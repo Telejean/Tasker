@@ -1,0 +1,19 @@
+.sidebarContainer {
+    position: sticky;
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - var(--var-navbar-height));
+    width: 12rem;
+    background-color: var(--var-primary);
+    padding: 0px 20px 0px 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    top: var(--var-navbar-height);
+}
+
+.sidebarItem {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+    color: var(--var-text-light);
+}
