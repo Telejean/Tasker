@@ -1,0 +1,18 @@
+.tableSmallContainer{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+table {
+    text-align: left;
+    color: white;
+    border-collapse: collapse;
+    font-size: 12px;
+    width: 95%;
+}
+
+tr {
+    border-bottom: 2px solid #0a324a;
+}

@@ -1,11 +1,21 @@
-.homeContainer{
+.homeContainer {
     text-align: center;
+    padding-bottom: 4rem;
 }
 
-.homecardContainer{
+.homecardContainer {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
     margin-top: 20px;
-    gap:2rem
+    gap: 2rem
 }
+
+.projectCardsContainer{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+
+

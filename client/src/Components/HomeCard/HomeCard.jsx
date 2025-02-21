@@ -1,9 +1,16 @@
 import s from './HomeCard.module.css'
 
-const HomeCard = ({title, children}) => {
+const HomeCard = ({ title, children }) => {
   return (
     <div className={s.homeCardContainer}>
-      <h2 className={s.homeCardTile}>{title}</h2>
+      {
+        title ?
+      <h2 className={s.homeCardTitle}>{title}</h2>
+      :null
+      }
+      <div className={s.homeCardChildContainer}>
+        {children}
+      </div>
     </div>
   )
 }

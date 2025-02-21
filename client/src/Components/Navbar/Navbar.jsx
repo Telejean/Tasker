@@ -12,8 +12,8 @@ const Navbar = () => {
         <LuSearch strokeWidth={3} size={30} />
       </div>
       <div className={s.navbarUserInfo}>
-        <LuInbox strokeWidth={2} size={38} color={"ffffff"} />
-        <LuCircleUser strokeWidth={2} size={50} color={"ffffff"}/>
+        <LuInbox strokeWidth={2} size={38} color={"#ffffff"} />
+        <LuCircleUser strokeWidth={2} size={50} color={"#ffffff"}/>
       </div>
     </div>
   )

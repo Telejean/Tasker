@@ -1,0 +1,11 @@
+.projectCardContainer{
+    display: flex;
+    width: 12rem;
+    padding: 2rem;
+}
+
+img{
+    width: 4rem;
+    height: 4rem;
+    border-radius: 20px;
+}

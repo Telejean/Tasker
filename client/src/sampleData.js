@@ -1,7 +1,7 @@
 const tasks = [
   {
     id: 0,
-    projectId: 2,
+    projectName: "E-Commerce Platform",
     name: "Develop login feature",
     deadline: "2025-03-01",
     description: "Implement user authentication with email and password.",
@@ -9,7 +9,7 @@ const tasks = [
   },
   {
     id: 1,
-    projectId: 1,
+    projectName: "E-Commerce Platform",
     name: "Design dashboard UI",
     deadline: "2025-03-05",
     description: "Create a user-friendly interface for the dashboard.",
@@ -17,14 +17,14 @@ const tasks = [
   },
   {
     id: 2,
-    projectId: 1,
+    projectName: "E-Commerce Platform",
     name: "Database schema setup",
     deadline: "2025-02-28",
     description: "Define tables and relationships for the database.",
     assignedPeople: ["Eve"],
   },
   {
-    projectId: 1,
+    projectName: "Mobile Banking App",
     id: 3,
     name: "API development for tasks",
     deadline: "2025-03-10",
@@ -32,7 +32,7 @@ const tasks = [
     assignedPeople: ["Frank", "Grace"],
   },
   {
-    projectId: 3,
+    projectName: "E-Commerce Platform",
     id: 4,
     name: "User registration feature",
     deadline: "2025-03-03",
@@ -40,7 +40,7 @@ const tasks = [
     assignedPeople: ["Hank"],
   },
   {
-    projectId: 2,
+    projectName: "AI-Based Task Management System",
     id: 5,
     name: "Implement task assignment",
     deadline: "2025-03-07",
@@ -48,7 +48,7 @@ const tasks = [
     assignedPeople: ["Ivy", "Jack"],
   },
   {
-    projectId: 1,
+    projectName: "E-Commerce Platform",
     id: 6,
     name: "Optimize database queries",
     deadline: "2025-03-15",
@@ -56,7 +56,7 @@ const tasks = [
     assignedPeople: ["Kevin"],
   },
   {
-    projectId: 1,
+    projectName: "E-Commerce Platform",
     id: 7,
     name: "Write unit tests",
     deadline: "2025-03-12",
@@ -64,7 +64,7 @@ const tasks = [
     assignedPeople: ["Laura", "Mike"],
   },
   {
-    projectId: 3,
+    projectName: "Mobile Banking App",
     id: 8,
     name: "Deploy application",
     deadline: "2025-03-20",
@@ -72,7 +72,7 @@ const tasks = [
     assignedPeople: ["Nancy"],
   },
   {
-    projectId: 2,
+    projectName: "AI-Based Task Management System",
     id: 9,
     name: "AI-based task estimation",
     deadline: "2025-03-25",
@@ -86,19 +86,22 @@ const projects = [
     name: "AI-Based Task Management System",
     members: ["Alice", "Bob", "Charlie", "Dave"],
     manager: "Eve",
+    iconId:1
   },
   {
     id: 2,
     name: "E-Commerce Platform",
     members: ["Frank", "Grace", "Hank", "Ivy"],
     manager: "Jack",
+    iconId:2
   },
   {
     id: 3,
     name: "Mobile Banking App",
     members: ["Kevin", "Laura", "Mike", "Nancy"],
     manager: "Oscar",
+    iconId:3
   },
 ];
 
-export { tasks, projects };
+export {tasks, projects};

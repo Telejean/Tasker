@@ -3,8 +3,17 @@
     height: 24em;
     background-color: var(--var-secondary);
     border-radius: 24px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+
 }
 
-.homeCardTile {
+.homeCardTitle {
     color: var(--var-text-light);
+}
+
+.homeCardChildContainer{
+    flex-grow: 1;
+    display: flex;
 }
