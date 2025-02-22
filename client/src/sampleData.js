@@ -71,14 +71,14 @@ const tasks = [
     description: "Deploy the system to a cloud environment.",
     assignedPeople: ["Nancy"],
   },
-  {
-    projectName: "AI-Based Task Management System",
-    id: 9,
-    name: "AI-based task estimation",
-    deadline: "2025-03-25",
-    description: "Implement an AI model to estimate task difficulty.",
-    assignedPeople: ["Oscar", "Paul"],
-  },
+  // {
+  //   projectName: "AI-Based Task Management System",
+  //   id: 9,
+  //   name: "AI-based task estimation",
+  //   deadline: "2025-03-25",
+  //   description: "Implement an AI model to estimate task difficulty.",
+  //   assignedPeople: ["Oscar", "Paul"],
+  // },
 ];
 const projects = [
   {
@@ -86,6 +86,7 @@ const projects = [
     name: "AI-Based Task Management System",
     members: ["Alice", "Bob", "Charlie", "Dave"],
     manager: "Eve",
+    completion: 0.6,
     iconId:1
   },
   {
@@ -93,6 +94,7 @@ const projects = [
     name: "E-Commerce Platform",
     members: ["Frank", "Grace", "Hank", "Ivy"],
     manager: "Jack",
+    completion: 1,
     iconId:2
   },
   {
@@ -100,6 +102,7 @@ const projects = [
     name: "Mobile Banking App",
     members: ["Kevin", "Laura", "Mike", "Nancy"],
     manager: "Oscar",
+    completion: 0.8,
     iconId:3
   },
 ];

@@ -1,20 +1,24 @@
 .homeContainer {
     text-align: center;
     padding-bottom: 4rem;
+    flex-grow: 1;
 }
 
-.homecardContainer {
+.homecardsContainer {
     display: flex;
     flex-wrap: wrap;
+    flex-direction: row;
     justify-content: center;
     margin-top: 20px;
-    gap: 2rem
+    gap: 2rem;
 }
 
 .projectCardsContainer{
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
+    padding: 1rem 2rem 2rem 2rem;
+    gap:1rem
 }
 
 

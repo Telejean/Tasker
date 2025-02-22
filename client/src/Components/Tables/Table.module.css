@@ -5,14 +5,19 @@
     justify-content: center;
 }
 
-table {
+.tableSmall {
     text-align: left;
     color: white;
     border-collapse: collapse;
-    font-size: 12px;
+    font-size: 14px;
     width: 95%;
 }
 
-tr {
+.tableSmallHeader{
     border-bottom: 2px solid #0a324a;
+}
+
+.tableSmallRow{
+    border-bottom: 2px solid #0a324a;
+
 }

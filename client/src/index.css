@@ -10,7 +10,7 @@
     --var-navbar-height: 60px;
 }
 
-#root{
+#root {
     overflow: visible;
 }
 
@@ -25,24 +25,29 @@ body {
     background-color: var(--var-bg);
 }
 
-h1{
+h1 {
     margin: 0;
 }
 
-h2{
+h2 {
     margin: 0;
 }
 
-h3{
+h3 {
     margin: 0;
 }
 
-h4{
+h4 {
     margin: 0;
+}
+
+p {
+    margin: 0;
+}
+
+.link {
+    text-decoration: none;
 }
 
 
 
-p{
-    margin: 0;
-}

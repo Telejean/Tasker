@@ -1,0 +1,40 @@
+.projectsContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-grow: 1;
+}
+
+.projectsTitle{
+    padding: 3rem 0 1rem 0;
+}
+
+.projectsContent{
+    width: 90%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.projectsSearchBar{
+    display: flex;
+    align-items: center;
+    width: 100%;
+    background-color: white;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    height: 2rem;
+    border-radius: 16px;
+    padding: 0rem 1rem 0rem 1rem;
+}
+
+.projectsSearchBarInput{
+    font-family: inherit;
+    width: 100%;
+    height: 100%;
+    border: none;
+    outline: none;
+    padding: 0 1rem;
+    border-radius: 16px;
+    font-size: 16px;
+}
+

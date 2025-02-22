@@ -4,6 +4,7 @@ import {tasks, projects} from '../../sampleData'
 import {LuCirclePlus} from "react-icons/lu";
 import TableSmall from "../../Components/Tables/TableSmall.jsx";
 import { ProjectCard } from '../../Components/ProjectCard/ProjectCard.jsx';
+import CreateProjectCard from '../../Components/ProjectCard/CreateProjectCard.jsx';
 
 const columnsSelector = [{
   accesor: "name",
@@ -15,6 +16,7 @@ const columnsSelector = [{
   accesor: "deadline",
   displayName: "Deadline"
 }]
+
 const Home = () => {
   const getCurrentDate = () => {
     const date = new Date();
@@ -26,17 +28,17 @@ const Home = () => {
   };
 
   return (
-
     <div className={s.homeContainer}>
 
       <h3>{getCurrentDate()}</h3>
       <h2>Good evening, Rareș</h2>
-      <div className={s.homecardContainer}>
+      <div className={s.homecardsContainer}>
         <HomeCard title={"Tasks"}>
           <TableSmall data={tasks} columnsName={columnsSelector}></TableSmall>
         </HomeCard>
         <HomeCard title={"Projects"}>
           <div className={s.projectCardsContainer}>
+          <CreateProjectCard/>
           {projects.map((project, index) => {
             return <ProjectCard key={index} id={index} projectName={project.name} noTasks={4}></ProjectCard>
           })}

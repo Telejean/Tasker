@@ -26,9 +26,9 @@ const TableSmall = ({ data, columnsName }) => {
 
   return (
     <div className={s.tableSmallContainer}>
-      <table>
+      <table className={s.tableSmall}>
         <thead>
-          <tr key={"0"}>
+          <tr key={"0"} className={s.tableSmallHeader}>
             {
               headers.map(header => (
                 <th key={header.id}>{header.column.columnDef.header}</th>
@@ -38,7 +38,7 @@ const TableSmall = ({ data, columnsName }) => {
         </thead>
         <tbody>
           {table.getRowModel().rows.map(row => (
-            <tr key={row.id}>
+            <tr key={row.id} className={s.tableSmallRow}>
               {row.getVisibleCells().map(cell => (
                 <td key={cell.id}>
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}

@@ -1,0 +1,17 @@
+.progressBarContainer{
+    display: flex;
+    gap:1rem;
+}
+
+.progressBar{
+    width: 10rem;
+    background-color: var(--var-text-light);
+    height: 1rem;
+    border-radius: 16px;
+}
+
+.progress{
+    background-color: var(--var-accent);
+    height: 1rem;
+    border-radius: 16px;
+}

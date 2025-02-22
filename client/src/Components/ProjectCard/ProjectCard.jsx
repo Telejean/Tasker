@@ -10,8 +10,8 @@ export const ProjectCard = ({ projectName, noTasks, id }) => {
         <div className={s.projectCardContainer}>
             <img src={icons[id]} alt="" />
             <div className={s.projectCardText}>
-                <h4>{projectName}</h4>
-                <p>{noTasks}</p>
+                <h4 className={s.projectCardProjName}>{projectName}</h4>
+                <p>Tasks due soon {noTasks}</p>
             </div>
 
         </div>
