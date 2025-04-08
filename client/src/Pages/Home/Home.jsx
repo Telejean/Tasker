@@ -1,10 +1,11 @@
 import HomeCard from '../../Components/HomeCard/HomeCard'
 import s from './Home.module.css'
-import {tasks, projects} from '../../sampleData'
-import {LuCirclePlus} from "react-icons/lu";
+import { tasks, projects } from '../../sampleData'
+import { LuCirclePlus } from "react-icons/lu";
 import TableSmall from "../../Components/Tables/TableSmall/TableSmall.jsx";
 import { ProjectCard } from '../../Components/ProjectCard/ProjectCard.jsx';
 import CreateProjectCard from '../../Components/ProjectCard/CreateProjectCard.jsx';
+import { Grid, Box, Card, Flex, Section, ScrollArea } from '@radix-ui/themes';
 
 const columnsSelector = [{
   accesor: "name",
@@ -28,30 +29,33 @@ const Home = () => {
   };
 
   return (
-    <div className={s.homeContainer}>
+    <Flex wrap='wrap' gap='8' p='4' justify='center'>
+      <HomeCard title={"Tasks"}>
+        <ScrollArea type="always" scrollbars="vertical" style={{ height: "40vh" }}>
+          <TableSmall data={tasks} columnsName={columnsSelector} />
+        </ScrollArea>
+      </HomeCard>
 
-      <h3>{getCurrentDate()}</h3>
-      <h2>Good evening, Rareș</h2>
-      <div className={s.homecardsContainer}>
-        <HomeCard title={"Tasks"}>
-          <TableSmall data={tasks} columnsName={columnsSelector}></TableSmall>
-        </HomeCard>
-        <HomeCard title={"Projects"}>
-          <div className={s.projectCardsContainer}>
-          <CreateProjectCard/>
-          {projects.map((project, index) => {
-            return <ProjectCard key={index} id={index} projectName={project.name} noTasks={4}></ProjectCard>
-          })}
-          </div>
+      <HomeCard title={"Projects"}>
+        <Grid rows='2' columns='2' gap='4' height="40vh">
+          {
+            projects.map((project, index) => (
+              <ProjectCard key={index} iconName={project.icon} projectName={project.name} noTasks={4}></ProjectCard>
+            ))
+          }
+          <CreateProjectCard />
+        </Grid>
+      </HomeCard>
 
-        </HomeCard>
-        <HomeCard title={"People"}></HomeCard>
-        <HomeCard>
-          <LuCirclePlus size={120} color={"#ffffff"}/>
-        </HomeCard>
-      </div>
+      <HomeCard title={"People"}>
 
-    </div>
+      </HomeCard>
+
+      <HomeCard >
+
+      </HomeCard>
+
+    </Flex>
   )
 }
 

@@ -9,7 +9,10 @@ import { Theme } from "@radix-ui/themes";
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
-      <Theme>
+      <Theme
+        accentColor='cyan'
+        panelBackground="solid"
+      >
         <App />
       </Theme>
     </BrowserRouter>

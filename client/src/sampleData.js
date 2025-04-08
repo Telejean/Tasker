@@ -87,7 +87,8 @@ const projects = [
     members: ["Alice", "Bob", "Charlie", "Dave"],
     manager: "Eve",
     completion: 0.6,
-    iconId:1
+    iconId:1,
+    icon:"LuApple"
   },
   {
     id: 2,
@@ -95,7 +96,8 @@ const projects = [
     members: ["Frank", "Grace", "Hank", "Ivy"],
     manager: "Jack",
     completion: 1,
-    iconId:2
+    iconId:2,
+    icon:"LuAmbulance "
   },
   {
     id: 3,
@@ -103,7 +105,8 @@ const projects = [
     members: ["Kevin", "Laura", "Mike", "Nancy"],
     manager: "Oscar",
     completion: 0.8,
-    iconId:3
+    iconId:3,
+    icon:"LuAperture"
   },
 ];
 

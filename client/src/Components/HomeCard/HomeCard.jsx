@@ -1,17 +1,14 @@
+import { Box, Card, Flex, Heading } from '@radix-ui/themes'
 import s from './HomeCard.module.css'
 
 const HomeCard = ({ title, children }) => {
   return (
-    <div className={s.homeCardContainer}>
-      {
-        title ?
-      <h2 className={s.homeCardTitle}>{title}</h2>
-      :null
-      }
-      <div className={s.homeCardChildContainer}>
+    <Box width={"40rem"} >
+      <Card>
+        <Heading align='center' mb='4'>{title}</Heading>
         {children}
-      </div>
-    </div>
+      </Card>
+    </Box>
   )
 }
 

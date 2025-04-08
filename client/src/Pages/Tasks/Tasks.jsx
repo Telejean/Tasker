@@ -3,6 +3,7 @@ import s from './Tasks.module.css'
 import { useState } from "react"; 
 import tasks from "../../mock_tasks.json"
 import { TasksTable } from "../../Components/Tables/TasksTable/TasksTable";
+import { Separator } from "radix-ui";
 
 
 const Tasks = () => {
@@ -34,7 +35,8 @@ const Tasks = () => {
         </div>
       </div>
 
-      <div className="separator" />
+
+      <Separator/>
 
       <div className={s.tasksActionsContainer}>
         <button className={s.addTaskBtn} onClick={handleAddTask}>+ Add task</button>

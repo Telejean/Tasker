@@ -5,6 +5,7 @@ import {
     useReactTable,
     getExpandedRowModel,
 } from '@tanstack/react-table'
+import { Box, Table } from '@radix-ui/themes'
 
 
 
@@ -45,30 +46,31 @@ export const TasksTable = ({ data }) => {
         getExpandedRowModel: getExpandedRowModel()
     })
 
+    const headerGroups = table.getHeaderGroups();
+    const headers = headerGroups[0].headers
+
     return (
-        <table>
-            <thead>
-                <tr>
+        <Table.Root >
+            <Table.Header >
+                <Table.Row key={"0"}>
                     {
-                        table.getHeaderGroups()[0].headers.map(header => (
+                        headers.map(header => (
                             <th key={header.id}>{header.column.columnDef.header}</th>
                         ))
                     }
-                </tr>
-            </thead>
-            <tbody>
-                {
-                    table.getRowModel().rows.map(row => (
-                        <tr key={row.id}>
-                            {
-                                row.getVisibleCells().map(cell => (
-                                    <td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
-                                ))
-                            }
-                        </tr>
-                    ))
-                }
-            </tbody>
-        </table>
+                </Table.Row>
+            </Table.Header>
+            <Table.Body>
+                {table.getRowModel().rows.map(row => (
+                    <Table.Row key={row.id} >
+                        {row.getVisibleCells().map(cell => (
+                            <Table.Cell key={cell.id}>
+                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                            </Table.Cell>
+                        ))}
+                    </Table.Row>
+                ))}
+            </Table.Body>
+        </Table.Root>
     )
 }

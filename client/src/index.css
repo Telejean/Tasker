@@ -15,6 +15,12 @@
     overflow: visible;
 }
 
+.radix-themes {
+    --cyan-12: var(--var-primary);
+    --cyan-a9: var(--var-primary);
+}
+
+
 body {
     box-sizing: border-box;
     margin: 0;

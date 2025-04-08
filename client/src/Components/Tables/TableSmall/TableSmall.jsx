@@ -5,6 +5,7 @@ import {
   useReactTable,
 } from '@tanstack/react-table'
 import s from "./Table.module.css"
+import { Box, Table } from '@radix-ui/themes'
 
 const TableSmall = ({ data, columnsName }) => {
 
@@ -25,30 +26,30 @@ const TableSmall = ({ data, columnsName }) => {
   const headers = headerGroups[0].headers
 
   return (
-    <div className={s.tableSmallContainer}>
-      <table className={s.tableSmall}>
-        <thead>
-          <tr key={"0"} className={s.tableSmallHeader}>
+    <Box className={s.tableSmallContainer}>
+      <Table.Root className={s.tableSmall}>
+        <Table.Header>
+          <Table.Row key={"0"} className={s.tableSmallHeader}>
             {
               headers.map(header => (
-                <th key={header.id}>{header.column.columnDef.header}</th>
+                <Table.ColumnHeaderCell key={header.id}>{header.column.columnDef.header}</Table.ColumnHeaderCell>
               ))
             }
-          </tr>
-        </thead>
-        <tbody>
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>
           {table.getRowModel().rows.map(row => (
-            <tr key={row.id} className={s.tableSmallRow}>
+            <Table.Row key={row.id} className={s.tableSmallRow}>
               {row.getVisibleCells().map(cell => (
-                <td key={cell.id}>
+                <Table.Cell key={cell.id}>
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </td>
+                </Table.Cell>
               ))}
-            </tr>
+            </Table.Row>
           ))}
-        </tbody>
-      </table>
-    </div>
+        </Table.Body>
+      </Table.Root>
+    </Box>
 
   )
 }

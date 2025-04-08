@@ -6,13 +6,13 @@ import {
 } from '@tanstack/react-table'
 import ProgressBar from '../../ProgressBar/ProgressBar'
 import s from "./TableBig.module.css"
-
+import { Table } from '@radix-ui/themes'
 
 
 const TableBig = ({ data }) => {
 
     const columnHelper = createColumnHelper()
-    const columns= [
+    const columns = [
         columnHelper.accessor("name", {
             id: "name",
             cell: info => info.getValue(),
@@ -36,28 +36,28 @@ const TableBig = ({ data }) => {
     const headers = headerGroups[0].headers
 
     return (
-        <table className={s.tableBig}>
-            <thead className={s.tableBigHeader}>
-                <tr key={"0"}>
+        <Table.Root >
+            <Table.Header >
+                <Table.Row key={"0"}>
                     {
                         headers.map(header => (
-                            <th className={s.tableBigHeaderCell} key={header.id}>{header.column.columnDef.header}</th>
+                            <th key={header.id}>{header.column.columnDef.header}</th>
                         ))
                     }
-                </tr>
-            </thead>
-            <tbody className={s.tableBigBody}>
+                </Table.Row>
+            </Table.Header>
+            <Table.Body>
                 {table.getRowModel().rows.map(row => (
-                    <tr key={row.id} className={s.tableBigRow}>
+                    <Table.Row key={row.id} >
                         {row.getVisibleCells().map(cell => (
-                            <td key={cell.id}>
+                            <Table.Cell key={cell.id}>
                                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                            </td>
+                            </Table.Cell>
                         ))}
-                    </tr>
+                    </Table.Row>
                 ))}
-            </tbody>
-        </table>
+            </Table.Body>
+        </Table.Root>
 
     )
 }

@@ -1,19 +1,28 @@
-import icon_1 from "../../Assets/proj_icon_1.png"
-import icon_2 from "../../Assets/proj_icon_2.png"
-import icon_3 from "../../Assets/proj_icon_3.png"
-import s from "./ProjectCard.module.css"
+import { Box, Card, Flex, Heading, Separator, Text } from "@radix-ui/themes";
+import { IconContext } from "react-icons";
+import * as LuIcons from "react-icons/lu";
+import s from "./ProjectCard.module.css";
 
-const icons = [icon_1, icon_2, icon_3]
+export const ProjectCard = ({ projectName, noTasks, iconName }) => {
+    const IconComponent = LuIcons[iconName] || LuIcons.LuCircleX;
 
-export const ProjectCard = ({ projectName, noTasks, id }) => {
     return (
-        <div className={s.projectCardContainer}>
-            <img src={icons[id]} alt="" />
-            <div className={s.projectCardText}>
-                <h4 className={s.projectCardProjName}>{projectName}</h4>
-                <p>Tasks due soon {noTasks}</p>
-            </div>
+        <Box>
+            <Card size='2' variant='' className={s.projectCardContainer} style={{height:"100%"}}>
+                <Flex gap='4' height={"100%"} align='center' >
+                    <Box width={"fit-content"}>
+                        <IconContext.Provider value={{ size: "3em" }}>
+                            <IconComponent />
+                        </IconContext.Provider>
+                    </Box>
 
-        </div>
-    )
-}
+                    <Box>
+                        <Text size="3" weight={"bold"}> {projectName} </Text>
+                        <Separator orientation="horizontal" size="4" />
+                        <Text>Tasks due soon: {noTasks}</Text>
+                    </Box>
+                </Flex>
+            </Card>
+        </Box>
+    );
+};
