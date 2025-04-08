@@ -1,9 +1,12 @@
-import { LuSquareKanban, LuList, LuCalendar, LuListFilter, LuArrowUpDown } from "react-icons/lu";
+import { LuSquareKanban, LuList, LuCalendar, LuListFilter, LuArrowUpDown, LuCirclePlus } from "react-icons/lu";
 import s from './Tasks.module.css'
-import { useState } from "react"; 
+import { useEffect, useState } from "react";
 import tasks from "../../mock_tasks.json"
 import { TasksTable } from "../../Components/Tables/TasksTable/TasksTable";
-import { Separator } from "radix-ui";
+import { Flex, Heading, Button, Tabs, Box, Text } from "@radix-ui/themes";
+import TasksFilter from "../../Components/TasksFilter/TasksFilter";
+import CalendarRangePicker from "../../Components/DateRangePicker/CalendarRangePicker";
+import { DateRangePicker } from "react-aria-components";
 
 
 const Tasks = () => {
@@ -14,50 +17,87 @@ const Tasks = () => {
   const handleAddTask = () => {
     console.log('add task')
   }
-  
-  console.log(selectedView)
+
+  useEffect(() => {
+    const handleClick = (e) => {
+      console.log("Clicked element:", e.target);
+      console.log("Event propagation path:", e.composedPath());
+      console.log("Focused element:", document.activeElement)
+    };
+    document.addEventListener("click", handleClick, true);
+
+    return () => {
+      document.removeEventListener("click", handleClick, true); // cleanup!
+    };
+  }, [])
 
   return (
-    <div className={s.tasksContainer}>
-      <h1 className={s.tasksTitle}>My Tasks</h1>
-      <div className={s.tasksViewsContainer}>
-        <div className={getViewStyle("list")} onClick={() => setSelectedView('list')}>
-          <LuList />
-          <p>List</p>
-        </div>
-        <div className={getViewStyle('board')} onClick={() => setSelectedView('board')}>
-          <LuSquareKanban />
-          <p>Board</p>
-        </div>
-        <div className={getViewStyle('calendar')} onClick={() => setSelectedView('calendar')}>
-          <LuCalendar />
-          <p>Calendar</p>
-        </div>
-      </div>
+
+    <Box width={"100%"} p='4'>
+      <Heading as='h1' align='center'>My Tasks</Heading>
+      <Tabs.Root defaultValue="list">
+        <Flex direction='column' gap='2'>
+
+          <Tabs.List>
+            <Tabs.Trigger value="list">
+              <Heading as="h2">
+                List
+              </Heading>
+            </Tabs.Trigger>
+            <Tabs.Trigger value="board">
+              <Heading as="h2">
+                Board
+              </Heading>
+            </Tabs.Trigger>
+            <Tabs.Trigger value="calendar">
+              <Heading as="h2">
+                Calendar
+              </Heading>
+            </Tabs.Trigger>
+
+          </Tabs.List>
+          <Flex direction='row' gap='2' justify='between'>
+            <Box>
+              <Button size='3' >
+                <LuCirclePlus size="1.5em" strokeWidth={3} />
+                Add task
+              </Button>
+            </Box>
 
 
-      <Separator/>
+            <CalendarRangePicker />
 
-      <div className={s.tasksActionsContainer}>
-        <button className={s.addTaskBtn} onClick={handleAddTask}>+ Add task</button>
-        <div className={s.tasksActions}>
-          <div className={s.tasksAction}>
-            <LuListFilter />
-            <p>Filter</p>
-          </div>
-          <div className={s.tasksAction}>
-            <LuArrowUpDown />
-            <p>Sort</p>
-          </div>
-        </div>
-      </div>
 
-      <div className="separator" />
+            <Flex gap='6'>
+              <TasksFilter />
 
-      <div className={s.tasksTableContainer}>
-        <TasksTable data={tasks}></TasksTable>
-      </div>
-    </div>
+              <Button >
+                <LuArrowUpDown />
+                <p>Sort</p>
+              </Button>
+            </Flex>
+          </Flex>
+
+
+          {/* <CalendarRangePicker /> */}
+
+          <Tabs.Content value="list">
+            <div >
+              <TasksTable data={tasks}></TasksTable>
+            </div>
+          </Tabs.Content>
+
+          <Tabs.Content value="board">
+            accounting
+          </Tabs.Content>
+
+          <Tabs.Content value="calendar">
+            calendar
+          </Tabs.Content>
+
+        </Flex>
+      </Tabs.Root >
+    </Box >
   )
 }
 
