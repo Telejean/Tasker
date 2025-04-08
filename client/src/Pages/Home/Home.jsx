@@ -2,7 +2,7 @@ import HomeCard from '../../Components/HomeCard/HomeCard'
 import s from './Home.module.css'
 import {tasks, projects} from '../../sampleData'
 import {LuCirclePlus} from "react-icons/lu";
-import TableSmall from "../../Components/Tables/TableSmall.jsx";
+import TableSmall from "../../Components/Tables/TableSmall/TableSmall.jsx";
 import { ProjectCard } from '../../Components/ProjectCard/ProjectCard.jsx';
 import CreateProjectCard from '../../Components/ProjectCard/CreateProjectCard.jsx';
 

@@ -3,6 +3,7 @@
 :root {
     --var-text: #040808;
     --var-text-light: #e0f1ff;
+    --var-text-grey: #89929a;
     --var-bg: #edf7ff;
     --var-primary: #087f8c;
     --var-secondary: #0b3a56;
@@ -49,5 +50,12 @@ p {
     text-decoration: none;
 }
 
-
-
+.separator {
+    width: 98%;
+    height: 2px;
+    background-color: var(--var-text-grey);
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    align-self: center;
+    border-radius: 16px;
+}

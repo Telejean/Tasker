@@ -1,0 +1,96 @@
+.tasksContainer {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.tasksTitle {
+    text-align: center;
+}
+
+.tasksViewsContainer {
+    display: flex;
+    gap: 1rem
+}
+
+.tasksView {
+    color: var(--var-text-grey);
+    font-weight: 600;
+    display: flex;
+    gap: 4px;
+    transition: all 0.3s;
+    cursor: pointer;
+    margin-left: 1rem;
+    padding: 2px 4px;
+    border-radius: 4px;
+    position: relative;
+}
+
+.tasksView:hover {
+    background-color: #89929a18;
+}
+
+.tasksViewActive {
+    color: var(--var-text);
+}
+
+.tasksViewActive::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: var(--var-text);
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: scaleX(0);
+    }
+
+    to {
+        transform: scaleX(1);
+    }
+}
+
+.tasksActionsContainer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.addTaskBtn {
+    background-color: var(--var-accent);
+    color: white;
+    width: fit-content;
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    margin-left: 1rem;
+    border: none;
+}
+
+.tasksActions {
+    display: flex;
+    gap: 1rem;
+}
+
+.tasksAction {
+    color: var(--var-text-grey);
+    font-weight: 600;
+    display: flex;
+    gap: 4px;
+    transition: all 0.3s;
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 4px;
+    margin-right: 1rem;
+    position: relative;
+}
+
+
+
+.tasksAction:hover {
+    background-color: #89929a18;
+}

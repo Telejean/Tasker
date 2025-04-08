@@ -1,6 +1,6 @@
 import { LuSearch, LuChevronDown } from "react-icons/lu";
 import s from './Projects.module.css'
-import TableBig from "../../Components/Tables/TableBig";
+import TableBig from "../../Components/Tables/TableBig/TableBig";
 import { projects } from '../../sampleData'
 import ProjectSearchFilters from "../../Components/ProjectSearchFilters/ProjectSearchFilters";
 
