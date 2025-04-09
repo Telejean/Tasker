@@ -40,7 +40,7 @@
     }
 
     &[data-pressed] {
-      background: var(--gray-100);
+      background: var(--gray-1);
     }
 
     &[data-focus-visible] {

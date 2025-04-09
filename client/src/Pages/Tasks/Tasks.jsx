@@ -3,10 +3,10 @@ import s from './Tasks.module.css'
 import { useEffect, useState } from "react";
 import tasks from "../../mock_tasks.json"
 import { TasksTable } from "../../Components/Tables/TasksTable/TasksTable";
-import { Flex, Heading, Button, Tabs, Box, Text } from "@radix-ui/themes";
+import { Flex, Heading, Button, Tabs, Box, Text, Dialog, TextField } from "@radix-ui/themes";
 import TasksFilter from "../../Components/TasksFilter/TasksFilter";
-import CalendarRangePicker from "../../Components/DateRangePicker/CalendarRangePicker";
-import { DateRangePicker } from "react-aria-components";
+import { TasksAdd } from "../../Components/TasksAdd/TasksAdd";
+import { CalendarDatePicker } from "../../Components/DatePicker/CalendarDatePicker";
 
 
 const Tasks = () => {
@@ -18,18 +18,18 @@ const Tasks = () => {
     console.log('add task')
   }
 
-  useEffect(() => {
-    const handleClick = (e) => {
-      console.log("Clicked element:", e.target);
-      console.log("Event propagation path:", e.composedPath());
-      console.log("Focused element:", document.activeElement)
-    };
-    document.addEventListener("click", handleClick, true);
+  // useEffect(() => {
+  //   const handleClick = (e) => {
+  //     console.log("Clicked element:", e.target);
+  //     console.log("Event propagation path:", e.composedPath());
+  //     console.log("Focused element:", document.activeElement)
+  //   };
+  //   document.addEventListener("click", handleClick, true);
 
-    return () => {
-      document.removeEventListener("click", handleClick, true); // cleanup!
-    };
-  }, [])
+  //   return () => {
+  //     document.removeEventListener("click", handleClick, true); // cleanup!
+  //   };
+  // }, [])
 
   return (
 
@@ -57,20 +57,13 @@ const Tasks = () => {
 
           </Tabs.List>
           <Flex direction='row' gap='2' justify='between'>
-            <Box>
-              <Button size='3' >
-                <LuCirclePlus size="1.5em" strokeWidth={3} />
-                Add task
-              </Button>
-            </Box>
 
+          <TasksAdd/>
 
-            <CalendarRangePicker />
-
+        <CalendarDatePicker/>
 
             <Flex gap='6'>
               <TasksFilter />
-
               <Button >
                 <LuArrowUpDown />
                 <p>Sort</p>

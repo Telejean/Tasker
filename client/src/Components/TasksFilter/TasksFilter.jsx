@@ -1,7 +1,8 @@
-import { Box, Button, DropdownMenu } from '@radix-ui/themes';
+import { Box, Button, CheckboxGroup, DropdownMenu } from '@radix-ui/themes';
 import { LuListFilter } from 'react-icons/lu';
 import CalendarRangePicker from '../DateRangePicker/CalendarRangePicker';
 import { useState } from 'react';
+import { CheckboxItem } from '@radix-ui/themes/components/context-menu';
 
 const TasksFilter = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -17,25 +18,21 @@ const TasksFilter = () => {
                     <DropdownMenu.TriggerIcon />
                 </Button>
             </DropdownMenu.Trigger>
-            <DropdownMenu.Content 
+            <DropdownMenu.Content
                 modal={false}
                 onPointerDownOutside={(event) => {
-                    // Prevent closing if calendar is open and click is inside it
                     if (isCalendarOpen && event.target.closest('.calendar-range-picker')) {
                         event.preventDefault();
                     }
                 }}
                 onInteractOutside={(event) => {
-                    // Prevent closing if calendar is open and interaction is inside it
                     if (isCalendarOpen && event.target.closest('.calendar-range-picker')) {
                         event.preventDefault();
                     }
                 }}
-                onEscapeKeyDown={() => {
-                    // Close calendar first on Escape, then dropdown on second Escape
+                onEscapeKeyDown={(event) => {
                     if (isCalendarOpen) {
                         setIsCalendarOpen(false);
-                        // Prevent dropdown from closing
                         event.preventDefault();
                     }
                 }}
@@ -43,16 +40,18 @@ const TasksFilter = () => {
                 <DropdownMenu.Sub open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
                     <DropdownMenu.SubTrigger>Deadline</DropdownMenu.SubTrigger>
                     <DropdownMenu.SubContent>
-                            <CalendarRangePicker />
+                        <CalendarRangePicker />
                     </DropdownMenu.SubContent>
                 </DropdownMenu.Sub>
 
                 <DropdownMenu.Sub>
                     <DropdownMenu.SubTrigger>Status</DropdownMenu.SubTrigger>
-                    <DropdownMenu.SubContent>
-                        <DropdownMenu.Item>Completed</DropdownMenu.Item>
-                        <DropdownMenu.Item>In progress</DropdownMenu.Item>
-                        <DropdownMenu.Item>Not started</DropdownMenu.Item>
+                    <DropdownMenu.SubContent >
+                        <CheckboxGroup.Root defaultValue={[]} name="example">
+                            <CheckboxGroup.Item value="1">Fun</CheckboxGroup.Item>
+                            <CheckboxGroup.Item value="2">Serious</CheckboxGroup.Item>
+                            <CheckboxGroup.Item value="3">Smart</CheckboxGroup.Item>
+                        </CheckboxGroup.Root>
                     </DropdownMenu.SubContent>
                 </DropdownMenu.Sub>
 
