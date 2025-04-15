@@ -1,13 +1,30 @@
 import { Box, Button, CheckboxGroup, DropdownMenu } from '@radix-ui/themes';
 import { LuListFilter } from 'react-icons/lu';
 import CalendarRangePicker from '../DateRangePicker/CalendarRangePicker';
-import { useState } from 'react';
-import { CheckboxItem } from '@radix-ui/themes/components/context-menu';
+import { useEffect, useState } from 'react';
+import { useAtom } from 'jotai';
+import { filtersAtom } from '../../Pages/Tasks/Tasks'; 
 
 const TasksFilter = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+    const [statusValues, setStatusValues] = useState([]);
+    const [selectedDate, setSelectedDate] = useState('');
+    const [, setFilters] = useAtom(filtersAtom); // Use the filtersAtom
 
+    // Update the filters atom whenever statusValues or selectedDate changes
+    useEffect(() => {
+        setFilters((prevFilters) => ({
+            ...prevFilters,
+            status: statusValues,
+            deadline: selectedDate,
+        }));
+    }, [statusValues, selectedDate, setFilters]);
+
+    // Handler for checkbox changes
+    const handleStatusChange = (values) => {
+        setStatusValues(values);
+    };
 
     return (
         <DropdownMenu.Root open={isOpen} onOpenChange={setIsOpen}>
@@ -15,6 +32,9 @@ const TasksFilter = () => {
                 <Button variant="soft" className="radix-dropdown-trigger">
                     <LuListFilter />
                     Filter
+                    {statusValues.length > 0 && (
+                        <span className="filter-badge">{statusValues.length}</span>
+                    )}
                     <DropdownMenu.TriggerIcon />
                 </Button>
             </DropdownMenu.Trigger>
@@ -40,21 +60,28 @@ const TasksFilter = () => {
                 <DropdownMenu.Sub open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
                     <DropdownMenu.SubTrigger>Deadline</DropdownMenu.SubTrigger>
                     <DropdownMenu.SubContent>
-                        <CalendarRangePicker />
+                        <CalendarRangePicker value={selectedDate} onChange={setSelectedDate} />
                     </DropdownMenu.SubContent>
                 </DropdownMenu.Sub>
-
                 <DropdownMenu.Sub>
-                    <DropdownMenu.SubTrigger>Status</DropdownMenu.SubTrigger>
-                    <DropdownMenu.SubContent >
-                        <CheckboxGroup.Root defaultValue={[]} name="example">
-                            <CheckboxGroup.Item value="1">Fun</CheckboxGroup.Item>
-                            <CheckboxGroup.Item value="2">Serious</CheckboxGroup.Item>
-                            <CheckboxGroup.Item value="3">Smart</CheckboxGroup.Item>
+                    <DropdownMenu.SubTrigger>
+                        Status
+                        {statusValues.length > 0 && (
+                            <span className="filter-badge">{statusValues.length}</span>
+                        )}
+                    </DropdownMenu.SubTrigger>
+                    <DropdownMenu.SubContent>
+                        <CheckboxGroup.Root
+                            value={statusValues}
+                            onValueChange={handleStatusChange}
+                            name="status-filters"
+                        >
+                            <CheckboxGroup.Item value="completed">Completed</CheckboxGroup.Item>
+                            <CheckboxGroup.Item value="in-progress">In progress</CheckboxGroup.Item>
+                            <CheckboxGroup.Item value="not-started">Not started</CheckboxGroup.Item>
                         </CheckboxGroup.Root>
                     </DropdownMenu.SubContent>
                 </DropdownMenu.Sub>
-
                 <DropdownMenu.Item>Assignee</DropdownMenu.Item>
                 <DropdownMenu.Item>Project</DropdownMenu.Item>
             </DropdownMenu.Content>

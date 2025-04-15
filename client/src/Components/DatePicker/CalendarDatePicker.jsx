@@ -1,17 +1,24 @@
 import React from 'react'
-import { Button, Calendar, CalendarCell, CalendarGrid, DateInput, DatePicker, DateSegment, Dialog, Group, Heading, Label, Popover } from 'react-aria-components';
+import { Calendar, CalendarCell, CalendarGrid, DateInput, DatePicker, DateSegment, Dialog, Group, Heading, Label } from 'react-aria-components';
 import "../../Assets/Style/ReactAria/DatePicker.css"
+import { Popover, Button } from '@radix-ui/themes';
 
-export const CalendarDatePicker = () => {
+export const CalendarDatePicker = ({onChange}) => {
+
+
     return (
-
-        <DatePicker>
-            <Label>Date</Label>
-            <Group>
+        <DatePicker onChange={onChange}>
+            <Popover.Root>
                 <DateInput>
                     {(segment) => <DateSegment segment={segment} />}
                 </DateInput>
-            </Group>
+                <Popover.Trigger>
+                    <Button variant="soft">
+                    ▼
+                    </Button>
+                </Popover.Trigger>
+
+                <Popover.Content>
                     <Calendar>
                         <header>
                             <Button slot="previous">◀</Button>
@@ -22,6 +29,9 @@ export const CalendarDatePicker = () => {
                             {(date) => <CalendarCell date={date} />}
                         </CalendarGrid>
                     </Calendar>
+                </Popover.Content>
+            </Popover.Root>
+
         </DatePicker>
     )
 }

@@ -7,32 +7,40 @@ import { Flex, Heading, Button, Tabs, Box, Text, Dialog, TextField } from "@radi
 import TasksFilter from "../../Components/TasksFilter/TasksFilter";
 import { TasksAdd } from "../../Components/TasksAdd/TasksAdd";
 import { CalendarDatePicker } from "../../Components/DatePicker/CalendarDatePicker";
+import { atom, useAtom } from 'jotai'
+
+
+
+const tasksAtom = atom(tasks);
+export const filtersAtom = atom({status:"completed"});
+
+const filteredTasksAtom = atom((get) => {
+  const tasks = get(tasksAtom);
+  const filter = get(filtersAtom);
+
+  console.log(filter)
+
+  return tasks.filter(task => {
+    return Object.keys(filter).every(key => {
+      if (Array.isArray(filter[key])) {
+        console.log(filter[key])
+        return filter[key].includes(task[key]);
+      } else {
+        return task[key] === filter[key];
+      }
+    });
+  });
+});
 
 
 const Tasks = () => {
   const [selectedView, setSelectedView] = useState('list');
+  const [filters, setFilters] = useAtom(filtersAtom);
+  const [tasks,] = useAtom(filteredTasksAtom);
+  const [, setTasks] = useAtom(tasksAtom);
 
-  const getViewStyle = (viewName) => selectedView === viewName ? `${s.tasksView} ${s.tasksViewActive}` : s.tasksView;
-
-  const handleAddTask = () => {
-    console.log('add task')
-  }
-
-  // useEffect(() => {
-  //   const handleClick = (e) => {
-  //     console.log("Clicked element:", e.target);
-  //     console.log("Event propagation path:", e.composedPath());
-  //     console.log("Focused element:", document.activeElement)
-  //   };
-  //   document.addEventListener("click", handleClick, true);
-
-  //   return () => {
-  //     document.removeEventListener("click", handleClick, true); // cleanup!
-  //   };
-  // }, [])
 
   return (
-
     <Box width={"100%"} p='4'>
       <Heading as='h1' align='center'>My Tasks</Heading>
       <Tabs.Root defaultValue="list">
@@ -58,9 +66,8 @@ const Tasks = () => {
           </Tabs.List>
           <Flex direction='row' gap='2' justify='between'>
 
-          <TasksAdd/>
+            <TasksAdd onAddTask={setTasks} />
 
-        <CalendarDatePicker/>
 
             <Flex gap='6'>
               <TasksFilter />
@@ -70,9 +77,6 @@ const Tasks = () => {
               </Button>
             </Flex>
           </Flex>
-
-
-          {/* <CalendarRangePicker /> */}
 
           <Tabs.Content value="list">
             <div >

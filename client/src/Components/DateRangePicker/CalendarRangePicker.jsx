@@ -17,7 +17,7 @@ const DateRangePickerClearButton = () => {
     );
 }
 
-const CalendarRangePicker = () => {
+const CalendarRangePicker = ({...props}) => {
     return (
         <DateRangePicker isOpen>
             <Group className="date-range-input-group">

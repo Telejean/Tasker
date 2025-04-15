@@ -5,6 +5,7 @@
   width: fit-content;
   max-width: 100%;
   color: var(--text-color);
+  background: var(--overlay-background);
 
   header {
     display: flex;
