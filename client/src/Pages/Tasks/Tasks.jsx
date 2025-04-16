@@ -12,21 +12,26 @@ import { atom, useAtom } from 'jotai'
 
 
 const tasksAtom = atom(tasks);
-export const filtersAtom = atom({status:"completed"});
+export const filtersAtom = atom({});
 
 const filteredTasksAtom = atom((get) => {
   const tasks = get(tasksAtom);
-  const filter = get(filtersAtom);
+  const filters = get(filtersAtom);
 
-  console.log(filter)
+  if (Object.keys(filters).length === 0) {
+    return tasks;
+  }
+
+  console.log(filters)
 
   return tasks.filter(task => {
-    return Object.keys(filter).every(key => {
-      if (Array.isArray(filter[key])) {
-        console.log(filter[key])
-        return filter[key].includes(task[key]);
+    return Object.keys(filters).every(filterKey => {
+      if (Array.isArray(filters[filterKey])) {
+        if (filters[filterKey].length === 0) return true
+        return filters[filterKey].includes(task[filterKey]);
       } else {
-        return task[key] === filter[key];
+        if (filters[filterKey] === "") return true
+        return task[filterKey] === filters[filterKey];
       }
     });
   });
@@ -36,9 +41,12 @@ const filteredTasksAtom = atom((get) => {
 const Tasks = () => {
   const [selectedView, setSelectedView] = useState('list');
   const [filters, setFilters] = useAtom(filtersAtom);
-  const [tasks,] = useAtom(filteredTasksAtom);
-  const [, setTasks] = useAtom(tasksAtom);
+  const [filteredTasks,] = useAtom(filteredTasksAtom);
+  const [tasks, setTasks] = useAtom(tasksAtom);
 
+  // console.log({tasks:tasks})
+  // console.log({filters:filters})
+  // console.log({filteredTasks:filteredTasks})
 
   return (
     <Box width={"100%"} p='4'>
@@ -68,7 +76,6 @@ const Tasks = () => {
 
             <TasksAdd onAddTask={setTasks} />
 
-
             <Flex gap='6'>
               <TasksFilter />
               <Button >
@@ -80,7 +87,7 @@ const Tasks = () => {
 
           <Tabs.Content value="list">
             <div >
-              <TasksTable data={tasks}></TasksTable>
+              <TasksTable data={filteredTasks}></TasksTable>
             </div>
           </Tabs.Content>
 

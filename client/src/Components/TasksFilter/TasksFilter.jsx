@@ -10,10 +10,10 @@ const TasksFilter = () => {
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
     const [statusValues, setStatusValues] = useState([]);
     const [selectedDate, setSelectedDate] = useState('');
-    const [, setFilters] = useAtom(filtersAtom); // Use the filtersAtom
+    const [, setFilters] = useAtom(filtersAtom); 
 
-    // Update the filters atom whenever statusValues or selectedDate changes
     useEffect(() => {
+        console.log('Filters updated:', { status: statusValues, deadline: selectedDate });
         setFilters((prevFilters) => ({
             ...prevFilters,
             status: statusValues,
@@ -21,7 +21,6 @@ const TasksFilter = () => {
         }));
     }, [statusValues, selectedDate, setFilters]);
 
-    // Handler for checkbox changes
     const handleStatusChange = (values) => {
         setStatusValues(values);
     };
