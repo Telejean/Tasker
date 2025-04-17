@@ -8,10 +8,11 @@ import TasksFilter from "../../Components/TasksFilter/TasksFilter";
 import { TasksAdd } from "../../Components/TasksAdd/TasksAdd";
 import { CalendarDatePicker } from "../../Components/DatePicker/CalendarDatePicker";
 import { atom, useAtom } from 'jotai'
+import Kanban from "../../Components/Kanban/Kanban";
 
 
 
-const tasksAtom = atom(tasks);
+export const tasksAtom = atom(tasks);
 export const filtersAtom = atom({});
 
 const filteredTasksAtom = atom((get) => {
@@ -22,16 +23,25 @@ const filteredTasksAtom = atom((get) => {
     return tasks;
   }
 
-  console.log(filters)
+  return tasks.filter((task) => {
+    return Object.keys(filters).every((filterKey) => {
+      const filterValue = filters[filterKey];
 
-  return tasks.filter(task => {
-    return Object.keys(filters).every(filterKey => {
-      if (Array.isArray(filters[filterKey])) {
-        if (filters[filterKey].length === 0) return true
-        return filters[filterKey].includes(task[filterKey]);
+      if (filterKey === "deadline") {
+        if (filterValue == null) return true;
+        const taskDeadline = new Date(task.deadline);
+        const filterStart = new Date(filterValue.start);
+        const filterEnd = new Date(filterValue.end);
+
+        return taskDeadline >= filterStart && taskDeadline <= filterEnd;
+      }
+
+      if (Array.isArray(filterValue)) {
+        if (filterValue.length === 0) return true;
+        return filterValue.includes(task[filterKey]);
       } else {
-        if (filters[filterKey] === "") return true
-        return task[filterKey] === filters[filterKey];
+        if (filterValue === "") return true;
+        return task[filterKey] === filterValue;
       }
     });
   });
@@ -42,7 +52,7 @@ const Tasks = () => {
   const [selectedView, setSelectedView] = useState('list');
   const [filters, setFilters] = useAtom(filtersAtom);
   const [filteredTasks,] = useAtom(filteredTasksAtom);
-  const [tasks, setTasks] = useAtom(tasksAtom);
+  const [, setTasks] = useAtom(tasksAtom);
 
   // console.log({tasks:tasks})
   // console.log({filters:filters})
@@ -92,7 +102,7 @@ const Tasks = () => {
           </Tabs.Content>
 
           <Tabs.Content value="board">
-            accounting
+            <Kanban tasks={filteredTasks} />
           </Tabs.Content>
 
           <Tabs.Content value="calendar">

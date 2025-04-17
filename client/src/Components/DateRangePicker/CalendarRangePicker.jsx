@@ -2,24 +2,28 @@ import { Button, CalendarCell, CalendarGrid, DateInput, DateRangePicker, DateSeg
 import "../../assets/Style/ReactAria/DateRangePicker.css";
 import { DateRangePickerStateContext } from 'react-aria-components';
 import React, { useContext } from 'react';
+import { dataListItemPropDefs } from '@radix-ui/themes/components/data-list.props';
 
 const DateRangePickerClearButton = () => {
-    const state = useContext(DateRangePickerStateContext);
+    const calendarState = useContext(DateRangePickerStateContext);
+    console.log({ calendarState });
     return (
         <Button
             slot={null}
             className="clear-button"
             aria-label="Clear"
-            onPress={() => state.setValue(null)}
+            onPress={() => {
+                calendarState.setValue(null);
+            }}
         >
             ✕
         </Button>
     );
 }
 
-const CalendarRangePicker = ({...props}) => {
+const CalendarRangePicker = ({ ...props }) => {
     return (
-        <DateRangePicker isOpen>
+        <DateRangePicker {...props}>
             <Group className="date-range-input-group">
                 <DateInput slot="start">
                     {(segment) => <DateSegment segment={segment} />}
@@ -30,17 +34,17 @@ const CalendarRangePicker = ({...props}) => {
                 </DateInput>
                 <DateRangePickerClearButton />
             </Group>
-            {/* Render the calendar directly without a Popover/Dialog */}
-                <RangeCalendar>
-                    <header>
-                        <Button slot="previous">◀</Button>
-                        <Heading />
-                        <Button slot="next">▶</Button>
-                    </header>
-                    <CalendarGrid>
-                        {(date) => <CalendarCell date={date} />}
-                    </CalendarGrid>
-                </RangeCalendar>
+
+            <RangeCalendar>
+                <header>
+                    <Button slot="previous">◀</Button>
+                    <Heading />
+                    <Button slot="next">▶</Button>
+                </header>
+                <CalendarGrid>
+                    {(date) => <CalendarCell date={date} />}
+                </CalendarGrid>
+            </RangeCalendar>
         </DateRangePicker>
     );
 }

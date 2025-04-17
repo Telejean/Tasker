@@ -4,16 +4,16 @@ import CalendarRangePicker from '../DateRangePicker/CalendarRangePicker';
 import { useEffect, useState } from 'react';
 import { useAtom } from 'jotai';
 import { filtersAtom } from '../../Pages/Tasks/Tasks'; 
+import {parseDate} from '@internationalized/date';
 
 const TasksFilter = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
     const [statusValues, setStatusValues] = useState([]);
-    const [selectedDate, setSelectedDate] = useState('');
+    const [selectedDate, setSelectedDate] = useState(null);
     const [, setFilters] = useAtom(filtersAtom); 
 
     useEffect(() => {
-        console.log('Filters updated:', { status: statusValues, deadline: selectedDate });
         setFilters((prevFilters) => ({
             ...prevFilters,
             status: statusValues,
