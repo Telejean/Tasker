@@ -38,12 +38,11 @@ const Kanban = ({ tasks }) => {
     const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
     const [, setTasks] = useAtom(tasksAtom);
 
-    useEffect(() => {   
+    useEffect(() => {
         console.log(selectedTask)
     }, [selectedTask]);
 
     useEffect(() => {
-        console.log(tasks)
         setColumns({
             'not-started': {
                 title: 'Not Started',
@@ -58,7 +57,7 @@ const Kanban = ({ tasks }) => {
                 items: tasks.filter(task => task.status === 'completed')
             }
         });
-    },[tasks])
+    }, [tasks])
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -78,7 +77,7 @@ const Kanban = ({ tasks }) => {
         }
 
         for (const [columnId, column] of Object.entries(columns)) {
-            const taskIndex = column.items.findIndex(task => task.task_name === id);
+            const taskIndex = column.items.findIndex(task => task.name === id);
             if (taskIndex !== -1) {
                 return columnId;
             }
@@ -89,7 +88,7 @@ const Kanban = ({ tasks }) => {
 
     const findTask = (id) => {
         for (const column of Object.values(columns)) {
-            const task = column.items.find(task => task.task_name === id);
+            const task = column.items.find(task => task.name === id);
             if (task) {
                 return task;
             }
@@ -129,7 +128,7 @@ const Kanban = ({ tasks }) => {
 
             // Find the task index in the active container
             const activeIndex = activeItems.findIndex(
-                item => item.task_name === activeId
+                item => item.name === activeId
             );
 
             if (activeIndex === -1) {
@@ -185,10 +184,10 @@ const Kanban = ({ tasks }) => {
         }
 
         const activeIndex = columns[activeContainer].items.findIndex(
-            item => item.task_name === activeId
+            item => item.name === activeId
         );
         const overIndex = columns[overContainer].items.findIndex(
-            item => item.task_name === overId
+            item => item.name === overId
         );
 
         if (activeIndex !== overIndex) {
@@ -212,37 +211,38 @@ const Kanban = ({ tasks }) => {
     };
 
     const handleTaskUpdate = (updatedTask) => {
+        console.log(updatedTask)
         setTasks(prev => {
             const updatedTasks = prev.map(task => {
-                if (task.task_name === updatedTask.task_name) {
+                if (task.name === updatedTask.name) {
                     return { ...task, ...updatedTask };
                 }
                 return task;
             });
             return updatedTasks;
         });
-        
+
         setColumns(prev => {
             let currentColumnId = null;
             for (const [columnId, column] of Object.entries(prev)) {
-                if (column.items.some(item => item.task_name === updatedTask.task_name)) {
+                if (column.items.some(item => item.name === updatedTask.name)) {
                     currentColumnId = columnId;
                     break;
                 }
             }
-    
+
             if (!currentColumnId) return prev;
-    
+
             // If status has changed (column needs to change)
             if (currentColumnId !== updatedTask.status) {
                 // Remove task from old column
                 const sourceItems = prev[currentColumnId].items.filter(
-                    item => item.task_name !== updatedTask.task_name
+                    item => item.name !== updatedTask.name
                 );
-    
+
                 // Add task to new column
                 const destinationItems = [...prev[updatedTask.status].items, updatedTask];
-    
+
                 return {
                     ...prev,
                     [currentColumnId]: {
@@ -255,14 +255,14 @@ const Kanban = ({ tasks }) => {
                     }
                 };
             }
-    
+
             // If status hasn't changed, just update the task in its current column
             return {
                 ...prev,
                 [currentColumnId]: {
                     ...prev[currentColumnId],
                     items: prev[currentColumnId].items.map(item =>
-                        item.task_name === updatedTask.task_name ? updatedTask : item
+                        item.name === updatedTask.name ? updatedTask : item
                     )
                 }
             };
@@ -278,7 +278,7 @@ const Kanban = ({ tasks }) => {
                 onDragOver={handleDragOver}
                 onDragEnd={handleDragEnd}
             >
-                <Flex gap="4" width="100%" style={{ overflowX: 'auto', padding: 'var(--space-4)' }}>
+                <Flex gap="4"  style={{padding: 'var(--space-4)' }}>
                     {Object.entries(columns).map(([columnId, column]) => (
                         <KanbanColumn
                             key={columnId}

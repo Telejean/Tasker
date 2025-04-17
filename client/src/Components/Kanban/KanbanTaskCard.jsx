@@ -11,7 +11,7 @@ const KanbanTaskCard = ({ task, onTaskClick }) => {
         setNodeRef,
         transform,
         transition
-    } = useSortable({ id: task.task_name });
+    } = useSortable({ id: task.name });
 
     // Format the deadline date
     const deadlineDate = new Date(task.deadline);
@@ -51,7 +51,7 @@ const KanbanTaskCard = ({ task, onTaskClick }) => {
         >
             <div className="card-content">
                 <Flex direction="column" gap="2">
-                    <Heading as="h4" size="2">{task.task_name}</Heading>
+                    <Heading as="h4" size="2">{task.name}</Heading>
                     <Text size="1" color="gray">{task.description}</Text>
 
                     <Flex justify="between" align="center">
@@ -59,16 +59,13 @@ const KanbanTaskCard = ({ task, onTaskClick }) => {
                         <Text size="1">Due: {formattedDate}</Text>
                     </Flex>
 
-                    <Box>
-                        <Text size="1" weight="bold" mb="1">Project: {task.project}</Text>
-                        <Text size="1" weight="bold" mb="1">Assignee: {task.name}</Text>
-                    </Box>
+                    <Text size="1" weight="bold" mb="1">Project: {task.projectName}</Text>
 
-                    {task.collaborators && task.collaborators.length > 0 && (
+                    {task.assignedPeople && task.assignedPeople.length > 0 && (
                         <Box>
                             <Text size="1" weight="bold" mb="1">Collaborators:</Text>
                             <Flex gap="1" wrap="wrap">
-                                {task.collaborators.slice(0, 3).map((collaborator, i) => (
+                                {task.assignedPeople.slice(0, 3).map((collaborator, i) => (
                                     <Avatar
                                         key={i}
                                         size="1"
@@ -77,9 +74,9 @@ const KanbanTaskCard = ({ task, onTaskClick }) => {
                                         title={collaborator}
                                     />
                                 ))}
-                                {task.collaborators.length > 3 && (
+                                {task.assignedPeople.length > 3 && (
                                     <Badge variant="soft">
-                                        +{task.collaborators.length - 3}
+                                        +{task.assignedPeople.length - 3}
                                     </Badge>
                                 )}
                             </Flex>

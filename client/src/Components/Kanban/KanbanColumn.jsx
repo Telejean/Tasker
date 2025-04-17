@@ -18,13 +18,13 @@ const KanbanColumn = ({ id, title, tasks, onTaskClick }) => {
             >
                 <ScrollArea style={{ height: '100%' }}>
                     <SortableContext
-                        items={tasks.map(task => task.task_name)}
+                        items={tasks.map(task => task.name)}
                         strategy={verticalListSortingStrategy}
                     >
                         <Flex direction="column" gap="2">
                             {tasks.map((task) => (
                                 <KanbanTaskCard
-                                    key={task.task_name}
+                                    key={task.id}
                                     task={task}
                                     onTaskClick={onTaskClick}
                                 />

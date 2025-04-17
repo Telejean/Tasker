@@ -1,7 +1,7 @@
 import { LuSquareKanban, LuList, LuCalendar, LuListFilter, LuArrowUpDown, LuCirclePlus } from "react-icons/lu";
 import s from './Tasks.module.css'
 import { useEffect, useState } from "react";
-import tasks from "../../mock_tasks.json"
+import {tasks} from "../../sampleData"
 import { TasksTable } from "../../Components/Tables/TasksTable/TasksTable";
 import { Flex, Heading, Button, Tabs, Box, Text, Dialog, TextField } from "@radix-ui/themes";
 import TasksFilter from "../../Components/TasksFilter/TasksFilter";
@@ -96,9 +96,7 @@ const Tasks = () => {
           </Flex>
 
           <Tabs.Content value="list">
-            <div >
               <TasksTable data={filteredTasks}></TasksTable>
-            </div>
           </Tabs.Content>
 
           <Tabs.Content value="board">

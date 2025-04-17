@@ -14,8 +14,8 @@ export const TasksTable = ({ data }) => {
 
     const columnHelper = createColumnHelper()
     const columns = [
-        columnHelper.accessor("task_name", {
-            id: "task_name",
+        columnHelper.accessor("name", {
+            id: "name",
             cell: info => info.getValue(),
             header: "Task name"
         }),
@@ -24,15 +24,15 @@ export const TasksTable = ({ data }) => {
             cell: info => info.getValue(),
             header: "Deadline"
         }),
-        columnHelper.accessor("collaborators", {
-            id: "collaborators",
+        columnHelper.accessor("assignedPeople", {
+            id: "assignedPeople",
             cell: info => info.getValue().map(name =>
                 name.split(' ').map(part => part[0]).join('')
             ).join(', '),
             header: "Collaborators"
         }),
-        columnHelper.accessor("project", {
-            id: "project",
+        columnHelper.accessor("projectName", {
+            id: "projectName",
             cell: info => info.getValue(),
             header: "Project"
         }),

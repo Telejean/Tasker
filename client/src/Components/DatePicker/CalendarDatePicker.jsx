@@ -3,11 +3,11 @@ import { Calendar, CalendarCell, CalendarGrid, DateInput, DatePicker, DateSegmen
 import "../../Assets/Style/ReactAria/DatePicker.css"
 import { Popover, Button } from '@radix-ui/themes';
 
-export const CalendarDatePicker = ({onChange}) => {
+export const CalendarDatePicker = ({onChange, defaultValue, ...props}) => {
 
 
     return (
-        <DatePicker onChange={onChange}>
+        <DatePicker onChange={onChange} defaultValue={defaultValue} {...props}>
             <Popover.Root>
                 <DateInput>
                     {(segment) => <DateSegment segment={segment} />}

@@ -6,7 +6,6 @@ import { dataListItemPropDefs } from '@radix-ui/themes/components/data-list.prop
 
 const DateRangePickerClearButton = () => {
     const calendarState = useContext(DateRangePickerStateContext);
-    console.log({ calendarState });
     return (
         <Button
             slot={null}

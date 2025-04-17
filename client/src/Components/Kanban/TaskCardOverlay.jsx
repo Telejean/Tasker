@@ -20,7 +20,7 @@ const TaskCardOverlay = ({ task }) => {
     return (
         <Card style={{ opacity: 0.8, width: '300px' }}>
             <Flex direction="column" gap="2">
-                <Heading as="h4" size="2">{task.task_name}</Heading>
+                <Heading as="h4" size="2">{task.name}</Heading>
                 <Text size="1" color="gray">{task.description}</Text>
 
                 <Flex justify="between" align="center">
@@ -29,7 +29,7 @@ const TaskCardOverlay = ({ task }) => {
                 </Flex>
 
                 <Box>
-                    <Text size="1" weight="bold" mb="1">Project: {task.project}</Text>
+                    <Text size="1" weight="bold" mb="1">Project: {task.projectName}</Text>
                     <Text size="1" weight="bold" mb="1">Assignee: {task.name}</Text>
                 </Box>
             </Flex>

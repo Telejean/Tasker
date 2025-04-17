@@ -1,6 +1,7 @@
 import { Box, Flex, Text, Badge, Dialog, TextField, TextArea, Select, Button } from '@radix-ui/themes';
 import { CalendarDatePicker } from '../DatePicker/CalendarDatePicker';
 import { use, useEffect, useState } from 'react';
+import { parseDate } from '@internationalized/date';
 
 const TaskDetailDialog = ({ task, open, onOpenChange, onTaskUpdate }) => {
     const [editedTask, setEditedTask] = useState({ ...task });
@@ -8,6 +9,16 @@ const TaskDetailDialog = ({ task, open, onOpenChange, onTaskUpdate }) => {
     useEffect(() => {
         setEditedTask({ ...task });
     }, [open, task]);
+
+
+    const getCalendarDate = (dateString) => {
+        try {
+            return parseDate(dateString);
+        } catch (e) {
+            console.error('Invalid date format:', e);
+            return null;
+        }
+    };
 
     const handleStatusChange = (value) => {
         setEditedTask(prev => ({
@@ -42,8 +53,8 @@ const TaskDetailDialog = ({ task, open, onOpenChange, onTaskUpdate }) => {
                             Task Name
                         </Text>
                         <TextField.Root
-                            value={editedTask.task_name}
-                            onChange={(e) => setEditedTask(prev => ({ ...prev, task_name: e.target.value }))}
+                            value={editedTask.name}
+                            onChange={(e) => setEditedTask(prev => ({ ...prev, name: e.target.value }))}
                         />
                     </label>
 
@@ -79,7 +90,7 @@ const TaskDetailDialog = ({ task, open, onOpenChange, onTaskUpdate }) => {
                             Deadline
                         </Text>
                         <CalendarDatePicker
-                            defaultValue={new Date(editedTask.deadline)}
+                            defaultValue={getCalendarDate(editedTask.deadline)}
                             onDateChange={handleDateChange}
                         />
                     </label>
@@ -89,8 +100,8 @@ const TaskDetailDialog = ({ task, open, onOpenChange, onTaskUpdate }) => {
                             Project
                         </Text>
                         <TextField.Root
-                            value={editedTask.project}
-                            onChange={(e) => setEditedTask(prev => ({ ...prev, project: e.target.value }))}
+                            value={editedTask.projectName}
+                            onChange={(e) => setEditedTask(prev => ({ ...prev, projectName: e.target.value }))}
                         />
                     </label>
 
@@ -99,18 +110,18 @@ const TaskDetailDialog = ({ task, open, onOpenChange, onTaskUpdate }) => {
                             Assignee
                         </Text>
                         <TextField.Root
-                            value={editedTask.name}
-                            onChange={(e) => setEditedTask(prev => ({ ...prev, name: e.target.value }))}
+                            value={editedTask.assignedPeople}
+                            onChange={(e) => setEditedTask(prev => ({ ...prev, assignedPeople: e.target.value }))}
                         />
                     </label>
 
-                    {editedTask.collaborators && (
+                    {editedTask.assignedPeople && (
                         <Box>
                             <Text as="div" size="2" mb="1" weight="bold">
                                 Collaborators
                             </Text>
                             <Flex gap="1" wrap="wrap">
-                                {editedTask.collaborators.map((collaborator, index) => (
+                                {editedTask.assignedPeople.map((collaborator, index) => (
                                     <Badge key={index} variant="soft">
                                         {collaborator}
                                     </Badge>

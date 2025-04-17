@@ -30,7 +30,7 @@ export const TasksAdd = ({ onAddTask }) => {
 
 
         let newTask = {
-            task_name: taskName,
+            name: taskName,
             deadline: formatDate(deadline),
             description: description,
             status: status,
