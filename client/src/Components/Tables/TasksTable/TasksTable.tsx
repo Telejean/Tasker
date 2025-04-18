@@ -6,13 +6,12 @@ import {
     getExpandedRowModel,
 } from '@tanstack/react-table'
 import { Box, Table } from '@radix-ui/themes'
+import { Task } from '@/types';
 
 
+const TasksTable = ({ data }: { data: Task[] }) => {
 
-
-export const TasksTable = ({ data }) => {
-
-    const columnHelper = createColumnHelper()
+    const columnHelper = createColumnHelper<Task>()
     const columns = [
         columnHelper.accessor("name", {
             id: "name",
@@ -21,7 +20,7 @@ export const TasksTable = ({ data }) => {
         }),
         columnHelper.accessor("deadline", {
             id: "deadline",
-            cell: info => info.getValue(),
+            cell: info => info.getValue().toString(),
             header: "Deadline"
         }),
         columnHelper.accessor("assignedPeople", {
@@ -55,7 +54,14 @@ export const TasksTable = ({ data }) => {
                 <Table.Row key={"0"}>
                     {
                         headers.map(header => (
-                            <th key={header.id}>{header.column.columnDef.header}</th>
+                            <Table.ColumnHeaderCell key={header.id}>
+                                {header.isPlaceholder
+                                    ? null
+                                    : flexRender(
+                                        header.column.columnDef.header,
+                                        header.getContext()
+                                    )}
+                            </Table.ColumnHeaderCell>
                         ))
                     }
                 </Table.Row>
@@ -74,3 +80,5 @@ export const TasksTable = ({ data }) => {
         </Table.Root>
     )
 }
+
+export default TasksTable

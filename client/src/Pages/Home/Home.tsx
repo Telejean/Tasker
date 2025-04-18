@@ -1,10 +1,9 @@
 import HomeCard from '../../Components/HomeCard/HomeCard'
-import s from './Home.module.css'
-import { tasks, projects } from '../../sampleData'
+import { sampleTasks, projects } from '../../sampleData'
 import { LuCirclePlus } from "react-icons/lu";
-import TableSmall from "../../Components/Tables/TableSmall/TableSmall.jsx";
-import { ProjectCard } from '../../Components/ProjectCard/ProjectCard.jsx';
-import CreateProjectCard from '../../Components/ProjectCard/CreateProjectCard.jsx';
+import TableSmall from "../../Components/Tables/TableSmall/TableSmall"
+import { ProjectCard } from '../../Components/ProjectCard/ProjectCard';
+import CreateProjectCard from '../../Components/ProjectCard/CreateProjectCard';
 import { Grid, Box, Card, Flex, Section, ScrollArea } from '@radix-ui/themes';
 
 const columnsSelector = [{
@@ -32,7 +31,7 @@ const Home = () => {
     <Flex wrap='wrap' gap='8' p='4' justify='center'>
       <HomeCard title={"Tasks"}>
         <ScrollArea type="always" scrollbars="vertical" style={{ height: "40vh" }}>
-          <TableSmall data={tasks} columnsName={columnsSelector} />
+          <TableSmall data={sampleTasks}  />
         </ScrollArea>
       </HomeCard>
 
@@ -51,7 +50,7 @@ const Home = () => {
 
       </HomeCard>
 
-      <HomeCard >
+      <HomeCard title='Calendar'>
 
       </HomeCard>
 

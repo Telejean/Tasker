@@ -12,11 +12,11 @@ function App() {
       <Navbar />
       <div id={s.mainContainer}>
         <Sidebar />
-          <Routes>
-            <Route path="/home" element={<Home />} />
-            <Route path="/tasks" element={<Tasks />} />
-            <Route path="/projects" element={<Projects />} />
-          </Routes>
+        <Routes>
+          <Route path="/home" element={<Home />} />
+          <Route path="/tasks" element={<Tasks />} />
+          <Route path="/projects" element={<Projects />} />
+        </Routes>
       </div>
 
     </>
