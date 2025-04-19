@@ -90,7 +90,7 @@ const TaskDetailDialog = ({ task, open, onOpenChange, onTaskUpdate } : {task: Ta
                             Deadline
                         </Text>
                         <CalendarDatePicker
-                            defaultValue={editedTask.deadline.toString()}
+                            defaultValue={task.deadline}
                             onDateChange={handleDateChange}
                         />
                     </label>

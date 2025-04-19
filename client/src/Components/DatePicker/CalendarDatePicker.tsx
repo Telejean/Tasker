@@ -1,9 +1,9 @@
 import React from 'react'
-import { Calendar, CalendarCell, CalendarGrid, DateInput, DatePicker, DateSegment, Dialog, Group, Heading, Label } from 'react-aria-components';
+import { Calendar, CalendarCell, CalendarGrid, DateInput, DatePicker, DateSegment, DateValue, Dialog, Group, Heading, Label } from 'react-aria-components';
 import "../../Assets/Style/ReactAria/DatePicker.css"
 import { Popover, Button } from '@radix-ui/themes';
 
-export const CalendarDatePicker = ({onChange, defaultValue, ...props} : {onChange?: any, defaultValue: any}) => {
+export const CalendarDatePicker = ({onChange, defaultValue, ...props} : {onChange?: any, defaultValue: DateValue}) => {
 
 
     return (

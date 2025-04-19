@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Flex } from '@radix-ui/themes';
+import { act, useEffect, useState } from 'react';
+import { Box, Flex } from '@radix-ui/themes';
 import {
     DndContext,
     closestCenter,
@@ -7,7 +7,11 @@ import {
     PointerSensor,
     useSensor,
     useSensors,
-    DragOverlay
+    DragOverlay,
+    DragEndEvent,
+    DragOverEvent,
+    DragStartEvent,
+    UniqueIdentifier
 } from '@dnd-kit/core';
 import { arrayMove, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 
@@ -35,7 +39,7 @@ const Kanban = ({ tasks } : {tasks:Task[]}) => {
     });
 
     const [activeTask, setActiveTask] = useState<Task | null>(null);
-    const [selectedTask, setSelectedTask] = useState(null);
+    const [selectedTask, setSelectedTask] = useState<Task | null>(null);
     const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
     const [, setTasks] = useAtom(tasksAtom);
 
@@ -69,12 +73,10 @@ const Kanban = ({ tasks } : {tasks:Task[]}) => {
         })
     );
 
-    const findContainer = (id : number) => {
+    const findContainer = (id: UniqueIdentifier) => {
         if (id in columns) {
             return id;
         }
-
-        console.log({findContainer:id})
 
         for (const [columnId, column] of Object.entries(columns)) {
             const taskIndex = column.items.findIndex(task => task.id === id);
@@ -86,23 +88,23 @@ const Kanban = ({ tasks } : {tasks:Task[]}) => {
         return null;
     };
 
-    const findTask = (id:number) => {
-        for (const column of Object.values(columns)) {
-            const task = column.items.find(task => task.id === id);
-            if (task) {
-                return task;
+    const findTask = (id: UniqueIdentifier) => {
+            for (const column of Object.values(columns)) {
+                const task = column.items.find(task => task.id === id);
+                if (task) {
+                    return task;
+                }
             }
-        }
-        return null;
-    };
+            return null;
+        };
 
-    const handleDragStart = (event) => {
+    const handleDragStart = (event : DragStartEvent) => {
         const { active } = event;
         const task = findTask(active.id);
         setActiveTask(task);
     };
 
-    const handleDragOver = (event) => {
+    const handleDragOver = (event : DragOverEvent) => {
         const { active, over } = event;
 
         if (!over) return;
@@ -111,7 +113,6 @@ const Kanban = ({ tasks } : {tasks:Task[]}) => {
         const overId = over.id;
 
         // Find the containers
-        console.log({handleDragOver:event})
 
         const activeContainer = findContainer(activeId);
         const overContainer = findContainer(overId);
@@ -163,7 +164,7 @@ const Kanban = ({ tasks } : {tasks:Task[]}) => {
         });
     };
 
-    const handleDragEnd = (event) => {
+    const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
         setActiveTask(null);
 
@@ -207,13 +208,12 @@ const Kanban = ({ tasks } : {tasks:Task[]}) => {
         }
     };
 
-    const handleTaskClick = (task) => {
+    const handleTaskClick = (task:Task) => {
         setSelectedTask(task);
         setIsDetailDialogOpen(true);
     };
 
-    const handleTaskUpdate = (updatedTask) => {
-        console.log(updatedTask)
+    const handleTaskUpdate = (updatedTask : Task) => {
         setTasks(prev => {
             const updatedTasks = prev.map(task => {
                 if (task.id === updatedTask.id) {
@@ -272,7 +272,7 @@ const Kanban = ({ tasks } : {tasks:Task[]}) => {
     };
 
     return (
-        <>
+        <Box overflowX='scroll' height='fitContent' overflowY='hidden'>
             <DndContext
                 sensors={sensors}
                 collisionDetection={closestCenter}
@@ -280,11 +280,10 @@ const Kanban = ({ tasks } : {tasks:Task[]}) => {
                 onDragOver={handleDragOver}
                 onDragEnd={handleDragEnd}
             >
-                <Flex gap="4"  style={{padding: 'var(--space-4)' }}>
+                <Flex gap="4" p='4' justify='center'>
                     {Object.entries(columns).map(([columnId, column]) => (
                         <KanbanColumn
                             key={columnId}
-                            id={columnId}
                             title={column.title}
                             tasks={column.items}
                             onTaskClick={handleTaskClick}
@@ -304,7 +303,7 @@ const Kanban = ({ tasks } : {tasks:Task[]}) => {
                     onTaskUpdate={handleTaskUpdate}
                 />
             )}
-        </>
+        </Box>
     );
 };
 

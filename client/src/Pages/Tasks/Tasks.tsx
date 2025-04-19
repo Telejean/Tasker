@@ -5,17 +5,20 @@ import TasksFilter from "../../Components/TasksFilter/TasksFilter";
 import { TasksAdd } from "../../Components/TasksAdd/TasksAdd";
 import { atom, useAtom } from 'jotai'
 import Kanban from "../../Components/Kanban/Kanban";
-import { RangeValue, Task, TaskFilters } from "@/types"
+import { RangeValue, SortOptions, Task, TaskFilters } from "@/types"
 import { DateValue } from "react-aria-components";
 import TasksTable from "@/Components/Tables/TasksTable/TasksTable";
-
+import TasksSort from "@/Components/TasksSort";
+import { useEffect } from "react";
 
 export const tasksAtom = atom<Task[]>(sampleTasks);
 export const filtersAtom = atom<TaskFilters>({});
+export const sortAtom = atom<SortOptions>({ field: null, direction: null });
 
 const filteredTasksAtom = atom((get) => {
   const tasks = get(tasksAtom);
   const filters = get(filtersAtom);
+  const sort = get(sortAtom);
 
   if (Object.keys(filters).length === 0) {
     return tasks;
@@ -46,12 +49,19 @@ const filteredTasksAtom = atom((get) => {
 
 
 const Tasks = () => {
+const [sort, setSort] = useAtom(sortAtom);
+  
   const [filteredTasks,] = useAtom(filteredTasksAtom);
   const [, setTasks] = useAtom(tasksAtom);
 
   // console.log({tasks:tasks})
   // console.log({filters:filters})
   // console.log({filteredTasks:filteredTasks})
+
+  useEffect(() => {
+    console.log("Sample tasks updated:", sort);
+  }, [sort]);
+
 
   return (
     <Box width={"100%"} p='4'>
@@ -83,10 +93,7 @@ const Tasks = () => {
 
             <Flex gap='6'>
               <TasksFilter />
-              <Button >
-                <LuArrowUpDown />
-                <p>Sort</p>
-              </Button>
+              <TasksSort />
             </Flex>
           </Flex>
 

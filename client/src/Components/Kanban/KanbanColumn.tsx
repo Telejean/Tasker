@@ -1,11 +1,11 @@
 import { Box, Heading, ScrollArea, Flex } from '@radix-ui/themes';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import KanbanTaskCard from './KanbanTaskCard';
+import { Task } from '@/types';
 
-// Column component for each status
-const KanbanColumn = ({ id, title, tasks, onTaskClick }) => {
+const KanbanColumn = ({ title, tasks, onTaskClick }:{title: string, tasks: Task[], onTaskClick: (task: Task) => void}) => {
     return (
-        <Box width="100%" maxWidth="350px">
+        <Box minWidth='300px'>
             <Heading as="h3" size="3" mb="2">{title}</Heading>
             <Box
                 height="100%"

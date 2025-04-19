@@ -24,3 +24,7 @@ export interface TaskFilters {
     priority?: string;
 }
 
+export interface SortOptions {
+    field: keyof Task | null;
+    direction: 'asc' | 'desc' | null;
+}

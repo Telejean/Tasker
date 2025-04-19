@@ -2,9 +2,10 @@ import { Card, Flex, Text, Avatar, Heading, Badge, Box } from '@radix-ui/themes'
 import { format } from 'date-fns';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { Task } from '@/types';
 
 // Task card component (sortable)
-const KanbanTaskCard = ({ task, onTaskClick }) => {
+const KanbanTaskCard = ({ task, onTaskClick } : {task:Task, onTaskClick: (task: Task) => void}) => {
     const {
         attributes,
         listeners,
@@ -14,11 +15,11 @@ const KanbanTaskCard = ({ task, onTaskClick }) => {
     } = useSortable({ id: task.id });
 
     // Format the deadline date
-    const deadlineDate = new Date(task.deadline);
+    const deadlineDate = new Date(task.deadline.toString());
     const formattedDate = format(deadlineDate, 'MMM d, yyyy');
 
     // Determine badge color based on status
-    const getBadgeColor = (status) => {
+    const getBadgeColor = (status: Task['status']) => {
         switch (status) {
             case 'not-started': return 'amber';
             case 'in-progress': return 'blue';
@@ -33,7 +34,7 @@ const KanbanTaskCard = ({ task, onTaskClick }) => {
         cursor: 'grab'
     };
 
-    const handleCardClick = (e) => {
+    const handleCardClick = (e:any) => {
         // Prevent triggering drag when clicking to view details
         if (e.target.closest('.card-content')) {
             onTaskClick(task);
