@@ -1,7 +1,7 @@
 import HomeCard from '../../Components/HomeCard/HomeCard'
 import { sampleTasks, projects } from '../../sampleData'
 import { LuCirclePlus } from "react-icons/lu";
-import TableSmall from "../../Components/Tables/TableSmall/TableSmall"
+import TableSmall from "../../Components/Tables/TableSmall"
 import { ProjectCard } from '../../Components/ProjectCard/ProjectCard';
 import CreateProjectCard from '../../Components/ProjectCard/CreateProjectCard';
 import { Grid, Box, Card, Flex, Section, ScrollArea } from '@radix-ui/themes';

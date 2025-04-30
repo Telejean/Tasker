@@ -6,6 +6,7 @@ import Tasks from "./Pages/Tasks/Tasks";
 import s from './App.module.css'
 import Projects from "./Pages/Projects/Projects";
 import { Box, Flex } from "@radix-ui/themes";
+import ProjectPage from "./Pages/Projects/ProjectPage";
 function App() {
 
   return (
@@ -13,11 +14,13 @@ function App() {
       <Navbar />
       <Flex>
         <Sidebar />
-        <Box id={s.mainContainer}>  
+        <Box id={s.mainContainer}>
           <Routes>
             <Route path="/home" element={<Home />} />
             <Route path="/tasks" element={<Tasks />} />
             <Route path="/projects" element={<Projects />} />
+            <Route path="/projects/:id" element={<ProjectPage />} />
+
           </Routes>
         </Box>
       </Flex>

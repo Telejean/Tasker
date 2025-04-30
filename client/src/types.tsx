@@ -28,3 +28,19 @@ export interface SortOptions {
     field: keyof Task | null;
     direction: 'asc' | 'desc' | null;
 }
+
+export interface Project {
+    id: number;
+    name: string;
+    members: string[];
+    manager: string;
+    completion: number;
+    iconId: number;
+    icon: string;
+    status: 'active' | 'archived' | 'deleted';
+}
+export interface ProjectFilters {
+    owner?: string[];
+    members?: string[];
+    status?: ('active' | 'archived' | 'deleted')[];
+}

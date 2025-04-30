@@ -1,0 +1,166 @@
+generator client {
+  provider = "prisma-client-js"
+  output = "../generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enhanced Prisma schema with ABAC Permission System
+
+// Include the existing models (User, Project, Task, etc.)
+// Then add these models for ABAC implementation:
+
+// Permission policy definitions
+
+// Individual rules that make up a policy
+model Rule {
+  id                    Int        @id @default(autoincrement())
+  name                  String
+  description           String?
+  effect                RuleEffect @default(ALLOW)
+  // Attributes to check (stored as JSON)
+  subjectAttributes     Json?
+  resourceAttributes    Json?
+  actionAttributes      Json?
+  environmentAttributes Json?
+  condition             String?    @db.Text
+  priority              Int        @default(0)
+  policyId              Int
+  policy                Policy     @relation(fields: [policyId], references: [id], onDelete: Cascade)
+
+  @@index([policyId])
+  @@index([priority])
+}
+
+enum RuleEffect {
+  ALLOW
+  DENY
+}
+
+// Assign policies to users
+model UserPolicy {
+  id         Int       @id @default(autoincrement())
+  userId     Int
+  policyId   Int
+  assignedAt DateTime  @default(now())
+  expiresAt  DateTime?
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  policy     Policy    @relation(fields: [policyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, policyId])
+  @@index([assignedAt])
+  @@index([expiresAt])
+}
+
+// Project-specific policy assignments
+model ProjectPolicy {
+  id         Int      @id @default(autoincrement())
+  projectId  Int
+  policyId   Int
+  assignedAt DateTime @default(now())
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  policy     Policy   @relation(fields: [policyId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, policyId])
+}
+
+// Task-specific policy assignments
+model TaskPolicy {
+  id         Int      @id @default(autoincrement())
+  taskId     Int
+  policyId   Int
+  assignedAt DateTime @default(now())
+  task       Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  policy     Policy   @relation(fields: [policyId], references: [id], onDelete: Cascade)
+
+  @@unique([taskId, policyId])
+}
+
+// Permission audit logs
+model PermissionLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  action    String
+  resource  String
+  allowed   Boolean
+  reason    String?
+  timestamp DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+// Add these relations to existing models:
+
+enum UserRoles {
+  MEMBER
+  LEADER
+  COORDINATOR
+  BOARD
+}
+
+model User {
+  id              Int             @id @default(autoincrement())
+  name            String
+  email           String          @unique
+  password        String
+  role            UserRoles
+  tasks           Task[]          @relation("AssignedTasks")
+  policies        UserPolicy[]
+  permissionLogs  PermissionLog[]
+  Project         Project[]       @relation("UserProjects")
+  managedProjects Project[]       @relation("ProjectManager")
+}
+
+model Project {
+  id        Int             @id @default(autoincrement())
+  name      String
+  iconId    Int
+  icon      String
+  status    ProjectStatus   @default(ACTIVE)
+  tasks     Task[]
+  managerId Int
+  manager   User            @relation("ProjectManager", fields: [managerId], references: [id])
+  policies  ProjectPolicy[]
+  users     User[]          @relation("UserProjects")
+}
+
+model Task {
+  id             Int          @id @default(autoincrement())
+  name           String
+  description    String
+  deadline       DateTime
+  status         TaskStatus   @default(NOT_STARTED)
+  priority       String
+  projectId      Int
+  project        Project      @relation(fields: [projectId], references: [id])
+  assignedPeople User[]       @relation("AssignedTasks")
+  policies       TaskPolicy[]
+}
+
+// Relation for Policy model
+model Policy {
+  id                 Int             @id @default(autoincrement())
+  name               String          @unique
+  description        String?
+  isActive           Boolean         @default(true)
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  rules              Rule[]
+  userAssignments    UserPolicy[]
+  projectAssignments ProjectPolicy[]
+  taskAssignments    TaskPolicy[]
+}
+
+enum ProjectStatus {
+  ACTIVE
+  ARCHIVED
+  DELETED
+}
+
+enum TaskStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+}

@@ -4,10 +4,9 @@ import {
   getCoreRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import s from "./Table.module.css"
+import "./table.css"
 import { Box, Table } from '@radix-ui/themes'
 import { Task } from '@/types';
-import { parseDate } from '@internationalized/date';
 
 const TableSmall = ({ data }: { data: Task[] }) => {
 
@@ -58,10 +57,10 @@ const TableSmall = ({ data }: { data: Task[] }) => {
   const headers = headerGroups[0].headers
 
   return (
-    <Box className={s.tableSmallContainer}>
-      <Table.Root className={s.tableSmall}>
+    <Box >
+      <Table.Root >
         <Table.Header>
-          <Table.Row key={"0"} className={s.tableSmallHeader}>
+          <Table.Row key={"0"}>
             {
               headers.map(header => (
                 <Table.ColumnHeaderCell key={header.id}>
@@ -78,7 +77,7 @@ const TableSmall = ({ data }: { data: Task[] }) => {
         </Table.Header>
         <Table.Body>
           {table.getRowModel().rows.map(row => (
-            <Table.Row key={row.id} className={s.tableSmallRow}>
+            <Table.Row key={row.id} >
               {row.getVisibleCells().map(cell => (
                 <Table.Cell key={cell.id}>
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}

@@ -1,5 +1,5 @@
 import { DateValue, parseDate } from '@internationalized/date';
-import { Task } from './types';
+import { Project, Task } from './types';
 
 
 export const sampleTasks: Task[] = [
@@ -156,7 +156,7 @@ export const sampleTasks: Task[] = [
 ]
 
 
-export const projects = [
+export const projects: Project[] = [
     {
         id: 1,
         name: "AI-Based Task Management System",
@@ -164,7 +164,8 @@ export const projects = [
         manager: "Eve",
         completion: 0.6,
         iconId: 1,
-        icon: "LuApple"
+        icon: "LuApple",
+        status: "active"  
     },
     {
         id: 2,
@@ -173,7 +174,9 @@ export const projects = [
         manager: "Jack",
         completion: 1,
         iconId: 2,
-        icon: "LuAmbulance"
+        icon: "LuAmbulance",
+        status: "active"  
+
     },
     {
         id: 3,
@@ -182,6 +185,17 @@ export const projects = [
         manager: "Oscar",
         completion: 0.8,
         iconId: 3,
-        icon: "LuAperture"
+        icon: "LuAperture",
+        status: "archived"  
+    },
+    {
+        id: 4,
+        name: "New Project Example",
+        members: ["Alice", "Eve"],
+        manager: "Bob",
+        completion: 0.0,
+        iconId: 4,
+        icon: "LuNewProjectIcon",
+        status: "active"  
     }
 ]

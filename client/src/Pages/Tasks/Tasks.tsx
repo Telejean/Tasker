@@ -7,7 +7,7 @@ import { atom, useAtom } from 'jotai'
 import Kanban from "../../Components/Kanban/Kanban";
 import { RangeValue, SortOptions, Task, TaskFilters } from "@/types"
 import { DateValue } from "react-aria-components";
-import TasksTable from "@/Components/Tables/TasksTable/TasksTable";
+import TasksTable from "@/Components/Tables/TasksTable";
 import TasksSort from "@/Components/TasksSort";
 import { useEffect } from "react";
 
@@ -49,8 +49,8 @@ const filteredTasksAtom = atom((get) => {
 
 
 const Tasks = () => {
-const [sort, setSort] = useAtom(sortAtom);
-  
+  const [sort, setSort] = useAtom(sortAtom);
+
   const [filteredTasks,] = useAtom(filteredTasksAtom);
   const [, setTasks] = useAtom(tasksAtom);
 

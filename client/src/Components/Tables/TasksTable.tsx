@@ -4,18 +4,19 @@ import {
     getCoreRowModel,
     useReactTable,
     getExpandedRowModel,
+    SortingState,
+    getSortedRowModel
 } from '@tanstack/react-table'
 import { Avatar, Box, Flex, Table } from '@radix-ui/themes'
 import { Task } from '@/types';
-import { set } from 'date-fns';
 import { useState } from 'react';
 import TaskDetailDialog from '@/Components/TaskDetailDialog/TaskDetailDialog';
 import { tasksAtom } from '@/Pages/Tasks/Tasks';
 import { useAtom } from 'jotai';
-import s from './TasksTable.module.css'
+import "./table.css"
 
 const TasksTable = ({ data }: { data: Task[] }) => {
-
+    const [sorting, setSorting] = useState<SortingState>([]);
     const [selectedTask, setSelectedTask] = useState<Task | null>(null);
     const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
     const [, setTasks] = useAtom(tasksAtom);
@@ -43,7 +44,14 @@ const TasksTable = ({ data }: { data: Task[] }) => {
         columnHelper.accessor("deadline", {
             id: "deadline",
             cell: info => info.getValue().toString(),
-            header: "Deadline"
+            sortingFn: (rowA, rowB) => {
+                const dateA = rowA.original.deadline.toDate("Europe/Bucharest");
+                const dateB = rowB.original.deadline.toDate("Europe/Bucharest");
+
+                console.log(dateA < dateB ? -1 : dateA > dateB ? 1 : 0)
+                return dateA < dateB ? -1 : dateA > dateB ? 1 : 0;
+            },
+            header: "Deadline",
         }),
         columnHelper.accessor("assignedPeople", {
             id: "assignedPeople",
@@ -60,9 +68,6 @@ const TasksTable = ({ data }: { data: Task[] }) => {
                     ))}
                 </Flex>
             ),
-            // cell: info => info.getValue().map(name =>
-            //     name.split(' ').map(part => part[0]).join('')
-            // ).join(', '),
             header: "Collaborators"
         }),
         columnHelper.accessor("projectName", {
@@ -75,9 +80,13 @@ const TasksTable = ({ data }: { data: Task[] }) => {
     const table = useReactTable({
         data,
         columns,
-        getRowCanExpand: (row) => true,
+        state: {
+            sorting
+        },
+        onSortingChange: setSorting,
         getCoreRowModel: getCoreRowModel(),
-        getExpandedRowModel: getExpandedRowModel()
+        getExpandedRowModel: getExpandedRowModel(),
+        getSortedRowModel: getSortedRowModel(),
     })
 
     const headerGroups = table.getHeaderGroups();
@@ -86,25 +95,33 @@ const TasksTable = ({ data }: { data: Task[] }) => {
     return (
         <>
             <Table.Root variant='surface'>
-                <Table.Header >
+                <Table.Header>
                     <Table.Row key={"0"}>
-                        {
-                            headers.map(header => (
-                                <Table.ColumnHeaderCell key={header.id}>
+                        {headers.map(header => (
+                            <Table.ColumnHeaderCell
+                                key={header.id}
+                                onClick={header.column.getToggleSortingHandler()}
+                                style={{ cursor: 'pointer' }}
+                            >
+                                <Flex align="center" gap="2">
                                     {header.isPlaceholder
                                         ? null
                                         : flexRender(
                                             header.column.columnDef.header,
                                             header.getContext()
                                         )}
-                                </Table.ColumnHeaderCell>
-                            ))
-                        }
+                                    {{
+                                        asc: ' ↑',
+                                        desc: ' ↓',
+                                    }[header.column.getIsSorted() as string] ?? null}
+                                </Flex>
+                            </Table.ColumnHeaderCell>
+                        ))}
                     </Table.Row>
                 </Table.Header>
                 <Table.Body>
                     {table.getRowModel().rows.map(row => (
-                        <Table.Row className={s['rt-TableRow']} key={row.id} onClick={() => {
+                        <Table.Row key={row.id} onClick={() => {
                             console.log(row.original)
                             setSelectedTask(row.original);
                             setIsDetailDialogOpen(true);
