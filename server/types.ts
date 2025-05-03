@@ -1,33 +1,32 @@
+export const RuleEffect = {
+    ALLOW: 'ALLOW',
+    DENY: 'DENY'
+};
 
-export enum RuleEffect {
-    ALLOW = 'ALLOW',
-    DENY = 'DENY'
-}
+export const UserRoles = {
+    MEMBER: 'MEMBER',
+    LEADER: 'LEADER',
+    COORDINATOR: 'COORDINATOR',
+    BOARD: 'BOARD'
+};
 
-export enum UserRoles {
-    MEMBER = 'MEMBER',
-    LEADER = 'LEADER',
-    COORDINATOR = 'COORDINATOR',
-    BOARD = 'BOARD'
-}
+export const ProjectStatus = {
+    ACTIVE: 'ACTIVE',
+    ARCHIVED: 'ARCHIVED',
+    DELETED: 'DELETED'
+};
 
-export enum ProjectStatus {
-    ACTIVE = 'ACTIVE',
-    ARCHIVED = 'ARCHIVED',
-    DELETED = 'DELETED'
-}
-
-export enum TaskStatus {
-    NOT_STARTED = 'NOT_STARTED',
-    IN_PROGRESS = 'IN_PROGRESS',
-    COMPLETED = 'COMPLETED'
-}
+export const TaskStatus = {
+    NOT_STARTED: 'NOT_STARTED',
+    IN_PROGRESS: 'IN_PROGRESS',
+    COMPLETED: 'COMPLETED'
+};
 
 export interface Rule {
     id: number;
     name: string;
     description?: string;
-    effect: RuleEffect;
+    effect: typeof RuleEffect[keyof typeof RuleEffect];
     subjectAttributes?: Record<string, any>;
     resourceAttributes?: Record<string, any>;
     actionAttributes?: Record<string, any>;
@@ -82,7 +81,7 @@ export interface User {
     name: string;
     email: string;
     password: string;
-    role: UserRoles;
+    role: typeof UserRoles[keyof typeof UserRoles];
     tasks: Task[];
     policies: UserPolicy[];
     permissionLogs: PermissionLog[];
@@ -95,7 +94,7 @@ export interface Project {
     name: string;
     iconId: number;
     icon: string;
-    status: ProjectStatus;
+    status: typeof ProjectStatus[keyof typeof ProjectStatus];
     tasks: Task[];
     managerId: number;
     manager: User;
@@ -107,8 +106,8 @@ export interface Task {
     id: number;
     name: string;
     description: string;
-    deadline: DateValue;
-    status: TaskStatus;
+    deadline: string;
+    status: typeof TaskStatus[keyof typeof TaskStatus];
     priority: string;
     projectId: number;
     project: Project;
@@ -131,9 +130,16 @@ export interface Policy {
 
 declare namespace NodeJS {
     interface ProcessEnv {
-      PORT: string;
-      DATABASE_URL: string;
-      CLIENT_URL: string;
-      // Add other environment variables you use
+        PORT: string;
+        DATABASE_URL: string;
+        CLIENT_URL: string;
+        // Add other environment variables you use
     }
-  }
+}
+
+module.exports = {
+    RuleEffect,
+    UserRoles,
+    ProjectStatus,
+    TaskStatus
+};

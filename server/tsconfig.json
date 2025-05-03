@@ -2,6 +2,9 @@
   "compilerOptions": {
     "target": "ES2022",
     "module": "CommonJS",
+    "moduleResolution": "node",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
@@ -17,12 +20,14 @@
         "../types/*"
       ]
     },
-    "allowImportingTsExtensions": true,
-    "allowArbitraryExtensions": true,
-    "noEmit": true
+    "allowImportingTsExtensions": false,
+    "resolveJsonModule": true,
+    "sourceMap": true,
+    "noEmit": false
   },
   "include": [
-    "**/*.ts"
+    "**/*.ts",
+    "server.js"
   ],
   "exclude": [
     "node_modules",

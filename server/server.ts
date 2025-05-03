@@ -1,12 +1,13 @@
 import express from 'express';
 import { createServer } from 'http';
-import type { Request, Response, NextFunction } from 'express';
 import { Server as SocketIOServer } from 'socket.io';
 import cors from 'cors';
 import dotenv from 'dotenv';
 
-dotenv.config();
+// Import the routes index
+import apiRoutes from './routes/index';
 
+dotenv.config();
 
 const app = express();
 const httpServer = createServer(app);
@@ -21,14 +22,24 @@ const io = new SocketIOServer(httpServer, {
 app.use(cors());
 app.use(express.json());
 
+// Mount API routes
+app.use('/api', apiRoutes);
+
 // Basic route
-app.get('/api/health', (req: Request, res: Response) => {
-    res.json({ status: 'ok' });
-});
 
 // Socket.IO connection handler
 io.on('connection', (socket) => {
     console.log('Client connected');
+
+    // Listen for task status changes and broadcast to all clients
+    socket.on('task:statusChange', (data) => {
+        io.emit('task:statusUpdated', data);
+    });
+
+    // Project updates
+    socket.on('project:update', (data) => {
+        io.emit('project:updated', data);
+    });
 
     socket.on('disconnect', () => {
         console.log('Client disconnected');

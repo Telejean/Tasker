@@ -2,25 +2,28 @@
   "name": "server",
   "version": "1.0.0",
   "main": "index.js",
-  "type": "module",
-  "prisma": {
-    "schema": "./config/schema.prisma"
-  },
+  "type": "commonjs",
   "scripts": {
-    "dev": "nodemon --exec node --no-warnings=ExperimentalWarning server.ts",
+    "dev": "nodemon --exec ts-node server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
     "type-check": "tsc --noEmit",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "experimentalDecorators": true,
+  "emitDecoratorMetadata": true,
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@prisma/client": "^6.6.0",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
+    "pg": "^8.15.6",
+    "pg-hstore": "^2.3.4",
+    "reflect-metadata": "^0.2.2",
+    "sequelize": "^6.37.7",
+    "sequelize-typescript": "^2.1.6",
     "socket.io": "^4.8.1",
     "ts-node": "^10.9.2"
   },
@@ -29,8 +32,8 @@
     "@types/express": "^5.0.1",
     "@types/node": "^22.15.3",
     "@types/socket.io": "^3.0.1",
+    "@types/validator": "^13.15.0",
     "nodemon": "^3.1.10",
-    "prisma": "^6.6.0",
     "typescript": "^5.8.3"
   }
 }
