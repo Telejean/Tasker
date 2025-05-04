@@ -44,3 +44,13 @@ export interface ProjectFilters {
     members?: string[];
     status?: ('active' | 'archived' | 'deleted')[];
 }
+
+export interface UserProfile {
+    id: number;
+    name: string;
+    surname: string;
+    email: string;
+    role: string;
+    tags?: any;
+    bio?: string;
+}

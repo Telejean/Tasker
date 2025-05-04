@@ -1,6 +1,6 @@
 import { Table, ForeignKey, Model, DataType, BelongsTo, Column } from 'sequelize-typescript';
-import { Project } from './Project';
-import { Policy } from './Policy';
+import { Project } from './Project.model';
+import { Policy } from './Policy.model';
 
 @Table
 export class ProjectPolicy extends Model {

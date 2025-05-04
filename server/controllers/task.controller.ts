@@ -1,9 +1,9 @@
 import type { Request, Response } from 'express';
 import { TaskStatus } from '../types';
-import { Task } from '../models/Task';
-import { Project } from '../models/Project';
-import { AssignedPerson } from '../models/AssignedPerson';
-import { User } from '../models/User';
+import { Task } from '../models/Task.model';
+import { Project } from '../models/Project.model';
+import { AssignedPerson } from '../models/AssignedPerson.model';
+import { User } from '../models/User.model';
 import { Op } from 'sequelize';
 
 export const taskController = {
@@ -84,7 +84,7 @@ export const taskController = {
                     taskId: task.id,
                     userId
                 }));
-                
+
                 await AssignedPerson.bulkCreate(assignedPeople);
             }
 
@@ -117,11 +117,11 @@ export const taskController = {
     async bulkCreateTasks(req: Request, res: Response) {
         try {
             const { tasks } = req.body;
-            
+
             if (!Array.isArray(tasks) || tasks.length === 0) {
                 return res.status(400).json({ error: 'A non-empty array of tasks is required' });
             }
-            
+
             // Use a transaction to ensure all operations succeed or fail together
             const result = await Task.sequelize!.transaction(async (t) => {
                 // Create all tasks
@@ -135,32 +135,32 @@ export const taskController = {
                     })),
                     { transaction: t }
                 );
-                
+
                 // Create assigned persons for each task
                 const assignedPersonPromises = [];
-                
+
                 for (let i = 0; i < tasks.length; i++) {
                     const task = tasks[i];
                     const createdTask = createdTasks[i];
-                    
+
                     if (task.assignedUserIds && task.assignedUserIds.length > 0) {
                         const assignedPeople = task.assignedUserIds.map((userId: number) => ({
                             taskId: createdTask.id,
                             userId
                         }));
-                        
+
                         assignedPersonPromises.push(
                             AssignedPerson.bulkCreate(assignedPeople, { transaction: t })
                         );
                     }
                 }
-                
+
                 await Promise.all(assignedPersonPromises);
-                
+
                 // Return the created tasks with their IDs
                 return createdTasks.map(task => task.id);
             });
-            
+
             // Fetch all created tasks with their associations
             const createdTasksWithAssociations = await Task.findAll({
                 where: {
@@ -184,7 +184,7 @@ export const taskController = {
                     }
                 ]
             });
-            
+
             return res.status(201).json(createdTasksWithAssociations);
         } catch (error) {
             console.error('Error bulk creating tasks:', error);
@@ -227,7 +227,7 @@ export const taskController = {
                         taskId,
                         userId
                     }));
-                    
+
                     await AssignedPerson.bulkCreate(assignedPeople);
                 }
             }

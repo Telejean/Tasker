@@ -1,9 +1,9 @@
 import { Table, Column, Model, DataType, HasMany, ForeignKey, BelongsTo, BelongsToMany } from 'sequelize-typescript';
-import { Task } from './Task';
-import { User } from './User';
+import { Task } from './Task.model';
+import { User } from './User.model';
 import { ProjectStatus } from '../types';
-import { ProjectPolicy } from './ProjectPolicy';
-import { ProjectMember } from './ProjectMember';
+import { ProjectPolicy } from './ProjectPolicy.model';
+import { ProjectMember } from './ProjectMember.model';
 
 @Table
 export class Project extends Model {

@@ -1,8 +1,8 @@
 import { Table, Column, Model, DataType, HasMany } from 'sequelize-typescript';
-import { Rule } from './Rule';
-import { UserPolicy } from './UserPolicy';
-import { ProjectPolicy } from './ProjectPolicy';
-import { TaskPolicy } from './TaskPolicy';
+import { Rule } from './Rule.model';
+import { UserPolicy } from './UserPolicy.model';
+import { ProjectPolicy } from './ProjectPolicy.model';
+import { TaskPolicy } from './TaskPolicy.model';
 
 @Table
 export class Policy extends Model {

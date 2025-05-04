@@ -1,19 +1,21 @@
 // Export all models from a single file to simplify imports
-import { AssignedPerson } from './AssignedPerson';
-import { PermissionLog } from './PermissionLog';
-import { Policy } from './Policy';
-import { Project } from './Project';
-import { ProjectMember } from './ProjectMember';
-import { ProjectPolicy } from './ProjectPolicy';
-import { Rule } from './Rule';
-import { Task } from './Task';
-import { TaskPolicy } from './TaskPolicy';
-import { User } from './User';
-import { UserPolicy } from './UserPolicy';
-
+import { AssignedPerson } from './AssignedPerson.model';
+import { Department } from './Department.model';
+import { PermissionLog } from './PermissionLog.model';
+import { Policy } from './Policy.model';
+import { Project } from './Project.model';
+import { ProjectMember } from './ProjectMember.model';
+import { ProjectPolicy } from './ProjectPolicy.model';
+import { Rule } from './Rule.model';
+import { Task } from './Task.model';
+import { TaskPolicy } from './TaskPolicy.model';
+import { User } from './User.model';
+import { UserPolicy } from './UserPolicy.model';
+import { UserProject } from './UserProjects.model';
 // Export all models
 export {
     AssignedPerson,
+    Department,
     PermissionLog,
     Policy,
     Project,
@@ -23,12 +25,14 @@ export {
     Task,
     TaskPolicy,
     User,
-    UserPolicy
+    UserPolicy,
+    UserProject
 };
 
 // Export a complete array of models for Sequelize initialization
 const models = [
     AssignedPerson,
+    Department,
     PermissionLog,
     Policy,
     Project,
@@ -38,7 +42,8 @@ const models = [
     Task,
     TaskPolicy,
     User,
-    UserPolicy
+    UserPolicy,
+    UserProject
 ];
 
 export default models;

@@ -79,14 +79,17 @@ export interface PermissionLog {
 export interface User {
     id: number;
     name: string;
+    surname: string;
     email: string;
-    password: string;
+    tags: JSON;
+    bio: string
     role: typeof UserRoles[keyof typeof UserRoles];
     tasks: Task[];
     policies: UserPolicy[];
     permissionLogs: PermissionLog[];
     projects: Project[];
     managedProjects: Project[];
+    department: Department;
 }
 
 export interface Project {
@@ -105,6 +108,7 @@ export interface Project {
 export interface Task {
     id: number;
     name: string;
+    creatorId: number;
     description: string;
     deadline: string;
     status: typeof TaskStatus[keyof typeof TaskStatus];
@@ -126,6 +130,10 @@ export interface Policy {
     userAssignments: UserPolicy[];
     projectAssignments: ProjectPolicy[];
     taskAssignments: TaskPolicy[];
+}
+
+export interface Department{
+    name: string;
 }
 
 declare namespace NodeJS {

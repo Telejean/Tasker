@@ -1,6 +1,6 @@
 import { Table, Column, Model, ForeignKey, BelongsTo } from 'sequelize-typescript';
-import  {Task}  from './Task';
-import { User } from './User';
+import { Task } from './Task.model';
+import { User } from './User.model';
 
 @Table
 export class AssignedPerson extends Model {

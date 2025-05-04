@@ -1,5 +1,6 @@
 import s from "./Navbar.module.css"
 import { LuSearch, LuInbox, LuCircleUser } from "react-icons/lu";
+import { Link } from "react-router-dom";
 
 const Navbar = () => {
   return (
@@ -13,7 +14,9 @@ const Navbar = () => {
       </div>
       <div className={s.navbarUserInfo}>
         <LuInbox strokeWidth={2} size={38} color={"#ffffff"} />
-        <LuCircleUser strokeWidth={2} size={50} color={"#ffffff"}/>
+        <Link to="/profile">
+          <LuCircleUser strokeWidth={2} size={50} color={"#ffffff"} />
+        </Link>
       </div>
     </div>
   )

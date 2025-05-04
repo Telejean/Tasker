@@ -1,9 +1,9 @@
 import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
-import { User } from './User';
-import { Policy } from './Policy';
+import { User } from './User.model';
+import { Project } from './Project.model';
 
 @Table
-export class UserPolicy extends Model {
+export class UserProject extends Model {
     @ForeignKey(() => User)
     @Column
     userId!: number;
@@ -11,12 +11,12 @@ export class UserPolicy extends Model {
     @BelongsTo(() => User)
     user!: User;
 
-    @ForeignKey(() => Policy)
+    @ForeignKey(() => Project)
     @Column
     policyId!: number;
 
-    @BelongsTo(() => Policy)
-    policy!: Policy;
+    @BelongsTo(() => Project)
+    policy!: Project;
 
     @Column({
         type: DataType.DATE,

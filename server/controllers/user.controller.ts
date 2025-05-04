@@ -1,12 +1,13 @@
 import { Request, Response } from 'express';
-import { User } from '../models/User';
-import { Project } from '../models/Project';
+import { User } from '../models/User.model';
+import { Project } from '../models/Project.model';
 // Fix import for Task - it uses CommonJS module exports
-import {Task}  from '../models/Task';
-import { AssignedPerson } from '../models/AssignedPerson';
+import { Task } from '../models/Task.model';
+import { AssignedPerson } from '../models/AssignedPerson.model';
 import { UserRoles } from '../types';
 // Fix import for sequelize - it uses default export
 import sequelize from '../utils/sequelize';
+import { createUserService } from '../services/user.service';
 
 export const userController = {
     async getAllUsers(req: Request, res: Response) {
@@ -19,18 +20,7 @@ export const userController = {
                     }
                 ]
             });
-
-            // Convert to plain objects and sanitize password if it exists
-            const sanitizedUsers = users.map(user => {
-                const plainUser = user.get({ plain: true });
-                if ('password' in plainUser) {
-                    const { password, ...userWithoutPassword } = plainUser;
-                    return userWithoutPassword;
-                }
-                return plainUser;
-            });
-
-            return res.status(200).json(sanitizedUsers);
+            return res.status(200).json(users);
         } catch (error) {
             console.error('Error getting users:', error);
 
@@ -67,11 +57,6 @@ export const userController = {
 
             const plainUser = user.get({ plain: true });
 
-            // Remove password if it exists
-            if ('password' in plainUser) {
-                const { password, ...userWithoutPassword } = plainUser;
-                return res.status(200).json(userWithoutPassword);
-            }
 
             return res.status(200).json(plainUser);
         } catch (error) {
@@ -82,40 +67,31 @@ export const userController = {
 
     async createUser(req: Request, res: Response) {
         try {
-            const { name, email, password, role = UserRoles.MEMBER } = req.body;
+            const userData = {
+                name: req.body.name,
+                surname: req.body.surname,
+                email: req.body.email,
+                phoneNumber: req.body.phoneNumber,
+                role: req.body.role || UserRoles.MEMBER,
+                tags: req.body.tags,
+                bio: req.body.bio,
+                departmentId: req.body.departmentId,
+            };
 
-            if (!name || !email || !password) {
-                return res.status(400).json({
-                    error: 'Missing required fields',
-                    details: {
-                        name: !name ? 'Name is required' : null,
-                        email: !email ? 'Email is required' : null,
-                        password: !password ? 'Password is required' : null
-                    }
-                });
-            }
+            const newUser = await createUserService(userData);
 
-            const user = await User.create({
-                name,
-                email,
-                password,
-                role
-            });
-
-            const plainUser = user.get({ plain: true });
-
-            if ('password' in plainUser) {
-                const { password: _, ...userWithoutPassword } = plainUser;
-                return res.status(201).json(userWithoutPassword);
-            }
-
-            return res.status(201).json(plainUser);
+            return res.status(201).json(newUser);
         } catch (error) {
             console.error('Error creating user:', error);
 
+            if (error instanceof Error && error.message.includes('Failed to validate user')) {
+                return res.status(400).json({
+                    message: error.message
+                });
+            }
+
             return res.status(500).json({
-                error: 'Unexpected error while creating user',
-                details: error instanceof Error ? error.message : 'Unknown error'
+                message: 'An unexpected error occurred while creating user'
             });
         }
     },

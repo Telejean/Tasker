@@ -1,6 +1,6 @@
 import { Table, Column, Model, DataType, ForeignKey, BelongsTo, PrimaryKey } from 'sequelize-typescript';
-import { User } from './User';
-import { Project } from './Project';
+import { User } from './User.model';
+import { Project } from './Project.model';
 
 @Table
 export class ProjectMember extends Model {

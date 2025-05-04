@@ -1,15 +1,15 @@
 import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
-import { Task } from './Task';
-import { Policy } from './Policy';
+import { User } from './User.model';
+import { Policy } from './Policy.model';
 
 @Table
-export class TaskPolicy extends Model {
-    @ForeignKey(() => Task)
+export class UserPolicy extends Model {
+    @ForeignKey(() => User)
     @Column
-    taskId!: number;
+    userId!: number;
 
-    @BelongsTo(() => Task)
-    task!: Task;
+    @BelongsTo(() => User)
+    user!: User;
 
     @ForeignKey(() => Policy)
     @Column
@@ -24,4 +24,10 @@ export class TaskPolicy extends Model {
         defaultValue: DataType.NOW,
     })
     assignedAt!: Date;
+
+    @Column({
+        type: DataType.DATE,
+        allowNull: true,
+    })
+    expiresAt?: Date;
 }

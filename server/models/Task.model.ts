@@ -1,6 +1,7 @@
 import { Table, Column, Model, DataType, ForeignKey, BelongsTo, HasMany } from 'sequelize-typescript';
-import { Project } from './Project';
-import { AssignedPerson } from './AssignedPerson';
+import { Project } from './Project.model';
+import { AssignedPerson } from './AssignedPerson.model';
+import { User } from './User.model';
 
 @Table
 export class Task extends Model {
@@ -29,6 +30,13 @@ export class Task extends Model {
     })
     status!: string;
 
+    @ForeignKey(() => User)
+    @Column
+    creatorId!: number;
+
+    @BelongsTo(() => User)
+    creator!: User;
+
     @ForeignKey(() => Project)
     @Column
     projectId!: number;
@@ -37,5 +45,5 @@ export class Task extends Model {
     project!: Project;
 
     @HasMany(() => AssignedPerson)
-    assignedPeople!: AssignedPerson[];
+    assignedUsers!: User[];
 }

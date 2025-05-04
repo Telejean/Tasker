@@ -1,5 +1,5 @@
 import { Table, Column, Model, DataType, ForeignKey, BelongsTo, HasMany } from 'sequelize-typescript';
-import { Policy } from './Policy';
+import { Policy } from './Policy.model';
 
 @Table
 export class Rule extends Model {
