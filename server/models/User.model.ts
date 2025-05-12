@@ -1,12 +1,13 @@
-import { Table, Column, Model, DataType, HasMany, BelongsTo, BelongsToMany, ForeignKey, HasOne } from 'sequelize-typescript';
+import { Table, Column, Model, DataType, HasMany, BelongsTo, BelongsToMany, ForeignKey, HasOne, AllowNull } from 'sequelize-typescript';
 import { AssignedPerson } from './AssignedPerson.model';
 import { Project } from './Project.model';
 import { Department } from './Department.model';
 import { UserPolicy } from './UserPolicy.model';
 import { PermissionLog } from './PermissionLog.model';
 import { UserRoles } from '../types';
-import { UserProject } from './UserProjects.model';
+import { UserTeam } from './UserTeam.model';
 import { Task } from './Task.model';
+import { Team } from './Team.model';
 
 @Table
 export class User extends Model {
@@ -55,10 +56,11 @@ export class User extends Model {
     bio!: string;
 
     @Column({
-        type: DataType.ENUM(...Object.values(UserRoles) as string[]),
+        type: DataType.BOOLEAN,
         allowNull: false,
+        defaultValue: false
     })
-    role!: typeof UserRoles[keyof typeof UserRoles];
+    isAdmin!: boolean
 
     @HasMany(() => AssignedPerson)
     tasks!: Task[];
@@ -67,12 +69,10 @@ export class User extends Model {
     policies!: UserPolicy[];
 
     @HasMany(() => PermissionLog)
-    permissionLogs!: PermissionLog[];
+    permissionLogs!: PermissionLog[]; @BelongsToMany(() => Team, () => UserTeam)
+    teams!: Team[];
 
-    @BelongsToMany(() => Project, () => UserProject)
-    projects!: Project[];
-
-    @HasOne(() => Project)
+    @HasOne(() => Project, 'managerId')
     managedProjects!: Project[];
 
     @ForeignKey(() => Department)

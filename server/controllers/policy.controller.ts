@@ -1,337 +1,319 @@
-import type { Request, Response } from 'express';
-import { RuleEffect } from '../types';
-import { Policy, Rule, User, Project, Task, UserPolicy, ProjectPolicy, TaskPolicy } from '../models';
+import { Request, Response } from 'express';
+import { Policy } from '../models/Policy.model';
+import { UserPolicy } from '../models/UserPolicy.model';
+import { ProjectPolicy } from '../models/ProjectPolicy.model';
+import { TaskPolicy } from '../models/TaskPolicy.model';
+import { Rule } from '../models/Rule.model';
+import { Op } from 'sequelize';
+
+// Get the appropriate policy model based on resource type
+const getPolicyModelForResource = (resourceType: string) => {
+    switch (resourceType.toLowerCase()) {
+        case 'user':
+            return UserPolicy as any;
+        case 'project':
+            return ProjectPolicy as any;
+        case 'task':
+            return TaskPolicy as any;
+        default:
+            throw new Error(`Invalid resource type: ${resourceType}`);
+    }
+};
 
 export const policyController = {
-    // Get all policies
-    async getAllPolicies(req: Request, res: Response) {
+    // Get all policies or filter by active status
+    async getPolicies(req: Request, res: Response) {
         try {
-            const policies = await Policy.findAll({
-                include: [
-                    { model: Rule }
-                ]
-            });
-            res.status(200).json(policies);
+            const { active } = req.query;
+            const where = active === 'true' ? { active: true } : {};
+
+            const policies = await Policy.findAll({ where });
+            res.json(policies);
         } catch (error) {
-            console.error('Error getting policies:', error);
-            res.status(500).json({ error: 'Failed to retrieve policies' });
+            console.error('Error fetching policies:', error);
+            res.status(500).json({ message: 'Error fetching policies' });
         }
     },
 
-    // Get policy by ID
-    async getPolicyById(req: Request, res: Response) {
+    // Get a specific policy by ID
+    async getPolicy(req: Request, res: Response) {
         try {
-            const policyId = parseInt(req.params.id);
-            const policy = await Policy.findByPk(policyId, {
-                include: [
-                    { model: Rule },
-                    { 
-                        model: UserPolicy,
-                        as: 'userAssignments',
-                        include: [
-                            { 
-                                model: User,
-                                attributes: ['id', 'name', 'email']
-                            }
-                        ]
-                    },
-                    {
-                        model: ProjectPolicy,
-                        as: 'projectAssignments',
-                        include: [
-                            {
-                                model: Project,
-                                attributes: ['id', 'name']
-                            }
-                        ]
-                    },
-                    {
-                        model: TaskPolicy,
-                        as: 'taskAssignments',
-                        include: [
-                            {
-                                model: Task,
-                                attributes: ['id', 'name']
-                            }
-                        ]
-                    }
-                ]
-            });
+            const { id } = req.params;
+            const policy = await Policy.findByPk(id);
 
             if (!policy) {
-                return res.status(404).json({ error: 'Policy not found' });
+                return res.status(404).json({ message: 'Policy not found' });
             }
 
-            return res.status(200).json(policy);
+            res.json(policy);
         } catch (error) {
-            console.error('Error getting policy:', error);
-            return res.status(500).json({ error: 'Failed to retrieve policy' });
+            console.error('Error fetching policy:', error);
+            res.status(500).json({ message: 'Error fetching policy' });
         }
     },
 
-    // Create new policy
+    // Create a new policy
     async createPolicy(req: Request, res: Response) {
         try {
-            const { name, description, isActive = true, rules = [] } = req.body;
+            const { name, description, rules, active } = req.body;
 
-            // Check if policy already exists
-            const existingPolicy = await Policy.findOne({
-                where: { name }
-            });
-
-            if (existingPolicy) {
-                return res.status(400).json({ error: 'Policy with this name already exists' });
+            // Basic validation
+            if (!name || !rules || !Array.isArray(rules)) {
+                return res.status(400).json({ message: 'Name and rules array are required' });
             }
 
-            // Create policy using transaction to ensure all operations succeed or fail together
-            const result = await Policy.sequelize!.transaction(async (t) => {
-                // Create the policy
-                const policy = await Policy.create({
-                    name,
-                    description,
-                    isActive
-                }, { transaction: t });
-
-                // Create rules if provided
-                if (rules.length > 0) {
-                    const rulesToCreate = rules.map((rule: any) => ({
-                        name: rule.name,
-                        description: rule.description,
-                        effect: rule.effect || RuleEffect.ALLOW,
-                        subjectAttributes: rule.subjectAttributes,
-                        resourceAttributes: rule.resourceAttributes,
-                        actionAttributes: rule.actionAttributes,
-                        environmentAttributes: rule.environmentAttributes,
-                        condition: rule.condition,
-                        priority: rule.priority || 0,
-                        policyId: policy.id
-                    }));
-
-                    await Rule.bulkCreate(rulesToCreate, { transaction: t });
-                }
-
-                // Return the created policy with its rules
-                return Policy.findByPk(policy.id, {
-                    include: [{ model: Rule }],
-                    transaction: t
-                });
+            const policy = await Policy.create({
+                name,
+                description,
+                rules,
+                active: active !== false, // Default to true if not specified
+                createdBy: (req.user as any).id
             });
 
-            return res.status(201).json(result);
+            res.status(201).json(policy);
         } catch (error) {
             console.error('Error creating policy:', error);
-            return res.status(500).json({ error: 'Failed to create policy' });
+            res.status(500).json({ message: 'Error creating policy' });
         }
     },
 
-    // Update policy
+    // Update an existing policy
     async updatePolicy(req: Request, res: Response) {
         try {
-            const policyId = parseInt(req.params.id);
-            const { name, description, isActive } = req.body;
+            const { id } = req.params;
+            const { name, description, rules, active } = req.body;
 
-            const policy = await Policy.findByPk(policyId);
-            
+            const policy = await Policy.findByPk(id);
             if (!policy) {
-                return res.status(404).json({ error: 'Policy not found' });
+                return res.status(404).json({ message: 'Policy not found' });
             }
 
-            // Update fields if provided
-            if (name !== undefined) policy.name = name;
-            if (description !== undefined) policy.description = description;
-            if (isActive !== undefined) policy.isActive = isActive;
-
-            await policy.save();
-
-            return res.status(200).json(policy);
-        } catch (error) {
-            console.error('Error updating policy:', error);
-            return res.status(500).json({ error: 'Failed to update policy' });
-        }
-    },
-
-    // Delete policy
-    async deletePolicy(req: Request, res: Response) {
-        try {
-            const policyId = parseInt(req.params.id);
-            
-            const policy = await Policy.findByPk(policyId);
-            
-            if (!policy) {
-                return res.status(404).json({ error: 'Policy not found' });
-            }
-            
-            await policy.destroy();
-            
-            return res.status(204).send();
-        } catch (error) {
-            console.error('Error deleting policy:', error);
-            return res.status(500).json({ error: 'Failed to delete policy' });
-        }
-    },
-
-    // Add rule to policy
-    async addRuleToPolicy(req: Request, res: Response) {
-        try {
-            const policyId = parseInt(req.params.id);
-            const {
-                name,
-                description,
-                effect,
-                subjectAttributes,
-                resourceAttributes,
-                actionAttributes,
-                environmentAttributes,
-                condition,
-                priority
-            } = req.body;
-
-            // Check if policy exists
-            const policy = await Policy.findByPk(policyId);
-            
-            if (!policy) {
-                return res.status(404).json({ error: 'Policy not found' });
-            }
-
-            // Create the rule
-            const rule = await Rule.create({
-                name,
-                description,
-                effect: effect || RuleEffect.ALLOW,
-                subjectAttributes,
-                resourceAttributes,
-                actionAttributes,
-                environmentAttributes,
-                condition,
-                priority: priority || 0,
-                policyId
+            // Update the policy fields
+            await policy.update({
+                ...(name && { name }),
+                ...(description !== undefined && { description }),
+                ...(rules && { rules }),
+                ...(active !== undefined && { active }),
+                updatedBy: (req.user as any).id
             });
 
-            return res.status(201).json(rule);
+            res.json(policy);
         } catch (error) {
-            console.error('Error adding rule to policy:', error);
-            return res.status(500).json({ error: 'Failed to add rule to policy' });
+            console.error('Error updating policy:', error);
+            res.status(500).json({ message: 'Error updating policy' });
         }
     },
 
-    // Assign policy to user
+    // Delete a policy
+    async deletePolicy(req: Request, res: Response) {
+        try {
+            const { id } = req.params;
+
+            const policy = await Policy.findByPk(id);
+            if (!policy) {
+                return res.status(404).json({ message: 'Policy not found' });
+            }
+
+            // Check if the policy is still in use
+            const userCount = await UserPolicy.count({ where: { policyId: id } });
+            const projectCount = await ProjectPolicy.count({ where: { policyId: id } });
+            const taskCount = await TaskPolicy.count({ where: { policyId: id } });
+
+            if (userCount > 0 || projectCount > 0 || taskCount > 0) {
+                // Instead of deleting, deactivate the policy
+                await policy.update({
+                    active: false,
+                    updatedBy: (req.user as any).id
+                });
+
+                return res.json({
+                    message: 'Policy is still in use. It has been deactivated instead of deleted.',
+                    policy
+                });
+            }
+
+            // Actually delete if not in use
+            await policy.destroy();
+            res.json({ message: 'Policy deleted successfully' });
+        } catch (error) {
+            console.error('Error deleting policy:', error);
+            res.status(500).json({ message: 'Error deleting policy' });
+        }
+    },
+
+    // Assign a policy to a user
     async assignPolicyToUser(req: Request, res: Response) {
         try {
             const { policyId, userId, expiresAt } = req.body;
 
-            // Check if policy and user exist
-            const [policy, user] = await Promise.all([
-                Policy.findByPk(policyId),
-                User.findByPk(userId)
-            ]);
-
+            // Check if policy exists
+            const policy = await Policy.findByPk(policyId);
             if (!policy) {
-                return res.status(404).json({ error: 'Policy not found' });
+                return res.status(404).json({ message: 'Policy not found' });
             }
 
-            if (!user) {
-                return res.status(404).json({ error: 'User not found' });
-            }
-
-            // Create the user policy assignment
-            const userPolicy = await UserPolicy.create({
-                userId,
+            // Create the assignment
+            const assignment = await UserPolicy.create({
                 policyId,
-                expiresAt: expiresAt ? new Date(expiresAt) : null
+                userId,
+                expiresAt: expiresAt || null,
+                assignedBy: (req.user as any).id
             });
 
-            // Fetch with associations for response
-            const userPolicyWithDetails = await UserPolicy.findByPk(userPolicy.id, {
-                include: [
-                    { model: User },
-                    { model: Policy }
-                ]
-            });
-
-            return res.status(201).json(userPolicyWithDetails);
+            res.status(201).json(assignment);
         } catch (error) {
             console.error('Error assigning policy to user:', error);
-            return res.status(500).json({ error: 'Failed to assign policy to user' });
+            res.status(500).json({ message: 'Error assigning policy to user' });
         }
     },
 
-    // Assign policy to project
+    // Assign a policy to a project
     async assignPolicyToProject(req: Request, res: Response) {
         try {
-            const { policyId, projectId } = req.body;
+            const { policyId, projectId, expiresAt } = req.body;
 
-            // Check if policy and project exist
-            const [policy, project] = await Promise.all([
-                Policy.findByPk(policyId),
-                Project.findByPk(projectId)
-            ]);
-
+            // Check if policy exists
+            const policy = await Policy.findByPk(policyId);
             if (!policy) {
-                return res.status(404).json({ error: 'Policy not found' });
+                return res.status(404).json({ message: 'Policy not found' });
             }
 
-            if (!project) {
-                return res.status(404).json({ error: 'Project not found' });
-            }
-
-            // Create the project policy assignment
-            const projectPolicy = await ProjectPolicy.create({
+            // Create the assignment
+            const assignment = await ProjectPolicy.create({
+                policyId,
                 projectId,
-                policyId
+                expiresAt: expiresAt || null,
+                assignedBy: (req.user as any).id
             });
 
-            // Fetch with associations for response
-            const projectPolicyWithDetails = await ProjectPolicy.findByPk(projectPolicy.id, {
-                include: [
-                    { model: Project },
-                    { model: Policy }
-                ]
-            });
-
-            return res.status(201).json(projectPolicyWithDetails);
+            res.status(201).json(assignment);
         } catch (error) {
             console.error('Error assigning policy to project:', error);
-            return res.status(500).json({ error: 'Failed to assign policy to project' });
+            res.status(500).json({ message: 'Error assigning policy to project' });
         }
     },
 
-    // Assign policy to task
+    // Assign a policy to a task
     async assignPolicyToTask(req: Request, res: Response) {
         try {
-            const { policyId, taskId } = req.body;
+            const { policyId, taskId, expiresAt } = req.body;
 
-            // Check if policy and task exist
-            const [policy, task] = await Promise.all([
-                Policy.findByPk(policyId),
-                Task.findByPk(taskId)
-            ]);
-
+            // Check if policy exists
+            const policy = await Policy.findByPk(policyId);
             if (!policy) {
-                return res.status(404).json({ error: 'Policy not found' });
+                return res.status(404).json({ message: 'Policy not found' });
             }
 
-            if (!task) {
-                return res.status(404).json({ error: 'Task not found' });
-            }
-
-            // Create the task policy assignment
-            const taskPolicy = await TaskPolicy.create({
+            // Create the assignment
+            const assignment = await TaskPolicy.create({
+                policyId,
                 taskId,
-                policyId
+                expiresAt: expiresAt || null,
+                assignedBy: (req.user as any).id
             });
 
-            // Fetch with associations for response
-            const taskPolicyWithDetails = await TaskPolicy.findByPk(taskPolicy.id, {
-                include: [
-                    { model: Task },
-                    { model: Policy }
-                ]
-            });
-
-            return res.status(201).json(taskPolicyWithDetails);
+            res.status(201).json(assignment);
         } catch (error) {
             console.error('Error assigning policy to task:', error);
-            return res.status(500).json({ error: 'Failed to assign policy to task' });
+            res.status(500).json({ message: 'Error assigning policy to task' });
+        }
+    },
+
+    // Get policy assignments for a specific resource
+    async getPolicyAssignments(req: Request, res: Response) {
+        try {
+            const { resourceType, resourceId } = req.params;
+
+            if (!['user', 'project', 'task'].includes(resourceType.toLowerCase())) {
+                return res.status(400).json({ message: 'Invalid resource type' });
+            }
+
+            const PolicyModel = getPolicyModelForResource(resourceType);
+            const resourceIdField = `${resourceType.toLowerCase()}Id`;
+
+            const assignments = await PolicyModel.findAll({
+                where: { [resourceIdField]: resourceId },
+                include: [{ model: Policy }]
+            });
+
+            res.json(assignments);
+        } catch (error) {
+            console.error(`Error fetching ${req.params.resourceType} policy assignments:`, error);
+            res.status(500).json({ message: `Error fetching policy assignments` });
+        }
+    },
+
+    // Remove a policy assignment
+    async removePolicyAssignment(req: Request, res: Response) {
+        try {
+            const { resourceType, assignmentId } = req.params;
+
+            if (!['user', 'project', 'task'].includes(resourceType.toLowerCase())) {
+                return res.status(400).json({ message: 'Invalid resource type' });
+            }
+
+            const PolicyModel = getPolicyModelForResource(resourceType);
+            const assignment = await PolicyModel.findByPk(assignmentId);
+
+            if (!assignment) {
+                return res.status(404).json({ message: 'Policy assignment not found' });
+            }
+
+            await assignment.destroy();
+            res.json({ message: 'Policy assignment removed successfully' });
+        } catch (error) {
+            console.error('Error removing policy assignment:', error);
+            res.status(500).json({ message: 'Error removing policy assignment' });
+        }
+    },
+
+    // Add a rule to an existing policy
+    async addRuleToPolicy(req: Request, res: Response) {
+        try {
+            const { policyId } = req.params;
+            const { rule } = req.body;
+
+            // Basic validation
+            if (!rule || typeof rule !== 'object') {
+                return res.status(400).json({
+                    message: 'A valid rule object is required'
+                });
+            }
+
+            // Check required rule properties
+            if (!rule.name || !rule.effect) {
+                return res.status(400).json({
+                    message: 'Rule must contain name and effect properties'
+                });
+            }
+
+            // Find the policy
+            const policy = await Policy.findByPk(policyId);
+            if (!policy) {
+                return res.status(404).json({ message: 'Policy not found' });
+            }
+
+            // Create the new rule
+            const newRule = await Rule.create({
+                name: rule.name,
+                description: rule.description || null,
+                effect: rule.effect,
+                subjectAttributes: rule.subjectAttributes || null,
+                resourceAttributes: rule.resourceAttributes || null,
+                actionAttributes: rule.actionAttributes || null,
+                environmentAttributes: rule.environmentAttributes || null,
+                condition: rule.condition || null,
+                priority: rule.priority || 0,
+                policyId: policy.id
+            });
+
+            res.status(201).json({
+                message: 'Rule added to policy successfully',
+                rule: newRule
+            });
+        } catch (error) {
+            console.error('Error adding rule to policy:', error);
+            res.status(500).json({ message: 'Error adding rule to policy' });
         }
     }
 };

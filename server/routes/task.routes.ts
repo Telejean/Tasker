@@ -7,6 +7,8 @@ const router = Router();
 router.get('/', taskController.getAllTasks as any);
 
 // GET task by ID
+router.get('/my-tasks', taskController.getMyTasks as any);
+
 router.get('/:id', taskController.getTaskById as any);
 
 // POST create task

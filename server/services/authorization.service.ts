@@ -1,342 +1,461 @@
+import { Policy } from '../models/Policy.model';
+import { User } from '../models/User.model';
+import { UserPolicy } from '../models/UserPolicy.model';
+import { ProjectPolicy } from '../models/ProjectPolicy.model';
+import { TaskPolicy } from '../models/TaskPolicy.model';
+import { Task } from '../models/Task.model';
+import { Op } from 'sequelize';
+import { PermissionLog } from '../models/PermissionLog.model';
+import { Project } from '../models/Project.model';
+import { Team } from '../models/Team.model';
+import { UserTeam } from '../models/UserTeam.model';
 
-const { PrismaClient } = require('@prisma/client');
-const { evaluate } = require('jsonata'); // For evaluating conditions
+interface PermissionCheckParams {
+  userId: number;
+  action: string;
+  resourceType: string;
+  projectId?: number;
+  resourceId?: number;
+}
 
-const prisma = new PrismaClient();
+interface Rule {
+  action: string;
+  resource: string;
+  condition?: any;
+}
+
+// Cache for policy rules to avoid frequent database queries
+const policyCache: Record<number, { rules: Rule[]; cachedAt: number }> = {};
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes in milliseconds
 
 class AuthorizationService {
-
   /**
-   * Main authorization method that evaluates if an action is permitted
+   * Check if a user has permission to perform an action on a resource
    */
-  async isAuthorized(request) {
+  async checkPermission({
+    userId,
+    action,
+    resourceType,
+    resourceId,
+    projectId
+  }: PermissionCheckParams): Promise<boolean> {
     try {
-      // Enrich the request with additional attributes from database
-      const enrichedRequest = await this.enrichRequest(request);
-
-      // Get applicable policies
-      const policies = await this.getApplicablePolicies(enrichedRequest);
-
-      // No policies found
-      if (policies.length === 0) {
-        return { allowed: false, reason: 'No applicable policies found' };
+      // Get user with role
+      const user = await User.findByPk(userId);
+      if (!user) {
+        this.logPermissionCheck(userId, action, resourceType, resourceId, false, 'User not found');
+        return false;
       }
 
-      // Evaluate policies
-      const result = await this.evaluatePolicies(enrichedRequest, policies);
+      // Board and Coordinator roles have all permissions
+      if (user.isAdmin) {
+        this.logPermissionCheck(userId, action, resourceType, resourceId, true, 'User has admin role');
+        return true;
+      }
 
-      // Log the authorization attempt
-      await this.logAuthorization({
-        userId: enrichedRequest.subject.userId,
-        action: `${enrichedRequest.action.type}:${enrichedRequest.resource.type}`,
-        resource: `${enrichedRequest.resource.type}:${enrichedRequest.resource.id}`,
-        allowed: result.allowed,
-        reason: result.reason
-      });
+      // Check role-based permissions
+      if (projectId) {
+        const hasRolePermission = await this.checkRolePermission(user, projectId, action, resourceType);
 
-      return result;
+        if (hasRolePermission) {
+          this.logPermissionCheck(userId, action, resourceType, resourceId, true, 'User has role-based permission');
+          return true;
+        }
+      }
+
+
+
+      // Check project membership (applies to project and task resources)
+      if ((resourceType === 'project' || resourceType === 'task') && resourceId) {
+        const hasProjectPermission = await this.checkProjectMembership(userId, action, resourceType, resourceId);
+        if (hasProjectPermission) {
+          this.logPermissionCheck(userId, action, resourceType, resourceId, true, 'User has project-based permission');
+          return true;
+        }
+      }
+
+      // Check policies assigned to user
+      const hasUserPolicy = await this.checkUserPolicies(userId, action, resourceType, resourceId);
+      if (hasUserPolicy) {
+        this.logPermissionCheck(userId, action, resourceType, resourceId, true, 'User has user-policy permission');
+        return true;
+      }
+
+      // Check policies assigned to the resource
+      const hasResourcePolicy = await this.checkResourcePolicies(userId, action, resourceType, resourceId);
+      if (hasResourcePolicy) {
+        this.logPermissionCheck(userId, action, resourceType, resourceId, true, 'User has resource-policy permission');
+        return true;
+      }
+
+      // No permission found
+      this.logPermissionCheck(userId, action, resourceType, resourceId, false, 'No matching permission found');
+      return false;
     } catch (error) {
-      console.error('Authorization error:', error);
-      return { allowed: false, reason: 'Authorization system error' };
-    }
-  }
-
-  /**
-   * Enrich the request with additional attributes from database
-   */
-  async enrichRequest(request) {
-    const enriched = { ...request };
-
-    // Enrich subject (user) attributes
-    if (request.subject.userId) {
-      const user = await prisma.user.findUnique({
-        where: { id: request.subject.userId },
-        include: {
-          projectsManaged: true,
-          projectsMember: { include: { project: true } },
-          assignedTasks: { include: { task: true } }
-        }
-      });
-
-      if (user) {
-        enriched.subject = {
-          ...enriched.subject,
-          role: user.role,
-          isActive: user.isActive,
-          managedProjectIds: user.projectsManaged.map(p => p.id),
-          memberProjectIds: user.projectsMember.map(up => up.projectId),
-          assignedTaskIds: user.assignedTasks.map(ut => ut.taskId)
-        };
-      }
-    }
-
-    // Enrich resource attributes
-    if (request.resource.type === 'project' && request.resource.id) {
-      const project = await prisma.project.findUnique({
-        where: { id: request.resource.id },
-        include: {
-          manager: true,
-          members: { include: { user: true } }
-        }
-      });
-
-      if (project) {
-        enriched.resource = {
-          ...enriched.resource,
-          status: project.status,
-          managerId: project.managerId,
-          memberIds: project.members.map(m => m.userId)
-        };
-      }
-    } else if (request.resource.type === 'task' && request.resource.id) {
-      const task = await prisma.task.findUnique({
-        where: { id: request.resource.id },
-        include: {
-          project: true,
-          creator: true,
-          assignees: { include: { user: true } }
-        }
-      });
-
-      if (task) {
-        enriched.resource = {
-          ...enriched.resource,
-          status: task.status,
-          priority: task.priority,
-          projectId: task.projectId,
-          creatorId: task.creatorId,
-          assigneeIds: task.assignees.map(a => a.userId),
-          projectStatus: task.project?.status
-        };
-      }
-    }
-
-    // Set default environment attributes if not provided
-    if (!enriched.environment) {
-      enriched.environment = {};
-    }
-
-    enriched.environment.time = enriched.environment.time || new Date();
-
-    return enriched;
-  }
-
-  /**
-   * Get policies applicable to the request
-   */
-  async getApplicablePolicies(request) {
-    // Get user-assigned policies
-    const userPolicies = await prisma.userPolicy.findMany({
-      where: {
-        userId: request.subject.userId,
-        OR: [
-          { expiresAt: null },
-          { expiresAt: { gt: new Date() } }
-        ]
-      },
-      include: {
-        policy: {
-          include: {
-            rules: true
-          }
-        }
-      }
-    });
-
-    // Get resource-specific policies
-    let resourcePolicies = [];
-
-    if (request.resource.type === 'project') {
-      const projectPolicies = await prisma.projectPolicy.findMany({
-        where: {
-          projectId: request.resource.id
-        },
-        include: {
-          policy: {
-            include: {
-              rules: true
-            }
-          }
-        }
-      });
-      resourcePolicies = [...resourcePolicies, ...projectPolicies];
-    } else if (request.resource.type === 'task') {
-      const taskPolicies = await prisma.taskPolicy.findMany({
-        where: {
-          taskId: request.resource.id
-        },
-        include: {
-          policy: {
-            include: {
-              rules: true
-            }
-          }
-        }
-      });
-      resourcePolicies = [...resourcePolicies, ...taskPolicies];
-
-      // Also include policies from the parent project
-      if (request.resource.projectId) {
-        const projectPolicies = await prisma.projectPolicy.findMany({
-          where: {
-            projectId: request.resource.projectId
-          },
-          include: {
-            policy: {
-              include: {
-                rules: true
-              }
-            }
-          }
-        });
-        resourcePolicies = [...resourcePolicies, ...projectPolicies];
-      }
-    }
-
-    // Combine and return unique policies
-    const allPolicies = [
-      ...userPolicies.map(up => up.policy),
-      ...resourcePolicies.map(rp => rp.policy)
-    ].filter(p => p.isActive);
-
-    // Return unique policies
-    const uniquePolicies = Array.from(
-      new Map(allPolicies.map(p => [p.id, p])).values()
-    );
-
-    return uniquePolicies;
-  }
-
-  /**
-   * Evaluate policies to determine if action is allowed
-   */
-  async evaluatePolicies(request, policies) {
-    // Extract rules from policies and sort by priority
-    const rules = policies.flatMap(p => p.rules)
-      .sort((a, b) => b.priority - a.priority);
-
-    // Default is to deny if no rules match
-    let finalEffect = 'DENY';
-    let reason = 'No matching rules';
-
-    for (const rule of rules) {
-      // Check if rule applies to this request
-      const ruleMatches = await this.ruleMatches(request, rule);
-
-      // If rule matches, take its effect and stop processing (first match wins)
-      if (ruleMatches) {
-        finalEffect = rule.effect;
-        reason = `Rule "${rule.name}" (${rule.id}) ${finalEffect === 'ALLOW' ? 'allows' : 'denies'} the action`;
-        break;
-      }
-    }
-
-    return {
-      allowed: finalEffect === 'ALLOW',
-      reason
-    };
-  }
-
-  /**
-   * Check if a rule matches the request
-   */
-  async ruleMatches(request, rule) {
-    try {
-      // Parse stored JSON attributes
-      const subjectAttrs = rule.subjectAttributes ? JSON.parse(rule.subjectAttributes) : null;
-      const resourceAttrs = rule.resourceAttributes ? JSON.parse(rule.resourceAttributes) : null;
-      const actionAttrs = rule.actionAttributes ? JSON.parse(rule.actionAttributes) : null;
-      const environmentAttrs = rule.environmentAttributes ? JSON.parse(rule.environmentAttributes) : null;
-
-      // Check subject attributes match
-      if (subjectAttrs && !this.attributesMatch(request.subject, subjectAttrs)) {
-        return false;
-      }
-
-      // Check resource attributes match
-      if (resourceAttrs && !this.attributesMatch(request.resource, resourceAttrs)) {
-        return false;
-      }
-
-      // Check action attributes match
-      if (actionAttrs && !this.attributesMatch(request.action, actionAttrs)) {
-        return false;
-      }
-
-      // Check environment attributes match
-      if (
-        environmentAttrs &&
-        request.environment &&
-        !this.attributesMatch(request.environment, environmentAttrs)
-      ) {
-        return false;
-      }
-
-      // Evaluate the condition if present
-      if (rule.condition) {
-        // Create a context object containing all attributes
-        const context = {
-          subject: request.subject,
-          resource: request.resource,
-          action: request.action,
-          environment: request.environment || {}
-        };
-
-        // Evaluate the condition expression
-        const result = await evaluate(rule.condition, context);
-        return Boolean(result);
-      }
-
-      // If we got here, all checks passed
-      return true;
-    } catch (error) {
-      console.error('Error evaluating rule:', error);
+      console.error('Error checking permission:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.logPermissionCheck(userId, action, resourceType, resourceId, false, `Error: ${errorMessage}`);
       return false;
     }
   }
 
   /**
-   * Check if attributes match the required pattern
+   * Check role-based permissions (simple role checks)
    */
-  attributesMatch(actual, required) {
-    for (const [key, value] of Object.entries(required)) {
-      if (Array.isArray(value)) {
-        // If expected value is an array, actual value must be in that array
-        if (!Array.isArray(actual[key]) && !value.includes(actual[key])) {
-          return false;
-        }
-      } else if (typeof value === 'object' && value !== null) {
-        // Recursively check nested objects
-        if (!actual[key] || !this.attributesMatch(actual[key], value)) {
-          return false;
-        }
+  private async checkRolePermission(user: User, project: number, action: string, resourceType: string): Promise<boolean> {
+    // Define role-based permissions for different resources
+
+    return true
+  }
+  /**
+   * Check project membership permissions through team membership
+   */
+  private async checkProjectMembership(
+    userId: number,
+    action: string,
+    resourceType: string,
+    resourceId: number
+  ): Promise<boolean> {
+    try {
+      let projectId: number;
+
+      // If checking task permissions, get the associated project ID
+      if (resourceType === 'task') {
+        const task = await Task.findByPk(resourceId);
+        if (!task) return false;
+        projectId = task.projectId;
       } else {
-        // Direct comparison
-        if (actual[key] !== value) {
-          return false;
+        projectId = resourceId;
+      }      // Check if user is a member of any team in the project
+      const teams = await Team.findAll({
+        where: { projectId },
+        include: [{
+          model: User,
+          through: {
+            where: { userId }
+          }
+        }]
+      });
+
+      // If not a member of any team, check if user is the project manager
+      if (teams.length === 0) {
+        const project = await Project.findByPk(projectId);
+        if (!project || project.managerId !== userId) return false;
+      }
+
+      // Get the user's highest role in any team
+      let highestRole = '';
+      for (const team of teams) {
+        const userTeam = await UserTeam.findOne({
+          where: { userId, teamId: team.id }
+        });
+
+        if (userTeam) {
+          // Determine which role has higher privileges
+          if (
+            highestRole === '' ||
+            (highestRole === 'viewer' && ['member', 'admin', 'owner'].includes(userTeam.userRole.toLowerCase())) ||
+            (highestRole === 'member' && ['admin', 'owner'].includes(userTeam.userRole.toLowerCase())) ||
+            (highestRole === 'admin' && userTeam.userRole.toLowerCase() === 'owner')
+          ) {
+            highestRole = userTeam.userRole.toLowerCase();
+          }
         }
       }
-    }
 
-    return true;
+      // If user is a project manager, consider them as "owner" role
+      const project = await Project.findByPk(projectId);
+      if (project && project.managerId === userId) {
+        highestRole = 'owner';
+      }
+
+      // Define role permissions within a project
+      const projectRolePermissions: Record<string, Record<string, string[]>> = {
+        'owner': {
+          'project': ['read', 'update', 'delete', 'manage'],
+          'task': ['read', 'create', 'update', 'delete', 'assign', 'manage']
+        },
+        'admin': {
+          'project': ['read', 'update'],
+          'task': ['read', 'create', 'update', 'delete', 'assign']
+        },
+        'member': {
+          'project': ['read'],
+          'task': ['read', 'create', 'update']
+        },
+        'viewer': {
+          'project': ['read'],
+          'task': ['read']
+        }
+      };
+
+      // Check if the project role has the required permission
+      return !!projectRolePermissions[highestRole]?.[resourceType]?.includes(action);
+    } catch (error) {
+      console.error('Error checking project membership:', error);
+      return false;
+    }
   }
 
   /**
-   * Log authorization attempts
+   * Check policies assigned directly to the user
    */
-  async logAuthorization(log) {
-    await prisma.permissionLog.create({
-      data: {
-        userId: log.userId,
-        action: log.action,
-        resource: log.resource,
-        allowed: log.allowed,
-        reason: log.reason
+  private async checkUserPolicies(
+    userId: number,
+    action: string,
+    resourceType: string,
+    resourceId?: number
+  ): Promise<boolean> {
+    try {
+      // Get active policies assigned to the user
+      const userPolicies = await UserPolicy.findAll({
+        where: {
+          userId,
+          [Op.or]: [
+            { expiresAt: null },
+            { expiresAt: { [Op.gt]: new Date() } }
+          ]
+        },
+        include: [
+          {
+            model: Policy,
+            where: {
+              isActive: true
+            }
+          }
+        ]
+      });
+
+      // Check each policy's rules
+      for (const userPolicy of userPolicies) {
+        const policy = userPolicy.policy;
+        const policyId = policy.id;
+
+        // Get rules from cache or database
+        const rules = await this.getPolicyRules(policyId);
+
+        // Check if any rule allows the action on the resource
+        if (this.evaluateRules(rules, action, resourceType, resourceId)) {
+          return true;
+        }
       }
+
+      return false;
+    } catch (error) {
+      console.error('Error checking user policies:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Check policies assigned to the resource
+   */
+  private async checkResourcePolicies(
+    userId: number,
+    action: string,
+    resourceType: string,
+    resourceId?: number
+  ): Promise<boolean> {
+    if (!resourceId) return false;
+
+    try {
+      let policyModel;
+      let whereClause: any = {};
+
+      switch (resourceType.toLowerCase()) {
+        case 'project':
+          policyModel = ProjectPolicy;
+          whereClause = { projectId: resourceId };
+          break;
+        case 'task':
+          policyModel = TaskPolicy;
+          whereClause = { taskId: resourceId };
+          break;
+        default:
+          return false;
+      }
+
+      // Filter for active, non-expired policies
+      whereClause = {
+        ...whereClause,
+        [Op.or]: [
+          { expiresAt: null },
+          { expiresAt: { [Op.gt]: new Date() } }
+        ]
+      };
+
+      const resourcePolicies = await (policyModel as any).findAll({
+        where: whereClause,
+        include: [
+          {
+            model: Policy,
+            where: {
+              active: true
+            }
+          }
+        ]
+      });
+
+      // Check each policy's rules
+      for (const resourcePolicy of resourcePolicies) {
+        const policy = resourcePolicy.policy;
+        const policyId = policy.id;
+
+        // Get rules from cache or database
+        const rules = await this.getPolicyRules(policyId);
+
+        // Check if any rule allows the action on the resource
+        if (this.evaluateRules(rules, action, resourceType, resourceId, { userId })) {
+          return true;
+        }
+      }
+
+      return false;
+    } catch (error) {
+      console.error('Error checking resource policies:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Get policy rules from cache or database
+   */
+  private async getPolicyRules(policyId: number): Promise<Rule[]> {
+    // Check if we have a valid cached version
+    const now = Date.now();
+    if (
+      policyCache[policyId] &&
+      now - policyCache[policyId].cachedAt < CACHE_TTL
+    ) {
+      return policyCache[policyId].rules;
+    }
+
+    // Get fresh rules from database
+    const policy = await Policy.findByPk(policyId);
+    if (!policy) return [];
+
+    // Map database Rule models to the Rule interface format used in this service
+    const mappedRules: Rule[] = policy.policyRules.map(dbRule => {
+      // Extract action from actionAttributes
+      const actionAttr = dbRule.actionAttributes as { type?: string } || {};
+      const action = actionAttr.type || '*';
+
+      // Extract resource from resourceAttributes
+      const resourceAttr = dbRule.resourceAttributes as { type?: string } || {};
+      const resource = resourceAttr.type || '*';
+
+      // Use condition as is or convert if needed
+      const condition = dbRule.condition ? JSON.parse(dbRule.condition) : undefined;
+
+      return {
+        action,
+        resource,
+        condition
+      };
     });
+
+    // Update cache
+    policyCache[policyId] = {
+      rules: mappedRules,
+      cachedAt: now
+    };
+
+    return mappedRules;
+  }
+
+  /**
+   * Evaluate policy rules against the requested action and resource
+   */
+  private evaluateRules(
+    rules: Rule[],
+    action: string,
+    resourceType: string,
+    resourceId?: number,
+    context: Record<string, any> = {}
+  ): boolean {
+    return rules.some(rule => {
+      // Check if action and resource match
+      const actionMatches = rule.action === '*' || rule.action === action;
+      const resourceMatches = rule.resource === '*' || rule.resource === resourceType;
+
+      if (!actionMatches || !resourceMatches) {
+        return false;
+      }
+
+      // If rule has no condition, it's a match
+      if (!rule.condition) {
+        return true;
+      }
+
+      // Evaluate conditions
+      return this.evaluateCondition(rule.condition, { resourceId, ...context });
+    });
+  }
+
+  /**
+   * Evaluate a condition with the given context
+   */
+  private evaluateCondition(condition: any, context: Record<string, any>): boolean {
+    if (!condition) return true;
+
+    // Simple condition format: { attribute: value }
+    if (typeof condition === 'object' && !Array.isArray(condition)) {
+      return Object.entries(condition).every(([key, value]) => {
+        return context[key] === value;
+      });
+    }
+
+    // TODO: Implement more complex condition evaluation logic if needed
+
+    return false;
+  }
+
+  /**
+   * Log permission checks for auditing purposes
+   */
+  private async logPermissionCheck(
+    userId: number,
+    action: string,
+    resourceType: string,
+    resourceId: number | undefined,
+    allowed: boolean,
+    reason: string
+  ): Promise<void> {
+    if(!userId || !action || !resourceType || !resourceId || !allowed || !reason )
+    {
+      console.log("couldn't log permission")
+      return
+    }
+    try {
+      await PermissionLog.create({
+        userId,
+        action,
+        resourceType,
+        resourceId,
+        allowed,
+        reason,
+        timestamp: new Date()
+      });
+    } catch (error) {
+      console.error('Error logging permission check:', error);
+    }
+  }
+
+  /**
+   * Clear the policy cache
+   */
+  clearCache(): void {
+    Object.keys(policyCache).forEach(key => {
+      delete policyCache[Number(key)];
+    });
+  }
+
+  /**
+   * Remove a specific policy from the cache
+   */
+  invalidatePolicy(policyId: number): void {
+    delete policyCache[policyId];
   }
 }
 
-module.exports = {
-  AuthorizationService: new AuthorizationService()
-};
+export default new AuthorizationService();

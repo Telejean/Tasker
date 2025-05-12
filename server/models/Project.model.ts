@@ -3,7 +3,7 @@ import { Task } from './Task.model';
 import { User } from './User.model';
 import { ProjectStatus } from '../types';
 import { ProjectPolicy } from './ProjectPolicy.model';
-import { ProjectMember } from './ProjectMember.model';
+import { Team } from './Team.model';
 
 @Table
 export class Project extends Model {
@@ -35,8 +35,8 @@ export class Project extends Model {
     @HasMany(() => Task)
     tasks!: Task[];
 
-    @HasMany(() => ProjectMember)
-    members!: ProjectMember[];
+    @HasMany(() => Team)
+    teams!: Team[];
 
     @ForeignKey(() => User)
     @Column({

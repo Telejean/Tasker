@@ -1,8 +1,9 @@
 import { Button, Callout, Dialog, Flex, Select, TextArea, TextField } from '@radix-ui/themes';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Text } from 'react-aria-components';
 import { LuCirclePlus } from 'react-icons/lu';
 import { CalendarDatePicker } from '../DatePicker/CalendarDatePicker';
+import { projectService } from '@/services/project.service';
 
 export const TasksAdd = ({ onAddTask }) => {
     const [taskName, setTaskName] = useState('');
@@ -10,8 +11,17 @@ export const TasksAdd = ({ onAddTask }) => {
     const [description, setDescription] = useState('');
     const [status, setStatus] = useState('');
     const [project, setProject] = useState('');
+    const [availableProjects, setAvailableProjects] = useState('');
     const [showWarning, setShowWarning] = useState(false);
 
+    useEffect(()=>{
+        const fetchProjects = async ()=>{
+            const availableProjects = await projectService.getMyProjects();
+            console.log(availableProjects)
+        }
+
+        fetchProjects()
+    })
 
     const formatDate = (date) => {
         const day = date.day;
@@ -37,8 +47,6 @@ export const TasksAdd = ({ onAddTask }) => {
             project: project,
             collaborators: [],
         }
-
-        console.log(newTask);
         onAddTask((prevData) => [...prevData, newTask]);
 
         setTaskName('');

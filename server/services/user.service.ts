@@ -7,7 +7,7 @@ interface CreateUserDto {
     name: string;
     surname: string;
     email: string;
-    phoneNumber:string;
+    phoneNumber: string;
     role: typeof UserRoles[keyof typeof UserRoles];
     tags?: JSON;
     bio?: string;
@@ -37,7 +37,7 @@ export const validateUserDataService = async (userData: CreateUserDto): Promise<
         }
 
         if (!userData.tags) {
-            userData.tags = JSON.parse("");
+            userData.tags = JSON.parse("{}");
         }
 
 
@@ -51,9 +51,12 @@ export const validateUserDataService = async (userData: CreateUserDto): Promise<
         });
 
         if (existingUser) {
+            console.log(error)
+
             throw new Error('User with this email already exists');
         }
     } catch (error) {
+        console.log(error)
         if (error instanceof Error) {
             throw new Error(`Failed to validate user: ${error.message}`);
         }
@@ -63,12 +66,11 @@ export const validateUserDataService = async (userData: CreateUserDto): Promise<
 
 export const createUserService = async (userData: CreateUserDto) => {
     try {
-        await validateUserDataService(userData);
-        const newUser = await UserModel.create({...userData});
+        const newUser = await UserModel.create({ ...userData });
         return newUser.toJSON() as User;
     } catch (error) {
         if (error instanceof Error) {
-            throw new Error(`Failed to create user: ${error.message}`);
+            throw new Error(`Failed to create user: ${error}`);
         }
         throw new Error('Failed to create user');
     }
@@ -77,7 +79,7 @@ export const createUserService = async (userData: CreateUserDto) => {
 
 export const createBulkUsersService = async (users: CreateUserDto[]) => {
     const transaction = await sequelize.transaction();
-    
+
     try {
         // Validate all users first
         for (const userData of users) {
@@ -88,7 +90,6 @@ export const createBulkUsersService = async (users: CreateUserDto[]) => {
             name: user.name,
             surname: user.surname,
             email: user.email,
-            role: user.role,
             tags: user.tags,
             bio: user.bio,
             departmentId: user.departmentId

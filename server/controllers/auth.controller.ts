@@ -3,6 +3,24 @@ import { User } from '../models/User.model';
 import { UserRoles } from '../types';
 import passport from 'passport';
 import { createUserService } from '../services/user.service';
+import authorizationService from '../services/authorization.service';
+import jwt from 'jsonwebtoken';
+
+// JWT token generation function
+const generateToken = (user: any) => {
+    const payload = {
+        id: user.id,
+        email: user.email,
+        phoneNumber: user.phoneNumber,
+        // Add any other user data you want in the token
+    };
+
+    // Get the secret key from environment variables or use a default (for development only)
+    const secret = process.env.JWT_SECRET || 'your-secret-key-here';
+
+    // Generate the token with a 24 hour expiration
+    return jwt.sign(payload, secret, { expiresIn: '24h' });
+};
 
 export const authController = {
     // Google OAuth callback handler
@@ -10,13 +28,38 @@ export const authController = {
         const user = req.user as { isNewUser: boolean; email: string; googleProfile: { name: string; surname: string } };
         if (user?.isNewUser) {
             const params = new URLSearchParams({
-            email: user.email,
-            name: user.googleProfile.name,
-            surname: user.googleProfile.surname
+                email: user.email,
+                name: user.googleProfile.name,
+                surname: user.googleProfile.surname
             });
             res.redirect(`${process.env.CLIENT_URL}/register?${params.toString()}`);
         } else {
             res.redirect(`${process.env.CLIENT_URL}/home`);
+        }
+    },
+
+    // Google login that returns JWT
+    async handleGoogleCallbackJWT(req: Request, res: Response) {
+        try {
+            const user = req.user as any;
+
+            if (user?.isNewUser) {
+                const params = new URLSearchParams({
+                    email: user.email,
+                    name: user.googleProfile.name,
+                    surname: user.googleProfile.surname
+                });
+                res.redirect(`${process.env.CLIENT_URL}/register?${params.toString()}`);
+            } else {
+                // Generate JWT token for authenticated user
+                const token = generateToken(user);
+
+                // Redirect to front-end with token
+                res.redirect(`${process.env.CLIENT_URL}/auth/callback?token=${token}`);
+            }
+        } catch (error) {
+            console.error('Google callback error:', error);
+            res.redirect(`${process.env.CLIENT_URL}/login?error=AuthenticationFailed`);
         }
     },
 
@@ -29,7 +72,7 @@ export const authController = {
                 return res.status(400).json({ message: 'User already exists' });
             }
 
-            const user = createUserService(req.body)
+            const user = await createUserService(req.body)
 
             req.login(user, (err) => {
                 if (err) {
@@ -39,15 +82,42 @@ export const authController = {
             });
         } catch (error) {
             console.error('Registration error:', error);
-            res.status(500).json({ message: 'Error completing registration' });
+            res.status(500).json({ message: 'Error completing registration', error:error });
         }
     },
 
-    async checkAuthStatus(req: Request, res: Response) {
-        if (req.isAuthenticated()) {
-            res.json({ isAuthenticated: true, user: req.user });
-        } else {
-            res.json({ isAuthenticated: false });
+    // Login with email (returns JWT token)
+    async login(req: Request, res: Response) {
+        try {
+            const { email } = req.body;
+
+            // Basic validation
+            if (!email) {
+                return res.status(400).json({ message: 'Email is required' });
+            }
+
+            // Find user by email
+            const user = await User.findOne({ where: { email } });
+            if (!user) {
+                return res.status(401).json({ message: 'User not found' });
+            }
+
+            // Generate JWT token
+            const token = generateToken(user);
+
+            // Return user data and token
+            res.json({
+                user: {
+                    id: user.id,
+                    email: user.email,
+                    name: user.name,
+                    surname: user.surname,
+                },
+                token
+            });
+        } catch (error) {
+            console.error('Login error:', error);
+            res.status(500).json({ message: 'Error during login' });
         }
     },
 
@@ -59,5 +129,119 @@ export const authController = {
             }
             res.json({ success: true });
         });
+    },
+
+    // Check user authentication status
+    async checkStatus(req: Request, res: Response) {
+        if (req.isAuthenticated()) {
+            res.json({
+                isAuthenticated: true,
+                user: req.user
+            });
+        } else {
+            res.json({
+                isAuthenticated: false
+            });
+        }
+    },
+
+    // Check if current user has permission to perform an action on a resource
+    async checkPermission(req: Request, res: Response) {
+        try {
+            if (!req.isAuthenticated()) {
+                return res.json({ hasPermission: false });
+            }
+
+            const { action, resourceType, resourceId } = req.query;
+
+            if (!action || !resourceType) {
+                return res.status(400).json({
+                    error: 'Missing required parameters: action and resourceType are required'
+                });
+            }
+
+            // Board and Coordinator roles have all permissions
+            const user = req.user as any;
+            if (user.isAdmin) {
+                return res.json({ hasPermission: true });
+            }
+
+            // Check permission using the authorization service
+            const hasPermission = await authorizationService.checkPermission({
+                userId: user.id,
+                action: action as string,
+                resourceType: resourceType as string,
+                resourceId: resourceId ? Number(resourceId) : undefined
+            });
+            console.log({context: req.query, hasPermission:hasPermission})
+            res.status(200).json({ hasPermission });
+        } catch (error) {
+            console.error('Error checking permission:', error);
+            res.status(500).json({
+                error: 'An error occurred while checking permission',
+                hasPermission: false
+            });
+        }
+    },
+
+    // Batch check multiple permissions at once
+    async checkPermissionsBatch(req: Request, res: Response) {
+        try {
+            if (!req.isAuthenticated()) {
+                return res.json({
+                    results: {},
+                    message: 'User not authenticated'
+                });
+            }
+
+            const { permissions } = req.body;
+
+            if (!permissions || !Array.isArray(permissions)) {
+                return res.status(400).json({
+                    error: 'Missing or invalid permissions array'
+                });
+            }
+
+            const user = req.user as any;
+            const results: Record<string, boolean> = {};
+
+            // Board and Coordinator roles have all permissions
+            if (user.isAdmin) {
+                for (const perm of permissions) {
+                    const { action, resourceType, resourceId } = perm;
+                    const key = `${action}:${resourceType}${resourceId ? `:${resourceId}` : ''}`;
+                    results[key] = true;
+                }
+                return res.json({ results });
+            }
+
+            // Check each permission and collect results
+            for (const perm of permissions) {
+                const { action, resourceType, resourceId } = perm;
+                const key = `${action}:${resourceType}${resourceId ? `:${resourceId}` : ''}`;
+
+                try {
+                    const hasPermission = await authorizationService.checkPermission({
+                        userId: user.id,
+                        action,
+                        resourceType,
+                        resourceId
+                    });
+
+                    results[key] = hasPermission;
+                } catch (err) {
+                    console.error(`Error checking permission ${key}:`, err);
+                    results[key] = false;
+                }
+            }
+
+            res.json({ results });
+        } catch (error) {
+            console.error('Error batch checking permissions:', error);
+            res.status(500).json({
+                error: 'An error occurred while batch checking permissions',
+                results: {}
+            });
+        }
     }
 };

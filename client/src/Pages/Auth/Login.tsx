@@ -1,5 +1,6 @@
 import { Button, Card, Flex, Heading, Text } from "@radix-ui/themes";
 import { FcGoogle } from "react-icons/fc";
+import { API_URL } from "../../config/api";
 
 const Login = () => {
     return (
@@ -12,7 +13,7 @@ const Login = () => {
                     <Button
                         variant="soft"
                         size="3"
-                        onClick={() => window.location.href = "http://localhost:3000/api/auth/google"}
+                        onClick={() => window.location.href = `${API_URL}/auth/google`}
                     >
                         <FcGoogle style={{ marginRight: 8 }} />
                         Continue with Google

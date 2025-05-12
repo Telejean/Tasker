@@ -10,6 +10,8 @@ import sequelize from '../utils/sequelize';
 import { createUserService } from '../services/user.service';
 
 export const userController = {
+
+
     async getAllUsers(req: Request, res: Response) {
         try {
             const users = await User.findAll({
@@ -107,14 +109,13 @@ export const userController = {
             }
 
             const invalidUsers = users.map((user, index) => {
-                const { name, email, password } = user;
-                if (!name || !email || !password) {
+                const { name, email } = user;
+                if (!name || !email) {
                     return {
                         index,
                         errors: {
                             name: !name ? 'Name is required' : null,
                             email: !email ? 'Email is required' : null,
-                            password: !password ? 'Password is required' : null
                         }
                     };
                 }
@@ -133,14 +134,13 @@ export const userController = {
 
             try {
                 const userData = users.map(user => {
-                    const { name, email, password, role = UserRoles.MEMBER } = user;
-                    return { name, email, password, role };
+                    const { name, surname, phoneNumber,  email, role  } = user;
+                    return { name, surname, phoneNumber, email, role };
                 });
+
 
                 const createdUsers = await User.bulkCreate(userData, {
                     transaction,
-                    // Exclude password from the returned objects
-                    fields: ['id', 'name', 'email', 'role'],
                     returning: true
                 });
 

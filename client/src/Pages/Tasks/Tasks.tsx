@@ -1,6 +1,4 @@
-import { LuSquareKanban, LuList, LuCalendar, LuListFilter, LuArrowUpDown, LuCirclePlus } from "react-icons/lu";
-import { sampleTasks } from "../../sampleData"
-import { Flex, Heading, Button, Tabs, Box } from "@radix-ui/themes";
+import { Flex, Heading, Tabs, Box, Text } from "@radix-ui/themes";
 import TasksFilter from "../../Components/TasksFilter/TasksFilter";
 import { TasksAdd } from "../../Components/TasksAdd/TasksAdd";
 import { atom, useAtom } from 'jotai'
@@ -9,16 +7,17 @@ import { RangeValue, SortOptions, Task, TaskFilters } from "@/types"
 import { DateValue } from "react-aria-components";
 import TasksTable from "@/Components/Tables/TasksTable";
 import TasksSort from "@/Components/TasksSort";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { taskService } from '@/services/task.service';
+import { parseDate } from '@internationalized/date';
 
-export const tasksAtom = atom<Task[]>(sampleTasks);
+export const tasksAtom = atom<Task[]>([]);
 export const filtersAtom = atom<TaskFilters>({});
 export const sortAtom = atom<SortOptions>({ field: null, direction: null });
 
 const filteredTasksAtom = atom((get) => {
   const tasks = get(tasksAtom);
   const filters = get(filtersAtom);
-  const sort = get(sortAtom);
 
   if (Object.keys(filters).length === 0) {
     return tasks;
@@ -49,19 +48,57 @@ const filteredTasksAtom = atom((get) => {
 
 
 const Tasks = () => {
-  const [sort, setSort] = useAtom(sortAtom);
-
-  const [filteredTasks,] = useAtom(filteredTasksAtom);
+  const [filteredTasks] = useAtom(filteredTasksAtom);
   const [, setTasks] = useAtom(tasksAtom);
-
-  // console.log({tasks:tasks})
-  // console.log({filters:filters})
-  // console.log({filteredTasks:filteredTasks})
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    console.log("Sample tasks updated:", sort);
-  }, [sort]);
+    const fetchMyTasks = async () => {
+      try {
+        setLoading(true);
+        const tasksData = await taskService.getMyTasks();
 
+        // Transform the task data to match the expected format
+        const formattedTasks = tasksData.map((task: any) => ({
+          id: task.id,
+          projectName: task.project?.name || "No Project",
+          name: task.name,
+          deadline: task.deadline ? parseDate(new Date(task.deadline).toISOString().split('T')[0]) : null,
+          description: task.description || "",
+          assignedPeople: task.assignedPeople?.map((person: any) => person.user?.name || "Unknown") || [],
+          status: task.status?.toLowerCase() || "not-started",
+          priority: task.priority || "medium"
+        }));
+
+        setTasks(formattedTasks);
+        setError("");
+      } catch (err) {
+        console.error("Error fetching tasks:", err);
+        setError("Failed to load tasks");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMyTasks();
+  }, [setTasks]);
+
+  if (loading) {
+    return (
+      <Box p="6">
+        <Text>Loading tasks...</Text>
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box p="6">
+        <Text color="red">{error}</Text>
+      </Box>
+    );
+  }
 
   return (
     <Box width={"100%"} p='4'>

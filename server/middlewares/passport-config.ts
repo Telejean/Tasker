@@ -1,10 +1,34 @@
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
+import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
 import { User } from '../models/User.model';
 import { UserRoles } from '../types';
 
+// JWT configuration
+const jwtOptions = {
+    jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+    secretOrKey: process.env.JWT_SECRET || 'your-secret-key-here'
+};
+
+// Add JWT strategy
+passport.use(new JwtStrategy(jwtOptions, async (payload, done) => {
+    try {
+        // Find the user specified in token
+        const user = await User.findByPk(payload.id);
+
+        // If user doesn't exist, handle it
+        if (!user) {
+            return done(null, false);
+        }
+
+        // Otherwise, return the user
+        return done(null, user);
+    } catch (error) {
+        return done(error, false);
+    }
+}));
+
 passport.serializeUser((user: any, done) => {
-    // Only serialize if it's a database user (has an id)
     if (user.id) {
         done(null, user.id);
     } else {
@@ -14,12 +38,10 @@ passport.serializeUser((user: any, done) => {
 
 passport.deserializeUser(async (payload: number | any, done) => {
     try {
-        // If payload is a number, it's a user ID
         if (typeof payload === 'number') {
             const user = await User.findByPk(payload);
             done(null, user);
         } else {
-            // If payload is an object, it's temporary registration data
             done(null, payload);
         }
     } catch (error) {
@@ -33,16 +55,23 @@ passport.use(new GoogleStrategy({
     callbackURL: "/api/auth/google/callback",
 }, async (accessToken, refreshToken, profile, done) => {
     try {
-        // Check if user exists
+
+        const email = profile.emails?.[0]?.value;
+        if (!email) {
+            return done(new Error('Email not found in Google profile'));
+        }
+
+
         const existingUser = await User.findOne({
-            where: { email: profile.emails?.[0].value }
+            where: { email }
         });
+
+
 
         if (existingUser) {
             return done(null, existingUser);
         }
 
-        // If user doesn't exist, store Google profile data in session
         return done(null, {
             isNewUser: true,
             email: profile.emails?.[0].value,

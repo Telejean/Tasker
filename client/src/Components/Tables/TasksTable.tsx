@@ -48,7 +48,6 @@ const TasksTable = ({ data }: { data: Task[] }) => {
                 const dateA = rowA.original.deadline.toDate("Europe/Bucharest");
                 const dateB = rowB.original.deadline.toDate("Europe/Bucharest");
 
-                console.log(dateA < dateB ? -1 : dateA > dateB ? 1 : 0)
                 return dateA < dateB ? -1 : dateA > dateB ? 1 : 0;
             },
             header: "Deadline",

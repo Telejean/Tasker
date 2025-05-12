@@ -4,6 +4,8 @@ import { Task } from '../models/Task.model';
 import { Project } from '../models/Project.model';
 import { AssignedPerson } from '../models/AssignedPerson.model';
 import { User } from '../models/User.model';
+import { Team } from '../models/Team.model';
+import { UserTeam } from '../models/UserTeam.model';
 import { Op } from 'sequelize';
 
 export const taskController = {
@@ -36,6 +38,7 @@ export const taskController = {
     async getTaskById(req: Request, res: Response) {
         try {
             const taskId = parseInt(req.params.id);
+
             const task = await Task.findByPk(taskId, {
                 include: [
                     {
@@ -43,7 +46,6 @@ export const taskController = {
                     },
                     {
                         model: AssignedPerson,
-                        as: 'assignedPeople',
                         include: [
                             {
                                 model: User,
@@ -61,7 +63,7 @@ export const taskController = {
             return res.status(200).json(task);
         } catch (error) {
             console.error('Error getting task:', error);
-            return res.status(500).json({ error: 'Failed to retrieve task' });
+            return res.status(500).json({ error: 'Failed to retrieve task aaaaaaaaaaaa' });
         }
     },
 
@@ -276,6 +278,119 @@ export const taskController = {
         } catch (error) {
             console.error('Error deleting task:', error);
             return res.status(500).json({ error: 'Failed to delete task' });
+        }
+    },
+
+    // Get tasks assigned to the current user
+    async getMyTasks(req: Request, res: Response) {
+        try {
+            const userId = (req.user as any)?.id;
+
+            if (!userId) {
+                return res.status(401).json({ error: 'Authentication required' });
+            }
+
+            const tasks = await Task.findAll({
+                include: [
+                    {
+                        model: Project
+                    },
+                    {
+                        model: AssignedPerson,
+                        where: { userId },
+                        required: true,
+                        include: [
+                            {
+                                model: User,
+                                attributes: ['id', 'name', 'email']
+                            }
+                        ]
+                    },
+                    {
+                        model: User,
+                        as: 'creator',
+                        attributes: ['id', 'name', 'email']
+                    }
+                ],
+                order: [
+                    ['deadline', 'ASC']
+                ]
+            });
+
+            return res.status(200).json(tasks);
+        } catch (error) {
+            console.error('Error getting user tasks:', error);
+            return res.status(500).json({ error: 'Failed to retrieve tasks' });
+        }
+    },
+
+    // Get tasks for a specific project
+    async getTasksByProject(req: Request, res: Response) {
+        try {
+            const userId = (req.user as any)?.id; const projectId = parseInt(req.params.projectId);
+
+            if (!userId) {
+                return res.status(401).json({ error: 'Authentication required' });
+            }
+
+            // Check if user is a member of any team in this project
+            const teams = await Team.findAll({
+                where: { projectId },
+                include: [{
+                    model: User,
+                    through: {
+                        where: { userId }
+                    }
+                }]
+            });
+
+            // Check if user is the project manager
+            const project = await Project.findByPk(projectId);
+            const isProjectManager = project && project.managerId === userId;
+
+            // Check if user has admin role
+            const user = req.user as any;
+            const isAdmin = user?.isAdmin;
+
+            // If not a team member, not the project manager, and not an admin, deny access
+            if (teams.length === 0 && !isProjectManager && !isAdmin) {
+                return res.status(403).json({
+                    error: 'You do not have access to this project'
+                });
+            }
+
+            // Get all tasks for this project
+            const tasks = await Task.findAll({
+                where: { projectId },
+                include: [
+                    {
+                        model: Project
+                    },
+                    {
+                        model: AssignedPerson,
+                        as: 'assignedPeople',
+                        include: [
+                            {
+                                model: User,
+                                attributes: ['id', 'name', 'email']
+                            }
+                        ]
+                    },
+                    {
+                        model: User,
+                        as: 'creator',
+                        attributes: ['id', 'name', 'email']
+                    }
+                ],
+                order: [
+                    ['deadline', 'ASC']
+                ]
+            });
+
+            return res.status(200).json(tasks);
+        } catch (error) {
+            console.error('Error getting project tasks:', error);
+            return res.status(500).json({ error: 'Failed to retrieve tasks' });
         }
     }
 };

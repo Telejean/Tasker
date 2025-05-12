@@ -32,25 +32,41 @@ export interface SortOptions {
 export interface Project {
     id: number;
     name: string;
-    members: string[];
-    manager: string;
+    teams: Team[];
+    manager: User;
+    managerId: number;
     completion: number;
     iconId: number;
     icon: string;
     status: 'active' | 'archived' | 'deleted';
-}
-export interface ProjectFilters {
-    owner?: string[];
-    members?: string[];
-    status?: ('active' | 'archived' | 'deleted')[];
+    description?: string;
 }
 
-export interface UserProfile {
+export interface Team {
+    id: number;
+    name: string;
+    projectId: number;
+    userTeams: UserTeam[];
+}
+
+export interface UserTeam {
+    id: number;
+    userId: number;
+    teamId: number;
+    userRole: string;
+    user: User;
+}
+
+export interface User {
     id: number;
     name: string;
     surname: string;
     email: string;
-    role: string;
+    phoneNumber: string;
+    role?: string;
+    isAdmin?: boolean;
+    iconName?: string;
+    iconBgColor?: string;
     tags?: any;
     bio?: string;
 }

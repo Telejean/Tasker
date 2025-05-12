@@ -1,27 +1,36 @@
 import { Router } from 'express';
-import passport from 'passport';
 import { authController } from '../controllers/auth.controller';
+import passport from 'passport';
 
 const router = Router();
 
 // Google OAuth routes
-router.get('/google',
-    passport.authenticate('google', { scope: ['profile', 'email'] })
-);
-
+router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 router.get('/google/callback',
-    passport.authenticate('google'),
+    passport.authenticate('google', { failureRedirect: '/login' }),
     authController.handleGoogleCallback
 );
 
+// JWT Google OAuth route (alternative to session-based auth)
+router.get('/google/jwt', passport.authenticate('google', { scope: ['profile', 'email'] }));
+router.get('/google/jwt/callback',
+    passport.authenticate('google', { failureRedirect: '/login' }),
+    authController.handleGoogleCallbackJWT
+);
 
-// Complete registration for new Google users
+// Login with email/password (JWT)
+
+// Complete registration for new users
 router.post('/complete-registration', authController.completeRegistration as any);
 
-// Check authentication status
-router.get('/status', authController.checkAuthStatus);
+// Check auth status
+router.get('/status', authController.checkStatus);
 
-// Logout route
+// Logout
 router.post('/logout', authController.logout);
+
+// ABAC permission check endpoints
+router.get('/check-permission', authController.checkPermission as any);
+router.post('/check-permissions-batch', authController.checkPermissionsBatch as any);
 
 export default router;

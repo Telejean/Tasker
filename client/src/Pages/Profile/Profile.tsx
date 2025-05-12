@@ -6,34 +6,47 @@ import ColorPicker from '@/Components/ColorPicker/ColorPicker';
 import * as Icons from 'react-icons/lu';
 import { userAtom } from '@/App';
 import { useAtom } from 'jotai';
-
-// Mock user data - would be fetched from API in a real app
-const mockUserProfile: UserProfile = {
-    id: 1,
-    name: 'John Doe',
-    email: 'john.doe@example.com',
-    role: 'Project Manager',
-    iconName: 'LuUser',
-    iconBgColor: '#6E56CF', // Radix violet
-    phone: '+1 (555) 123-4567',
-    department: 'Engineering',
-    bio: 'Project manager with 5+ years of experience in agile development and team leadership.'
-};
+import axios from 'axios';
+import { API_URL, axiosConfig } from '@/config/api';
 
 const Profile = () => {
     const [profile, setProfile] = useAtom(userAtom);
     const [isEditing, setIsEditing] = useState(false);
     const [selectedIcon, setSelectedIcon] = useState(profile.iconName);
     const [selectedColor, setSelectedColor] = useState(profile.iconBgColor);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState('');
 
-    // This would actually save to the backend in a real application
-    const handleSaveProfile = () => {
-        setProfile(prev => ({
-            ...prev,
-            iconName: selectedIcon,
-            iconBgColor: selectedColor
-        }));
-        setIsEditing(false);
+    // Update profile on the backend
+    const handleSaveProfile = async () => {
+        setIsLoading(true);
+        setError('');
+
+        try {
+            const updatedProfile = {
+                ...profile,
+                iconName: selectedIcon,
+                iconBgColor: selectedColor
+            };
+
+            const { data } = await axios.put(
+                `${API_URL}/users/${profile.id}`,
+                updatedProfile,
+                axiosConfig
+            );
+
+            setProfile(data);
+            setIsEditing(false);
+        } catch (err) {
+            console.error('Error updating profile:', err);
+            if (axios.isAxiosError(err)) {
+                setError(err.response?.data?.message || 'Failed to update profile');
+            } else {
+                setError('Failed to update profile');
+            }
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     // Get the actual icon component based on the icon name
@@ -42,6 +55,12 @@ const Profile = () => {
     return (
         <Box width="100%" p="6">
             <Heading as="h1" size="8" mb="6">My Profile</Heading>
+
+            {error && (
+                <Card size="2" color="red" mb="4">
+                    <Text color="red">{error}</Text>
+                </Card>
+            )}
 
             <Flex gap="6" direction={{ initial: 'column', md: 'row' }}>
                 {/* Left column: Profile Image & Details */}
@@ -69,7 +88,9 @@ const Profile = () => {
                         ) : (
                             <Flex gap="2">
                                 <Button color="gray" variant="soft" onClick={() => setIsEditing(false)}>Cancel</Button>
-                                <Button onClick={handleSaveProfile}>Save Changes</Button>
+                                <Button onClick={handleSaveProfile} disabled={isLoading}>
+                                    {isLoading ? 'Saving...' : 'Save Changes'}
+                                </Button>
                             </Flex>
                         )}
                     </Flex>
@@ -114,11 +135,11 @@ const Profile = () => {
                                         <Text as="div" size="2" weight="bold" mb="1">Phone</Text>
                                         {isEditing ? (
                                             <TextField.Root
-                                                defaultValue={profile.phone || ''}
-                                                onChange={(e) => setProfile(prev => ({ ...prev, phone: e.target.value }))}
+                                                defaultValue={profile.phoneNumber || ''}
+                                                onChange={(e) => setProfile(prev => ({ ...prev, phoneNumber: e.target.value }))}
                                             />
                                         ) : (
-                                            <Text>{profile.phone || 'Not provided'}</Text>
+                                            <Text>{profile.phoneNumber || 'Not provided'}</Text>
                                         )}
                                     </Box>
 

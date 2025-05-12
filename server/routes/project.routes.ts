@@ -7,6 +7,8 @@ const router = Router();
 router.get('/', projectController.getAllProjects as any);
 
 // GET project by ID
+router.get('/my-projects', projectController.getMyProjects as any);
+
 router.get('/:id', projectController.getProjectById as any);
 
 // POST create project

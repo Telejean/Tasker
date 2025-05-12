@@ -1,29 +1,38 @@
-import { Router } from 'express';
-import { policyController  } from '../controllers/index';
+import express from 'express';
+import { policyController } from '../controllers/policy.controller';
+import passport from 'passport';
+import { RequestHandler } from 'express';
 
-const router = Router();
+const router = express.Router();
 
-// GET all policies
-router.get('/', policyController.getAllPolicies);
+// Using passport.authenticate for authentication
+const authenticate = passport.authenticate('jwt', { session: false });
 
-// GET policy by ID
-router.get('/:id', policyController.getPolicyById as any);
+// Apply authenticate middleware to all routes
+router.use(authenticate);
 
-// POST create policy
-router.post('/', policyController.createPolicy as any);
+// Cast controller functions to RequestHandler to fix TypeScript errors
+const asHandler = (fn: any): RequestHandler => fn as RequestHandler;
 
-// PUT update policy
-router.put('/:id', policyController.updatePolicy as any);
+// Policy management routes
+router.get('/', asHandler(policyController.getPolicies));
+router.get('/:id', asHandler(policyController.getPolicy));
+router.post('/', asHandler(policyController.createPolicy));
+router.put('/:id', asHandler(policyController.updatePolicy));
+router.delete('/:id', asHandler(policyController.deletePolicy));
 
-// DELETE policy
-router.delete('/:id', policyController.deletePolicy as any);
+// Add a rule to an existing policy
+router.post('/:policyId/rules', asHandler(policyController.addRuleToPolicy));
 
-// POST add rule to policy
-router.post('/:id/rules', policyController.addRuleToPolicy as any);
+// Policy assignment routes
+router.post('/assign/user', asHandler(policyController.assignPolicyToUser));
+router.post('/assign/project', asHandler(policyController.assignPolicyToProject));
+router.post('/assign/task', asHandler(policyController.assignPolicyToTask));
 
-// Policy assignments
-router.post('/assign-to-user', policyController.assignPolicyToUser as any);
-router.post('/assign-to-project', policyController.assignPolicyToProject as any);
-router.post('/assign-to-task', policyController.assignPolicyToTask as any);
+// Get policy assignments for a resource
+router.get('/assignments/:resourceType/:resourceId', asHandler(policyController.getPolicyAssignments));
+
+// Remove policy assignment
+router.delete('/assignments/:resourceType/:assignmentId', asHandler(policyController.removePolicyAssignment));
 
 export default router;

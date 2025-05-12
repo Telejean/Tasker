@@ -3,22 +3,23 @@ import { FormEvent, useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAtom } from "jotai";
 import { userAtom } from "../../App";
+import axios from "axios";
+import { API_URL, axiosConfig } from "../../config/api";
 
 const Register = () => {
     const [searchParams] = useSearchParams();
     const [name, setName] = useState(searchParams.get("name") || "");
     const [surname, setSurname] = useState(searchParams.get("surname") || "");
     const [email, setEmail] = useState(searchParams.get("email") || "");
+    const [phoneNumber, setPhoneNumber] = useState("");
     const [bio, setBio] = useState("");
     const [error, setError] = useState("");
     const navigate = useNavigate();
     const [, setUser] = useAtom(userAtom);
 
-    // Redirect to login if no email in params (means they didn't come from Google OAuth)
     useEffect(() => {
         if (!searchParams.get("email")) {
-            console.log("Navigaaaaaaaaaaaaaaam")
-            // navigate('/login');
+            navigate('/login');
         }
     }, [searchParams, navigate]);
 
@@ -27,24 +28,19 @@ const Register = () => {
         setError("");
 
         try {
-            const response = await fetch("http://localhost:3000/api/auth/complete-registration", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                credentials: 'include',
-                body: JSON.stringify({ name, surname, email, bio }),
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message || "Registration failed");
-            }
-
-            // Set user in global state and redirect to home
+            const { data } = await axios.post(
+                `${API_URL}/auth/complete-registration`,
+                { name, surname, email, phoneNumber, bio },
+                axiosConfig
+            );
             setUser(data.user);
-            // navigate("/home");
+            navigate("/home");
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Registration failed");
+            if (axios.isAxiosError(err)) {
+                setError(err.response?.data?.message || "Registration failed");
+            } else {
+                setError("Registration failed");
+            }
         }
     };
 
@@ -84,6 +80,15 @@ const Register = () => {
                                     onChange={(e) => setEmail(e.target.value)}
                                     required
                                     disabled
+                                />
+                            </Box>
+                            <Box>
+                                <TextField.Root
+                                    placeholder="Phone Number"
+                                    type="tel"
+                                    value={phoneNumber}
+                                    onChange={(e) => setPhoneNumber(e.target.value)}
+                                    required
                                 />
                             </Box>
                             <Box>
