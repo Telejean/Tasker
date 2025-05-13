@@ -8,6 +8,11 @@ import { UserRoles } from '../types';
 // Fix import for sequelize - it uses default export
 import sequelize from '../utils/sequelize';
 import { createUserService } from '../services/user.service';
+import { Department } from '../models/Department.model';
+import { Team } from '../models/Team.model';
+import { UserPolicy } from '../models/UserPolicy.model';
+import { Policy } from '../models/Policy.model';
+import { PermissionLog } from '../models/PermissionLog.model';
 
 export const userController = {
 
@@ -134,7 +139,7 @@ export const userController = {
 
             try {
                 const userData = users.map(user => {
-                    const { name, surname, phoneNumber,  email, role  } = user;
+                    const { name, surname, phoneNumber, email, role } = user;
                     return { name, surname, phoneNumber, email, role };
                 });
 
@@ -170,5 +175,97 @@ export const userController = {
                 details: error instanceof Error ? error.message : 'Unknown error'
             });
         }
-    }
+    },
+
+    async getFullUser(req: Request, res: Response) {
+        try {
+            const userId = parseInt(req.params.id);
+
+            if (isNaN(userId)) {
+                return res.status(400).json({
+                    error: 'Invalid user ID',
+                    details: 'User ID must be a number'
+                });
+            }
+
+            const user = await User.findByPk(userId, {
+                include: [
+                    {
+                        model: Department
+                    },
+                    {
+                        model: AssignedPerson,
+                        include: [
+                            {
+                                model: Task,
+                                include: [
+                                    { model: Project }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        model: Team,
+                        through: {
+                            attributes: ['userRole', 'createdAt']
+                        },
+                        include: [
+                            {
+                                model: Project,
+                                attributes: ['id', 'name', 'icon', 'status']
+                            }
+                        ]
+                    },
+                    {
+                        model: Project,
+                        as: 'managedProjects',
+                        include: [
+                            {
+                                model: Team,
+                                attributes: ['id', 'name']
+                            }
+                        ]
+                    },
+                    {
+                        model: UserPolicy,
+                        include: [
+                            { model: Policy }
+                        ]
+                    },
+                    {
+                        model: PermissionLog,
+                        limit: 20,
+                        order: [['createdAt', 'DESC']]
+                    }
+                ]
+            });
+
+            if (!user) {
+                return res.status(404).json({ error: 'User not found' });
+            }
+
+            // Convert to plain object to modify before sending
+            const fullUserData = user.get({ plain: true });
+
+            // Calculate additional statistics
+            const assignedTasksCount = fullUserData.tasks?.length || 0;
+            const teamsCount = fullUserData.teams?.length || 0;
+            const managedProjectsCount = fullUserData.managedProjects?.length || 0;
+
+            // Add summary statistics to response
+            fullUserData.statistics = {
+                assignedTasksCount,
+                teamsCount,
+                managedProjectsCount
+            };
+
+            return res.status(200).json(fullUserData);
+        } catch (error) {
+            console.error('Error retrieving full user data:', error);
+            return res.status(500).json({
+                error: 'Failed to retrieve complete user data',
+                details: error instanceof Error ? error.message : 'Unknown error'
+            });
+        }
+    },
 };

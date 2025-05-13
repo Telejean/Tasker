@@ -18,9 +18,6 @@ router.get('/google/jwt/callback',
     authController.handleGoogleCallbackJWT
 );
 
-// Login with email/password (JWT)
-
-// Complete registration for new users
 router.post('/complete-registration', authController.completeRegistration as any);
 
 // Check auth status

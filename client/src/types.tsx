@@ -63,10 +63,10 @@ export interface User {
     surname: string;
     email: string;
     phoneNumber: string;
-    role?: string;
+    userRole:string;
     isAdmin?: boolean;
     iconName?: string;
     iconBgColor?: string;
-    tags?: any;
-    bio?: string;
+    tags: JSON;
+    bio: string;
 }

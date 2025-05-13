@@ -28,24 +28,12 @@ function App() {
       try {
         const { data } = await axios.get(`${API_URL}/auth/status`, axiosConfig);
 
-        // Only set the user if they're authenticated and have completed registration
         if (data.isAuthenticated && !data.user.isNewUser) {
           setUser(data.user);
         }
       } catch (error) {
         console.error('Error checking auth status:', error);
       }
-
-      // setUser({
-      //   id: 4,
-      //   name: "Vișan",
-      //   surname: "Rareș",
-      //   email: "raresvisanandrei@gmail.com",
-      //   phoneNumber: "ads",
-      //   tags: {},
-      //   bio: "asd",
-      //   isAdmin: true,
-      // })
     };
 
     checkAuth();

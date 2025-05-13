@@ -56,27 +56,38 @@ export const teamController = {
         }
     },
 
-    async getTeamsByProject(req: Request, res: Response) {
-        try {
-            const projectId = parseInt(req.params.projectId); const teams = await Team.findAll({
-                where: { projectId },
-                include: [
-                    {
-                        model: User,
-                        through: {
-                            attributes: ['userRole', 'assignedAt']
-                        },
-                        attributes: ['id', 'name', 'email']
-                    }
-                ]
-            });
+   async getTeamsByProject(req: Request, res: Response) {
+    try {
+        const projectId = parseInt(req.params.projectId);
+        const teams = await Team.findAll({
+            where: { projectId },
+            include: [
+                {
+                    model: User,
+                    through: {
+                        attributes: ['userRole', 'assignedAt']
+                    },
+                }
+            ]
+        });
 
-            return res.status(200).json(teams);
-        } catch (error) {
-            console.error('Error getting project teams:', error);
-            return res.status(500).json({ error: 'Failed to retrieve teams' });
-        }
-    },
+        const teamsWithFlatUsers = teams.map(team => {
+            const teamJson = team.toJSON();
+            teamJson.users = teamJson.users.map((user: any) => ({
+                ...user,
+                userRole: user.UserTeam?.userRole,
+                assignedAt: user.UserTeam?.assignedAt,
+            }));
+            teamJson.users.forEach((user: any) => delete user.UserTeam);
+            return teamJson;
+        });
+
+        return res.status(200).json(teamsWithFlatUsers);
+    } catch (error) {
+        console.error('Error getting project teams:', error);
+        return res.status(500).json({ error: 'Failed to retrieve teams' });
+    }
+},
 
     async createTeam(req: Request, res: Response) {
         try {

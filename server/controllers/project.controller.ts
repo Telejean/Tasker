@@ -74,9 +74,8 @@ export const projectController = {
         }
     }, async createProject(req: Request, res: Response) {
         try {
-            const { name, managerId, userIds = [], iconId = 1, icon, status = ProjectStatus.ACTIVE } = req.body;
-
-            // Create the project with the manager association
+            const { name, managerId, userIds, iconId = 1, icon, status = ProjectStatus.ACTIVE } = req.body;
+            
             const project = await Project.create({
                 name,
                 iconId,
@@ -85,29 +84,7 @@ export const projectController = {
                 managerId
             });
 
-            // Create a default team for the project
-            const defaultTeam = await Team.create({
-                name: "Default Team",
-                projectId: project.id
-            });
-
-            // Add manager to the default team with owner role
-            await UserTeam.create({
-                userId: managerId,
-                teamId: defaultTeam.id,
-                userRole: "OWNER"
-            });            // Add other users to the default team with member role if provided
-            if (userIds.length > 0) {
-                const userTeams = userIds.map((userId: number) => ({
-                    userId,
-                    teamId: defaultTeam.id,
-                    userRole: "MEMBER"
-                }));
-
-                await UserTeam.bulkCreate(userTeams);
-            }
-
-            // Fetch the complete project with associations
+        
             const createdProject = await Project.findByPk(project.id, {
                 include: [
                     {

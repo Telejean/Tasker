@@ -1,4 +1,4 @@
-import { LuSearch } from "react-icons/lu";
+import { LuSearch, LuPlus } from "react-icons/lu";
 import s from './Projects.module.css'
 import ProjectsTable from '@/Components/Tables/ProjectsTable'
 import ProjectSearchFilters from '@/Components/ProjectSearchFilters/ProjectSearchFilters'
@@ -6,7 +6,9 @@ import { atom, useAtom } from 'jotai';
 import { Project, ProjectFilters } from '@/types';
 import { useState, useEffect } from "react";
 import { projectService } from '@/services/project.service';
-import { Box, Text } from '@radix-ui/themes';
+import { Box, Text, Button } from '@radix-ui/themes';
+import { userAtom } from '../../App';
+import ProjectModal from '../../Components/ProjectCard/ProjectModal';
 
 const accentColor = "#ef4872"
 
@@ -47,18 +49,21 @@ const Projects = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [, setProjects] = useAtom(projectsAtom);
+    const [user] = useAtom(userAtom);
+    const [projectModalOpen, setProjectModalOpen] = useState(false);
 
-    useEffect(() => {
+    const isAdmin = user?.isAdmin || false; useEffect(() => {
         const fetchProjects = async () => {
             try {
                 setLoading(true);
                 const projectsData = await projectService.getMyProjects();
 
-                // Transform the project data to match the expected format if needed
                 const formattedProjects = projectsData.map((project: any) => ({
                     id: project.id,
                     name: project.name,
-                    members: project.members?.map((member: any) => member.name) || [],
+                    members: project.teams?.flatMap((team: any) =>
+                        team.users?.map((user: any) => user.name) || []
+                    ) || [],
                     manager: project.manager?.name || "Unknown",
                     completion: project.completion || 0,
                     iconId: project.iconId || 1,
@@ -97,11 +102,21 @@ const Projects = () => {
                 <Text color="red">{error}</Text>
             </Box>
         );
-    }
-
+    } 
     return (
         <div className={s.projectsContainer}>
-            <h1 className={s.projectsTitle}>Projects</h1>
+            <div className={s.projectsHeader}>
+                <h1 className={s.projectsTitle}>Projects</h1>
+                {isAdmin && (
+                    <Button
+                        color="indigo"
+                        onClick={() => setProjectModalOpen(true)}
+                    >
+                        <LuPlus />
+                        Create Project
+                    </Button>
+                )}
+            </div>
 
             <div className={s.projectsContent}>
                 <div className={s.projectsSearchBar}>
@@ -118,6 +133,35 @@ const Projects = () => {
                 <ProjectSearchFilters />
                 <ProjectsTable data={displayedProjects} />
             </div>
+
+            <ProjectModal
+                open={projectModalOpen}
+                onOpenChange={setProjectModalOpen}
+                onProjectSaved={() => {
+                    // Refresh the projects list after creating/updating a project
+                    const fetchProjects = async () => {
+                        try {
+                            const projectsData = await projectService.getMyProjects();
+                            const formattedProjects = projectsData.map((project: any) => ({
+                                id: project.id,
+                                name: project.name,
+                                members: project.teams?.flatMap((team: any) =>
+                                    team.users?.map((user: any) => user.name) || []
+                                ) || [],
+                                manager: project.manager?.name || "Unknown",
+                                completion: project.completion || 0,
+                                iconId: project.iconId || 1,
+                                icon: "LuFile", // Default icon
+                                status: project.status?.toLowerCase() || "active"
+                            }));
+                            setProjects(formattedProjects);
+                        } catch (err) {
+                            console.error("Error fetching projects:", err);
+                        }
+                    };
+                    fetchProjects();
+                }}
+            />
         </div>
     );
 };

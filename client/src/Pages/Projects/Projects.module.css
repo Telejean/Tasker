@@ -5,18 +5,26 @@
     flex-grow: 1;
 }
 
-.projectsTitle{
+.projectsHeader {
+    width: 90%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     padding: 3rem 0 1rem 0;
 }
 
-.projectsContent{
+.projectsTitle {
+    margin: 0;
+}
+
+.projectsContent {
     width: 90%;
     display: flex;
     flex-direction: column;
     align-items: center;
 }
 
-.projectsSearchBar{
+.projectsSearchBar {
     display: flex;
     align-items: center;
     width: 100%;
@@ -27,7 +35,7 @@
     padding: 0rem 1rem 0rem 1rem;
 }
 
-.projectsSearchBarInput{
+.projectsSearchBarInput {
     font-family: inherit;
     width: 100%;
     height: 100%;
@@ -37,4 +45,3 @@
     border-radius: 16px;
     font-size: 16px;
 }
-

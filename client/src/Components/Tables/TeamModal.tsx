@@ -28,7 +28,6 @@ export const TeamModal = ({
     const isEditMode = !!teamId;
 
     useEffect(() => {
-        // If editing existing team, load team data
         if (teamId && open) {
             const loadTeam = async () => {
                 try {
@@ -49,7 +48,6 @@ export const TeamModal = ({
 
             loadTeam();
         } else {
-            // Reset form for new team
             setName('');
             setSelectedUserIds([]);
             setError('');
@@ -112,7 +110,7 @@ export const TeamModal = ({
                         <Text as="div" size="2" mb="1" weight="bold">
                             Team Name
                         </Text>
-                        <TextField.Input
+                        <TextField.Root
                             placeholder="Enter team name"
                             value={name}
                             onChange={(e) => setName(e.target.value)}

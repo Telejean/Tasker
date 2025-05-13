@@ -25,11 +25,8 @@ interface TeamListProps {
 interface Team {
     id: number;
     name: string;
-    userTeams: {
-        userId: number;
-        userRole: string;
-        user: User;
-    }[];
+    projectId: number; 
+    users: User[];
 }
 
 const TeamList = ({ projectId, availableUsers, projectManager }: TeamListProps) => {
@@ -91,11 +88,14 @@ const TeamList = ({ projectId, availableUsers, projectManager }: TeamListProps) 
 
     // Format team members for the table
     const getTeamMembers = (team: Team) => {
-        return team.userTeams.map(ut => ({
-            id: ut.user.id,
-            name: ut.user.name,
-            email: ut.user.email || '',
-            role: ut.userRole
+        return team.users.map(user => ({
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.userRole,
+            tags: user.tags,
+            bio: user.bio,
+            isAdmin: user.isAdmin,
         }));
     };
 
@@ -126,7 +126,16 @@ const TeamList = ({ projectId, availableUsers, projectManager }: TeamListProps) 
                         ))}
                     </Tabs.List>
 
-                    {teams.map(team => (
+                    {teams.map(team => {
+                        const teamMembers = getTeamMembers(team);
+                        const projectManagerMember = projectManager ? {
+                            id: projectManager.id,
+                            name: projectManager.name,
+                            email: projectManager.email || '',
+                            role: 'PROJECT MANAGER'
+                        } : undefined;
+
+                        return (
                         <Tabs.Content key={team.id} value={team.id.toString()}>
                             <Box p="4">
                                 <Flex justify="between" align="center" mb="4">
@@ -149,17 +158,12 @@ const TeamList = ({ projectId, availableUsers, projectManager }: TeamListProps) 
                                 </Flex>
 
                                 <TeamMembersTable
-                                    teamMembers={getTeamMembers(team)}
-                                    projectManager={projectManager ? {
-                                        id: projectManager.id,
-                                        name: projectManager.name,
-                                        email: projectManager.email || '',
-                                        role: 'PROJECT MANAGER'
-                                    } : undefined}
+                                    teamMembers={teamMembers}
+                                    projectManager={projectManagerMember}
                                 />
                             </Box>
                         </Tabs.Content>
-                    ))}
+                    )})}
                 </Tabs.Root>
             )}
 

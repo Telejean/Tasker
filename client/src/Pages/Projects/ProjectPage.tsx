@@ -10,6 +10,11 @@ import { taskService } from "@/services/task.service";
 import Permission from "@/Components/Permission/Permission";
 import PolicyAssignment from "@/Components/Permission/PolicyAssignment";
 import { parseDate } from "@internationalized/date";
+import { userAtom } from "../../App";
+import { useAtom } from "jotai";
+import { LuPencil } from "react-icons/lu";
+import ProjectModal from "../../Components/ProjectCard/ProjectModal";
+import { userService } from "@/services/user.service";
 
 const ProjectPage = () => {
     const { id } = useParams();
@@ -17,7 +22,38 @@ const ProjectPage = () => {
     const [tasks, setTasks] = useState<Task[]>([]);
     const [allUsers, setAllUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
+    const [error, setError] = useState(""); const [user] = useAtom(userAtom);
+    const [projectModalOpen, setProjectModalOpen] = useState(false);
+
+    const isAdmin = user?.isAdmin || false;
+
+    const refreshProjectData = async () => {
+        if (!id) return;
+
+        try {
+            setLoading(true);
+            const projectData = await projectService.getProjectById(parseInt(id));
+
+            const formattedProject = {
+                id: projectData.id,
+                name: projectData.name,
+                teams: projectData.teams || [],
+                manager: projectData.manager || { id: 0, name: "Unknown" },
+                managerId: projectData.managerId,
+                completion: projectData.completion || 0,
+                iconId: projectData.iconId || 1,
+                icon: projectData.icon || "LuFile",
+                status: projectData.status?.toLowerCase() || "active",
+                description: projectData.description || ""
+            };
+
+            setProject(formattedProject);
+        } catch (err) {
+            console.error("Error refreshing project data:", err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
         const fetchProjectData = async () => {
@@ -48,15 +84,11 @@ const ProjectPage = () => {
 
                 setProject(formattedProject);
 
-                // Fetch all users for team management
-                const usersResponse = await fetch('/api/users');
-                const usersData = await usersResponse.json();
+                const usersData = await userService.getAllUsers();
                 setAllUsers(usersData);
 
-                // Fetch project tasks
                 const tasksData = await taskService.getTasksByProject(parseInt(id));
 
-                // Transform the task data to match the expected format
                 const formattedTasks = tasksData.map((task: any) => ({
                     id: task.id,
                     projectName: task.project?.name || "No Project",
@@ -93,11 +125,32 @@ const ProjectPage = () => {
                 </Card>
             </Box>
         );
-    }
-
+    } 
+    
     return (
-        <Box width="100%" p="4">
-            <Heading as="h1" align="center" mb="4">{project.name}</Heading>
+        <Box width="100%" p="4">               
+         <Flex justify="between" align="baseline" mb="4">
+            <Heading as="h1">{project.name}</Heading>
+            {isAdmin && (
+                <Button
+                    variant="soft"
+                    color="indigo"
+                    onClick={() => setProjectModalOpen(true)}
+                >
+                    <LuPencil />
+                    Edit Project
+                </Button>
+            )}
+        </Flex>
+
+            {projectModalOpen && (
+                <ProjectModal
+                    open={projectModalOpen}
+                    onOpenChange={setProjectModalOpen}
+                    projectId={project.id}
+                    onProjectSaved={refreshProjectData}
+                />
+            )}
 
             <Tabs.Root defaultValue="overview">
                 <Flex direction="column" gap="2">
@@ -115,7 +168,6 @@ const ProjectPage = () => {
                             <Heading as="h2">Files</Heading>
                         </Tabs.Trigger>
 
-                        {/* Settings tab only visible to project managers and admins */}
                         <Permission action="manage" resourceType="project" resourceId={project.id}>
                             <Tabs.Trigger value="settings">
                                 <Heading as="h2">Settings</Heading>
@@ -129,13 +181,16 @@ const ProjectPage = () => {
                                 <Flex justify="between" align="center" mb="2">
                                     <Heading as="h3">Tasks</Heading>
 
-                                    {/* Add task button - only for those with create task permission */}
                                     <Permission action="create" resourceType="task" resourceId={project.id}>
                                         <Button size="2">Add Task</Button>
                                     </Permission>
                                 </Flex>
+
                                 <TasksTable data={tasks} />
-                            </Box>                            <Box>
+
+                            </Box>
+
+                            <Box>
                                 <Flex justify="between" align="center" mb="2">
                                     <Heading as="h3">Team Members</Heading>
                                 </Flex>
@@ -207,7 +262,36 @@ const ProjectPage = () => {
                         </Flex>
                     </Tabs.Content>
                 </Flex>
-            </Tabs.Root>
+            </Tabs.Root>  
+
+            <ProjectModal
+                open={projectModalOpen}
+                onOpenChange={setProjectModalOpen}
+                projectId={project.id}
+                onProjectSaved={async () => {
+                    try {
+                        setLoading(true);
+                        const updatedProject = await projectService.getProjectById(project.id);
+
+                        setProject({
+                            id: updatedProject.id,
+                            name: updatedProject.name,
+                            teams: updatedProject.teams || [],
+                            manager: updatedProject.manager || { id: 0, name: "Unknown" },
+                            managerId: updatedProject.managerId,
+                            completion: updatedProject.completion || 0,
+                            iconId: updatedProject.iconId || 1,
+                            icon: updatedProject.icon || "LuFile",
+                            status: updatedProject.status?.toLowerCase() || "active",
+                            description: updatedProject.description || ""
+                        });
+                    } catch (err) {
+                        console.error("Error refreshing project data:", err);
+                    } finally {
+                        setLoading(false);
+                    }
+                }}
+            />
         </Box>
     );
 };
