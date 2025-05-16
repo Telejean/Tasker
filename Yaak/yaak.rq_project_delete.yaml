@@ -1,0 +1,26 @@
+type: http_request
+model: http_request
+id: rq_project_delete
+createdAt: 2025-05-03T11:48:48.654078800
+updatedAt: 2025-05-03T12:55:37.731469100
+workspaceId: wk_mxbmXX2jVR
+folderId: fl_MyLrVw79WD
+authentication: {}
+authenticationType: null
+body: {}
+bodyType: null
+description: Delete a project by ID
+headers:
+- enabled: true
+  name: Accept
+  value: application/json
+  id: null
+method: DELETE
+name: Delete project
+sortPriority: 9000.0
+url: ${[baseUrl]}/projects/:id
+urlParameters:
+- enabled: true
+  name: :id
+  value: <integer>
+  id: null

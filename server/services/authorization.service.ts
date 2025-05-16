@@ -100,6 +100,101 @@ class AuthorizationService {
   }
 
   /**
+   * ABAC: Check if a user is authorized for an action on a resource
+   * @param authRequest { subject: {userId}, action: {type}, resource: {type, id}, environment: {...} }
+   * @returns { allowed: boolean, reason: string }
+   */
+  async isAuthorized(authRequest: any): Promise<{ allowed: boolean; reason: string }> {
+    const { subject, action, resource, environment } = authRequest;
+    const userId = subject.userId;
+    const actionType = action.type;
+    const resourceType = resource.type;
+    const resourceId = resource.id;
+
+    // 1. Get all active policies assigned to the user (UserPolicy)
+    const userPolicies = await UserPolicy.findAll({
+      where: {
+        userId,
+        [Op.or]: [
+          { expiresAt: null },
+          { expiresAt: { [Op.gt]: new Date() } }
+        ]
+      },
+      include: [{ model: Policy, where: { isActive: true }, include: [{ model: require('../models/Rule.model').Rule, as: 'policyRules' }] }]
+    });
+
+    // 2. Get all active policies assigned to the resource (e.g., TaskPolicy, ProjectPolicy, etc.)
+    let resourcePolicies: any[] = [];
+    if (resourceType === 'task') {
+      resourcePolicies = await TaskPolicy.findAll({
+        where: { taskId: resourceId },
+        include: [{ model: Policy, where: { isActive: true }, include: [{ model: require('../models/Rule.model').Rule, as: 'policyRules' }] }]
+      });
+    }
+    // Add more resource types as needed
+
+    // 3. Collect all rules from user and resource policies
+    const allRules: any[] = [];
+    for (const up of userPolicies) {
+      if (up.policy && up.policy.policyRules) {
+        allRules.push(...up.policy.policyRules);
+      }
+    }
+    for (const rp of resourcePolicies) {
+      if (rp.policy && rp.policy.policyRules) {
+        allRules.push(...rp.policy.policyRules);
+      }
+    }
+
+    // 4. Sort rules by priority (higher first)
+    allRules.sort((a, b) => (b.priority || 0) - (a.priority || 0));
+
+    // 5. Evaluate rules (ABAC)
+    for (const rule of allRules) {
+      // Check action
+      if (rule.actionAttributes && rule.actionAttributes['type'] && rule.actionAttributes['type'] !== actionType) {
+        continue;
+      }
+      // Check resource
+      if (rule.resourceAttributes && rule.resourceAttributes['type'] && rule.resourceAttributes['type'] !== resourceType) {
+        continue;
+      }
+      // Check subject attributes (user attributes)
+      if (rule.subjectAttributes) {
+        // Example: { department: 'IT' }
+        const user = await User.findByPk(userId);
+        if (!user) continue;
+        let subjectMatch = true;
+        for (const [key, value] of Object.entries(rule.subjectAttributes)) {
+          if ((user as any)[key] !== value) {
+            subjectMatch = false;
+            break;
+          }
+        }
+        if (!subjectMatch) continue;
+      }
+      // Check environment attributes (e.g., time)
+      if (rule.environmentAttributes) {
+        // Example: { time: { $gte: '09:00', $lte: '17:00' } }
+        // Implement as needed
+      }
+      // Check condition (optional, as stringified JSON logic)
+      if (rule.condition) {
+        // For now, skip or implement as needed
+      }
+      // If rule matches, return effect
+      if (rule.effect === 'DENY') {
+        return { allowed: false, reason: rule.description || 'Denied by policy rule' };
+      }
+      if (rule.effect === 'ALLOW') {
+        return { allowed: true, reason: rule.description || 'Allowed by policy rule' };
+      }
+    }
+    // Default deny
+    return { allowed: false, reason: 'No matching ABAC rule found' };
+  }
+
+  /**
    * Check role-based permissions (simple role checks)
    */
   private async checkRolePermission(user: User, project: number, action: string, resourceType: string): Promise<boolean> {
@@ -421,8 +516,7 @@ class AuthorizationService {
     allowed: boolean,
     reason: string
   ): Promise<void> {
-    if(!userId || !action || !resourceType || !resourceId || !allowed || !reason )
-    {
+    if (!userId || !action || !resourceType || !resourceId || !allowed || !reason) {
       console.log("couldn't log permission")
       return
     }

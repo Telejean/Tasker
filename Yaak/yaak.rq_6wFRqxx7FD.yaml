@@ -1,0 +1,36 @@
+type: http_request
+model: http_request
+id: rq_6wFRqxx7FD
+createdAt: 2025-05-03T11:48:48.644406200
+updatedAt: 2025-05-03T12:54:19.277764
+workspaceId: wk_mxbmXX2jVR
+folderId: fl_wRAbKd2BeH
+authentication: {}
+authenticationType: null
+body:
+  text: |-
+    {
+      "name": "<string>",
+      "email": "<string>",
+      "role": "<string>"
+    }
+bodyType: application/json
+description: ''
+headers:
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: null
+- enabled: true
+  name: Accept
+  value: application/json
+  id: null
+method: PUT
+name: Update user
+sortPriority: 1000.0
+url: ${[baseUrl]}/users/:id
+urlParameters:
+- enabled: true
+  name: :id
+  value: <integer>
+  id: null

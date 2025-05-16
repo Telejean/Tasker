@@ -1,6 +1,21 @@
 import type { Request, Response } from 'express';
-import { Team, User, UserTeam, Project } from '../models';
+import { Team, User, UserTeam, Project, Department } from '../models';
 import { Op } from 'sequelize';
+
+/**
+*    removes the nested UserRole and adds it at the same level as the rest of the properties
+**/
+const teamFlattenUtil = (team: Team) => {
+    const teamJson = team.toJSON();
+    teamJson.users = teamJson.users.map((user: any) => ({
+        ...user,
+        userRole: user.UserTeam?.userRole,
+        assignedAt: user.UserTeam?.assignedAt,
+    }));
+    teamJson.users.forEach((user: any) => delete user.UserTeam);
+
+    return teamJson;
+}
 
 export const teamController = {
     async getAllTeams(req: Request, res: Response) {
@@ -16,11 +31,19 @@ export const teamController = {
                         through: {
                             attributes: ['userRole', 'assignedAt']
                         },
-                        attributes: ['id', 'name', 'email']
+                        attributes: ['id', 'name', 'email'],
+                        include: [
+                            {
+                                model: Department,
+                                attributes: ['id', 'departmentName']
+                            }
+                        ]
                     }
                 ]
             });
-            return res.status(200).json(teams);
+            // Flatten UserTeam and include department
+            const teamsWithFlatUsers = teams.map(team => teamFlattenUtil(team));
+            return res.status(200).json(teamsWithFlatUsers);
         } catch (error) {
             console.error('Error getting teams:', error);
             return res.status(500).json({ error: 'Failed to retrieve teams' });
@@ -29,7 +52,8 @@ export const teamController = {
 
     async getTeamById(req: Request, res: Response) {
         try {
-            const teamId = parseInt(req.params.id); const team = await Team.findByPk(teamId, {
+            const teamId = parseInt(req.params.id);
+            const team = await Team.findByPk(teamId, {
                 include: [
                     {
                         model: Project,
@@ -40,7 +64,13 @@ export const teamController = {
                         through: {
                             attributes: ['userRole', 'assignedAt']
                         },
-                        attributes: ['id', 'name', 'email']
+                        attributes: ['id', 'name', 'email'],
+                        include: [
+                            {
+                                model: Department,
+                                attributes: ['id', 'departmentName']
+                            }
+                        ]
                     }
                 ]
             });
@@ -49,68 +79,63 @@ export const teamController = {
                 return res.status(404).json({ error: 'Team not found' });
             }
 
-            return res.status(200).json(team);
+            const teamWithFlatUsers = teamFlattenUtil(team);
+            return res.status(200).json(teamWithFlatUsers);
         } catch (error) {
             console.error('Error getting team:', error);
             return res.status(500).json({ error: 'Failed to retrieve team' });
         }
     },
 
-   async getTeamsByProject(req: Request, res: Response) {
-    try {
-        const projectId = parseInt(req.params.projectId);
-        const teams = await Team.findAll({
-            where: { projectId },
-            include: [
-                {
-                    model: User,
-                    through: {
-                        attributes: ['userRole', 'assignedAt']
-                    },
-                }
-            ]
-        });
+    async getTeamsByProject(req: Request, res: Response) {
+        try {
+            const projectId = parseInt(req.params.projectId);
+            const teams = await Team.findAll({
+                where: { projectId },
+                include: [
+                    {
+                        model: User,
+                        through: {
+                            attributes: ['userRole', 'assignedAt']
+                        },
+                        attributes: ['id', 'name', 'email'],
+                        include: [
+                            {
+                                model: Department,
+                                attributes: ['id', 'departmentName']
+                            }
+                        ]
+                    }
+                ]
+            });
 
-        const teamsWithFlatUsers = teams.map(team => {
-            const teamJson = team.toJSON();
-            teamJson.users = teamJson.users.map((user: any) => ({
-                ...user,
-                userRole: user.UserTeam?.userRole,
-                assignedAt: user.UserTeam?.assignedAt,
-            }));
-            teamJson.users.forEach((user: any) => delete user.UserTeam);
-            return teamJson;
-        });
-
-        return res.status(200).json(teamsWithFlatUsers);
-    } catch (error) {
-        console.error('Error getting project teams:', error);
-        return res.status(500).json({ error: 'Failed to retrieve teams' });
-    }
-},
+            const teamsWithFlatUsers = teams.map(team => teamFlattenUtil(team));
+            return res.status(200).json(teamsWithFlatUsers);
+        } catch (error) {
+            console.error('Error getting project teams:', error);
+            return res.status(500).json({ error: 'Failed to retrieve teams' });
+        }
+    },
 
     async createTeam(req: Request, res: Response) {
         try {
-            const { name, projectId, userIds = [] } = req.body;
+            const { name, projectId, userIds = [], userRoles = {} } = req.body;
 
-            // Create the team
             const team = await Team.create({
                 name,
                 projectId
             });
 
-            // Add users to the team with member role if provided
             if (userIds.length > 0) {
                 const userTeams = userIds.map((userId: number) => ({
                     userId,
                     teamId: team.id,
-                    userRole: "MEMBER"
+                    userRole: userRoles[userId] || "MEMBER"
                 }));
 
                 await UserTeam.bulkCreate(userTeams);
             }
 
-            // Fetch the complete team with associations            
             const createdTeam = await Team.findByPk(team.id, {
                 include: [
                     {
@@ -122,12 +147,20 @@ export const teamController = {
                         through: {
                             attributes: ['userRole', 'assignedAt']
                         },
-                        attributes: ['id', 'name', 'email']
+                        attributes: ['id', 'name', 'email'],
+                        include: [
+                            {
+                                model: Department,
+                                attributes: ['id', 'departmentName']
+                            }
+                        ]
                     }
                 ]
             });
-
-            return res.status(201).json(createdTeam);
+            if (createdTeam) {
+                const teamWithFlatUsers = teamFlattenUtil(createdTeam);
+                return res.status(201).json(teamWithFlatUsers);
+            } else res.status(501).json({ error: "Failed to retrieve created team" })
         } catch (error) {
             console.error('Error creating team:', error);
             return res.status(500).json({ error: 'Failed to create team' });
@@ -137,61 +170,62 @@ export const teamController = {
     async updateTeam(req: Request, res: Response) {
         try {
             const teamId = parseInt(req.params.id);
-            const { name, userIds } = req.body;
+            const { name, userIds, userRoles = {} } = req.body;
 
-            // Find the team by ID
             const team = await Team.findByPk(teamId);
 
             if (!team) {
                 return res.status(404).json({ error: 'Team not found' });
             }
 
-            // Update team fields
             if (name !== undefined) team.name = name;
 
-            // Save the changes
             await team.save();
-
-            // Update team members if provided
             if (userIds && userIds.length >= 0) {
-                // Get current team members excluding owners
                 const currentUserTeams = await UserTeam.findAll({
                     where: {
                         teamId,
                         userRole: { [Op.ne]: 'OWNER' }
-                    }
+                    },
+                    raw: true
                 });
 
                 const currentUserIds = currentUserTeams.map(ut => ut.userId);
 
-                // Determine users to remove and users to add
                 const usersToRemove = currentUserIds.filter(id => !userIds.includes(id));
                 const usersToAdd = userIds.filter((id: number) => !currentUserIds.includes(id));
 
-                // Remove users no longer in the team
                 if (usersToRemove.length > 0) {
                     await UserTeam.destroy({
                         where: {
                             teamId,
                             userId: usersToRemove,
-                            userRole: { [Op.ne]: 'OWNER' } // Don't remove owners
+                            userRole: { [Op.ne]: 'OWNER' }
                         }
                     });
                 }
 
-                // Add new users to the team
                 if (usersToAdd.length > 0) {
                     const newUserTeams = usersToAdd.map((userId: number) => ({
                         userId,
                         teamId,
-                        userRole: 'MEMBER'
+                        userRole: userRoles[userId] || 'MEMBER'
                     }));
 
                     await UserTeam.bulkCreate(newUserTeams);
                 }
+
+                const usersToUpdate = userIds.filter((id: number) => currentUserIds.includes(id));
+                for (const userId of usersToUpdate) {
+                    if (userRoles[userId]) {
+                        await UserTeam.update(
+                            { userRole: userRoles[userId] },
+                            { where: { teamId, userId } }
+                        );
+                    }
+                }
             }
 
-            // Fetch the updated team with associations
             const updatedTeam = await Team.findByPk(teamId, {
                 include: [
                     {
@@ -199,18 +233,28 @@ export const teamController = {
                         attributes: ['id', 'name']
                     },
                     {
-                        model: UserTeam,
+                        model: User,
+                        through: {
+                            attributes: ['userRole', 'assignedAt']
+                        },
+                        attributes: ['id', 'name', 'email'],
                         include: [
                             {
-                                model: User,
-                                attributes: ['id', 'name', 'email']
+                                model: Department,
+                                attributes: ['id', 'departmentName']
                             }
                         ]
                     }
                 ]
             });
 
-            return res.status(200).json(updatedTeam);
+            if (updatedTeam != null) {
+                const teamWithFlatUsers = teamFlattenUtil(updatedTeam);
+                return res.status(200).json(teamWithFlatUsers);
+            } else {
+                return res.status(404).json({error: "Failed to retrive updated team"})
+            }
+
         } catch (error) {
             console.error('Error updating team:', error);
             return res.status(500).json({ error: 'Failed to update team' });

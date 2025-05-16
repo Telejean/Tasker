@@ -1,0 +1,22 @@
+type: http_request
+model: http_request
+id: rq_u6k4mLMCVy
+createdAt: 2025-05-15T10:46:18.056857700
+updatedAt: 2025-05-15T11:46:30.427066500
+workspaceId: wk_mxbmXX2jVR
+folderId: fl_wRAbKd2BeH
+authentication: {}
+authenticationType: null
+body: {}
+bodyType: null
+description: ''
+headers: []
+method: GET
+name: Get users by project
+sortPriority: -0.0002
+url: ${[ baseUrl ]}/users/project/:id
+urlParameters:
+- enabled: true
+  name: :id
+  value: '1'
+  id: z0NfBYYqzm

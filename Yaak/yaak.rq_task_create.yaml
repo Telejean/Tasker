@@ -1,0 +1,34 @@
+type: http_request
+model: http_request
+id: rq_task_create
+createdAt: 2025-05-03T11:48:48.625539400
+updatedAt: 2025-05-03T13:59:08.439964100
+workspaceId: wk_mxbmXX2jVR
+folderId: fl_LVaGwZvZzS
+authentication: {}
+authenticationType: null
+body:
+  text: |-
+    {
+      "name": "Prepare for Launch2",
+      "description": "Final preparations before the application launch.",
+      "deadline": "2025-06-07T18:30:00Z",
+      "priority": "High",
+      "projectId": 1
+    }
+bodyType: application/json
+description: Create a new task with assigned people
+headers:
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: null
+- enabled: true
+  name: Accept
+  value: application/json
+  id: null
+method: POST
+name: Create task
+sortPriority: 13000.0
+url: ${[baseUrl]}/tasks
+urlParameters: []

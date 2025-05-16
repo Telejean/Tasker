@@ -1,13 +1,24 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Dialog, Flex, Button, TextField, Text, Select, Box } from '@radix-ui/themes';
 import { teamService } from '../../services/team.service';
-import { User } from '../../types';
+import { User, Team, Department } from '../../types';
+
+const ROLE_OPTIONS = [
+    { value: 'MEMBER', label: 'Member' },
+    { value: 'LEADER', label: 'Leader' },
+    { value: 'OWNER', label: 'Owner' },
+];
+
+interface SelectedUser {
+    userId: number;
+    role: string;
+}
 
 interface TeamModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     projectId: number;
-    teamId?: number;
+    team?: Team;
     onTeamSaved: () => void;
     availableUsers: User[];
 }
@@ -16,67 +27,117 @@ export const TeamModal = ({
     open,
     onOpenChange,
     projectId,
-    teamId,
+    team,
     onTeamSaved,
-    availableUsers
+    availableUsers,
 }: TeamModalProps) => {
     const [name, setName] = useState('');
-    const [selectedUserIds, setSelectedUserIds] = useState<number[]>([]);
+    const [selectedUsers, setSelectedUsers] = useState<SelectedUser[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
+    const [search, setSearch] = useState('');
+    const [department, setDepartment] = useState('');
 
-    const isEditMode = !!teamId;
+    const isEditMode = !!team;
+
+    const currentTeamUserIds = useMemo(
+        () => isEditMode && team?.users ? team.users.map(u => u.id) : [],
+        [isEditMode, team]
+    );
+
+    const departments: Department[] = useMemo(() => {
+        const deptMap = new Map<number, Department>();
+        availableUsers.forEach(u => {
+            if (u.department && u.department.id && u.department.departmentName) {
+                deptMap.set(u.department.id, u.department);
+            }
+        });
+        console.log('Departments:', deptMap);
+        return Array.from(deptMap.values());
+    }, [availableUsers]);
 
     useEffect(() => {
-        if (teamId && open) {
-            const loadTeam = async () => {
-                try {
-                    setIsLoading(true);
-                    const team = await teamService.getTeamById(teamId);
-                    setName(team.name);
+        if (open) {
+            if (isEditMode) {
+                setDepartment('current_team');
+            } else {
+                setDepartment(null);
+            }
+        }
+    }, [open, isEditMode]);
 
-                    // Extract user IDs from the userTeams array
-                    const userIds = team.userTeams?.map(ut => ut.userId) || [];
-                    setSelectedUserIds(userIds);
-                } catch (err) {
-                    setError('Failed to load team data');
-                    console.error(err);
-                } finally {
-                    setIsLoading(false);
-                }
-            };
-
-            loadTeam();
-        } else {
+    useEffect(() => {
+        if (team && open) {
+            setName(team.name);
+            setSelectedUsers(
+                team.users
+                    ? team.users.map((u: any) => ({ userId: u.id, role: u.userRole || 'MEMBER' }))
+                    : []
+            );
+            setError('');
+        } else if (open) {
             setName('');
-            setSelectedUserIds([]);
+            setSelectedUsers([]);
             setError('');
         }
-    }, [teamId, open]);
+    }, [team, open]);
+
+    const filteredUsers = useMemo(() => {
+        return availableUsers.filter(user => {
+            const matchesSearch =
+                user.name.toLowerCase().includes(search.toLowerCase()) ||
+                user.email.toLowerCase().includes(search.toLowerCase());
+            let matchesDept = true;
+            if (department === 'current_team') {
+                matchesDept = currentTeamUserIds.includes(user.id);
+            } else if (department) {
+                matchesDept = user.department?.departmentName === department;
+            }
+            return matchesSearch && matchesDept;
+        });
+    }, [availableUsers, search, department, currentTeamUserIds]);
+
+    const handleUserToggle = (userId: number) => {
+        setSelectedUsers(prev => {
+            const exists = prev.find(u => u.userId === userId);
+            if (exists) {
+                return prev.filter(u => u.userId !== userId);
+            } else {
+                return [...prev, { userId, role: 'MEMBER' }];
+            }
+        });
+    };
+
+    const handleRoleChange = (userId: number, role: string) => {
+        setSelectedUsers(prev =>
+            prev.map(u => (u.userId === userId ? { ...u, role } : u))
+        );
+    };
 
     const handleSave = async () => {
         if (!name.trim()) {
             setError('Team name is required');
             return;
         }
-
         try {
             setIsLoading(true);
             setError('');
-
+            const userIds = selectedUsers.map(u => u.userId);
+            const userRoles: Record<number, string> = Object.fromEntries(selectedUsers.map(u => [u.userId, u.role]));
             if (isEditMode) {
-                await teamService.updateTeam(teamId, {
+                await teamService.updateTeam(team?.id, {
                     name,
-                    userIds: selectedUserIds
+                    userIds,
+                    userRoles
                 });
             } else {
                 await teamService.createTeam({
                     name,
                     projectId,
-                    userIds: selectedUserIds
+                    userIds,
+                    userRoles
                 });
             }
-
             onTeamSaved();
             onOpenChange(false);
         } catch (err) {
@@ -87,17 +148,9 @@ export const TeamModal = ({
         }
     };
 
-    const handleUserToggle = (userId: number) => {
-        setSelectedUserIds(prev =>
-            prev.includes(userId)
-                ? prev.filter(id => id !== userId)
-                : [...prev, userId]
-        );
-    };
-
     return (
         <Dialog.Root open={open} onOpenChange={onOpenChange}>
-            <Dialog.Content style={{ maxWidth: 450 }}>
+            <Dialog.Content style={{ maxWidth: 600 }}>
                 <Dialog.Title>{isEditMode ? 'Edit Team' : 'Create Team'}</Dialog.Title>
                 <Dialog.Description size="2" mb="4">
                     {isEditMode
@@ -117,24 +170,70 @@ export const TeamModal = ({
                         />
                     </label>
 
+                    {/* Search and Department Filter */}
+                    <Flex gap="2" align="center">
+                        <TextField.Root
+                            placeholder="Search users..."
+                            value={search}
+                            onChange={e => setSearch(e.target.value)}
+                            style={{ flex: 2 }}
+                        />
+                        <Select.Root value={department} onValueChange={setDepartment}>
+                            <Select.Trigger placeholder="Department" style={{ minWidth: 120 }} />
+                            <Select.Content>
+                                {isEditMode && (
+                                    <Select.Item value="current_team">Current Team Members</Select.Item>
+                                )}
+                                <Select.Item value={null}>All</Select.Item>
+                                {departments.map(dept => (
+                                    <Select.Item key={dept.id} value={dept.departmentName}>
+                                        {dept.departmentName}
+                                    </Select.Item>
+                                ))}
+                            </Select.Content>
+                        </Select.Root>
+                    </Flex>
+
                     <Box>
                         <Text as="div" size="2" mb="1" weight="bold">
                             Team Members
                         </Text>
                         <Flex direction="column" gap="1">
-                            {availableUsers.map(user => (
-                                <Flex key={user.id} align="center" gap="2">
-                                    <input
-                                        type="checkbox"
-                                        id={`user-${user.id}`}
-                                        checked={selectedUserIds.includes(user.id)}
-                                        onChange={() => handleUserToggle(user.id)}
-                                    />
-                                    <label htmlFor={`user-${user.id}`}>
-                                        {user.name} ({user.email})
-                                    </label>
-                                </Flex>
-                            ))}
+                            {filteredUsers.map(user => {
+                                const selected = selectedUsers.find(u => u.userId === user.id);
+                                return (
+                                    <Flex key={user.id} align="center" gap="2" justify={'between'}>
+                                        <Flex>
+                                            <input
+                                                type="checkbox"
+                                                id={`user-${user.id}`}
+                                                checked={!!selected}
+                                                onChange={() => handleUserToggle(user.id)}
+                                            />
+                                            <label htmlFor={`user-${user.id}`}>
+                                                <Box>
+                                                    <Text size="3">{user.id}.{user.name} {user.surname + " "} </Text>
+                                                    <Text size="2">({user.email})</Text>
+                                                </Box>
+                                            </label>
+                                        </Flex>
+                                        {/* <label htmlFor={`user-${user.id}`}>{user.name} ({user.email})</label> */}
+                                        {selected && (
+                                            <Select.Root
+                                                value={selected.role}
+                                                onValueChange={role => handleRoleChange(user.id, role)}
+                                            >
+                                                <Select.Trigger style={{ minWidth: 100 }} />
+                                                <Select.Content>
+                                                    {ROLE_OPTIONS.map(opt => (
+                                                        <Select.Item key={opt.value} value={opt.value}>{opt.label}</Select.Item>
+                                                    ))}
+                                                </Select.Content>
+                                            </Select.Root>
+                                        )}
+                                    </Flex>
+                                );
+                            })}
                         </Flex>
                     </Box>
 

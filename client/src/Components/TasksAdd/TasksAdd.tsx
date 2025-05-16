@@ -1,9 +1,10 @@
-import { Button, Callout, Dialog, Flex, Select, TextArea, TextField } from '@radix-ui/themes';
+import { Button, Callout, Dialog, Flex, Select, TextArea, TextField, Text } from '@radix-ui/themes';
 import React, { useEffect, useState } from 'react';
-import { Text } from 'react-aria-components';
 import { LuCirclePlus } from 'react-icons/lu';
 import { CalendarDatePicker } from '../DatePicker/CalendarDatePicker';
 import { projectService } from '@/services/project.service';
+import * as LuIcons from 'react-icons/lu';
+import { Project } from '@/types';
 
 export const TasksAdd = ({ onAddTask }) => {
     const [taskName, setTaskName] = useState('');
@@ -11,17 +12,20 @@ export const TasksAdd = ({ onAddTask }) => {
     const [description, setDescription] = useState('');
     const [status, setStatus] = useState('');
     const [project, setProject] = useState('');
-    const [availableProjects, setAvailableProjects] = useState('');
+    const [availableProjects, setAvailableProjects] = useState<Project[]>([]);
     const [showWarning, setShowWarning] = useState(false);
 
-    useEffect(()=>{
-        const fetchProjects = async ()=>{
-            const availableProjects = await projectService.getMyProjects();
-            console.log(availableProjects)
+    useEffect(() => {
+        const fetchProjects = async () => {
+            const projectsRes = await projectService.getMyProjects();
+            console.log(projectsRes)
+            setAvailableProjects(projectsRes);
         }
 
         fetchProjects()
-    })
+
+        console.log(LuIcons)
+    }, [])
 
     const formatDate = (date) => {
         const day = date.day;
@@ -84,7 +88,6 @@ export const TasksAdd = ({ onAddTask }) => {
                         />
                     </label>
 
-                    {/* Deadline */}
                     <label>
                         <Text as="div" size="2" mb="1" weight="bold">
                             Deadline
@@ -127,9 +130,16 @@ export const TasksAdd = ({ onAddTask }) => {
                         <Select.Root value={project} onValueChange={setProject}>
                             <Select.Trigger placeholder="Select project" />
                             <Select.Content>
-                                <Select.Item value="project1">Project 1</Select.Item>
-                                <Select.Item value="project2">Project 2</Select.Item>
-                                <Select.Item value="project3">Project 3</Select.Item>
+                                {
+                                    availableProjects && availableProjects.map((project) => (
+                                        <Select.Item key={project.id} value={project.id}>
+                                            <Flex as="span" align="center" gap="2">
+                                                {LuIcons[project.icon] && React.createElement(LuIcons[project.icon], { size: 20 })}
+                                                {project.name}
+                                            </Flex>
+                                        </Select.Item>
+                                    ))
+                                }
                             </Select.Content>
                         </Select.Root>
                     </label>

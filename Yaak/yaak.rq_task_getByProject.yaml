@@ -1,0 +1,26 @@
+type: http_request
+model: http_request
+id: rq_task_getByProject
+createdAt: 2025-05-03T11:48:48.635019700
+updatedAt: 2025-05-13T18:57:29.337715800
+workspaceId: wk_mxbmXX2jVR
+folderId: fl_LVaGwZvZzS
+authentication: {}
+authenticationType: null
+body: {}
+bodyType: null
+description: Get tasks by project ID with assigned people info
+headers:
+- enabled: true
+  name: Accept
+  value: application/json
+  id: null
+method: GET
+name: Get tasks by project
+sortPriority: 11000.0
+url: ${[baseUrl]}/tasks/project/:projectId
+urlParameters:
+- enabled: true
+  name: :projectId
+  value: '1'
+  id: aZVbfjR4fk

@@ -8,6 +8,7 @@ import { UserRoles } from '../types';
 import { UserTeam } from './UserTeam.model';
 import { Task } from './Task.model';
 import { Team } from './Team.model';
+import { UserProject } from './UserProjects.model';
 
 @Table
 export class User extends Model {
@@ -69,7 +70,9 @@ export class User extends Model {
     policies!: UserPolicy[];
 
     @HasMany(() => PermissionLog)
-    permissionLogs!: PermissionLog[]; @BelongsToMany(() => Team, () => UserTeam)
+    permissionLogs!: PermissionLog[];
+
+    @BelongsToMany(() => Team, () => UserTeam)
     teams!: Team[];
 
     @HasOne(() => Project, 'managerId')
@@ -80,4 +83,7 @@ export class User extends Model {
 
     @BelongsTo(() => Department)
     department!: Department;
+
+    @BelongsToMany(() => Project, () => UserProject)
+    projects!: Project[];
 }

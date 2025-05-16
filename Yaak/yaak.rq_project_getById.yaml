@@ -1,0 +1,30 @@
+type: http_request
+model: http_request
+id: rq_project_getById
+createdAt: 2025-05-03T11:48:48.635019700
+updatedAt: 2025-05-12T15:24:40.125344100
+workspaceId: wk_mxbmXX2jVR
+folderId: fl_MyLrVw79WD
+authentication: {}
+authenticationType: null
+body: {}
+bodyType: null
+description: Get project by ID with tasks, manager and users info
+headers:
+- enabled: true
+  name: Accept
+  value: application/json
+  id: null
+method: GET
+name: Get project by ID
+sortPriority: 6000.0
+url: ${[baseUrl]}/projects/:id
+urlParameters:
+- enabled: true
+  name: :id
+  value: '1'
+  id: xmSXhjVSNV
+- enabled: true
+  name: ''
+  value: ''
+  id: 69JGCRyYJZ

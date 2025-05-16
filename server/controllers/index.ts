@@ -5,3 +5,4 @@ export { policyController } from './policy.controller';
 export { utilsController } from './utils.controller';
 export { authController } from './auth.controller';
 export { teamController } from './team.controller';
+export { departmentController } from './department.controller';

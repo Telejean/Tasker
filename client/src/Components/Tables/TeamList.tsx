@@ -14,7 +14,7 @@ import { LuPlus, LuPencil, LuTrash2 } from 'react-icons/lu';
 import { teamService } from '../../services/team.service';
 import TeamMembersTable from './TeamMembersTable';
 import TeamModal from './TeamModal';
-import { User } from '../../types';
+import { User, Team } from '../../types';
 
 interface TeamListProps {
     projectId: number;
@@ -22,19 +22,14 @@ interface TeamListProps {
     projectManager?: User;
 }
 
-interface Team {
-    id: number;
-    name: string;
-    projectId: number; 
-    users: User[];
-}
+
 
 const TeamList = ({ projectId, availableUsers, projectManager }: TeamListProps) => {
     const [teams, setTeams] = useState<Team[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [teamModalOpen, setTeamModalOpen] = useState(false);
-    const [selectedTeamId, setSelectedTeamId] = useState<number | undefined>(undefined);
+    const [selectedTeam, setSelectedTeam] = useState<Team | undefined>(undefined);
     const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
     const [teamToDelete, setTeamToDelete] = useState<number | null>(null);
 
@@ -42,6 +37,7 @@ const TeamList = ({ projectId, availableUsers, projectManager }: TeamListProps) 
         try {
             setLoading(true);
             const teamsData = await teamService.getTeamsByProject(projectId);
+            console.log('Loaded teams:', teamsData);
             setTeams(teamsData);
         } catch (err) {
             setError('Failed to load teams');
@@ -58,12 +54,12 @@ const TeamList = ({ projectId, availableUsers, projectManager }: TeamListProps) 
     }, [projectId]);
 
     const handleCreateTeam = () => {
-        setSelectedTeamId(undefined);
+        setSelectedTeam(undefined);
         setTeamModalOpen(true);
     };
 
-    const handleEditTeam = (teamId: number) => {
-        setSelectedTeamId(teamId);
+    const handleEditTeam = (team: Team) => {
+        setSelectedTeam(team);
         setTeamModalOpen(true);
     };
 
@@ -88,6 +84,10 @@ const TeamList = ({ projectId, availableUsers, projectManager }: TeamListProps) 
 
     // Format team members for the table
     const getTeamMembers = (team: Team) => {
+        if (!team.users) {
+            console.error('No users found for team:', team.id);
+            return [];
+        }
         return team.users.map(user => ({
             id: user.id,
             name: user.name,
@@ -136,48 +136,48 @@ const TeamList = ({ projectId, availableUsers, projectManager }: TeamListProps) 
                         } : undefined;
 
                         return (
-                        <Tabs.Content key={team.id} value={team.id.toString()}>
-                            <Box p="4">
-                                <Flex justify="between" align="center" mb="4">
-                                    <Heading size="3">{team.name}</Heading>
-                                    <Flex gap="2">
-                                        <IconButton
-                                            variant="soft"
-                                            onClick={() => handleEditTeam(team.id)}
-                                        >
-                                            <LuPencil />
-                                        </IconButton>
-                                        <IconButton
-                                            variant="soft"
-                                            color="red"
-                                            onClick={() => handleDeleteTeam(team.id)}
-                                        >
-                                            <LuTrash2 />
-                                        </IconButton>
+                            <Tabs.Content key={team.id} value={team.id.toString()}>
+                                <Box p="4">
+                                    <Flex justify="between" align="center" mb="4">
+                                        <Heading size="3">{team.name}</Heading>
+                                        <Flex gap="2">
+                                            <IconButton
+                                                variant="soft"
+                                                onClick={() => handleEditTeam(team)}
+                                            >
+                                                <LuPencil />
+                                            </IconButton>
+                                            <IconButton
+                                                variant="soft"
+                                                color="red"
+                                                onClick={() => handleDeleteTeam(team.id)}
+                                            >
+                                                <LuTrash2 />
+                                            </IconButton>
+                                        </Flex>
                                     </Flex>
-                                </Flex>
 
-                                <TeamMembersTable
-                                    teamMembers={teamMembers}
-                                    projectManager={projectManagerMember}
-                                />
-                            </Box>
-                        </Tabs.Content>
-                    )})}
+                                    <TeamMembersTable
+                                        teamMembers={teamMembers}
+                                        projectManager={projectManagerMember}
+                                    />
+                                </Box>
+                            </Tabs.Content>
+                        )
+                    })}
                 </Tabs.Root>
             )}
 
             {/* Team Create/Edit Modal */}
-            <TeamModal
-                open={teamModalOpen}
-                onOpenChange={setTeamModalOpen}
-                projectId={projectId}
-                teamId={selectedTeamId}
-                onTeamSaved={loadTeams}
-                availableUsers={availableUsers}
-            />
+                    <TeamModal
+                        open={teamModalOpen}
+                        onOpenChange={setTeamModalOpen}
+                        projectId={projectId}
+                        team={selectedTeam}
+                        onTeamSaved={loadTeams}
+                        availableUsers={availableUsers}
+                    />
 
-            {/* Delete Confirmation Dialog */}
             <Dialog.Root open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
                 <Dialog.Content>
                     <Dialog.Title>Delete Team</Dialog.Title>

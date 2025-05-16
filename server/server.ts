@@ -9,6 +9,7 @@ import passport from './middlewares/passport-config';
 // Import the routes index
 import apiRoutes from './routes/index';
 import authRoutes from './routes/auth.routes';
+import cookieParser from 'cookie-parser';
 
 dotenv.config();
 
@@ -27,6 +28,7 @@ app.use(cors({
     origin: process.env.CLIENT_URL || 'http://localhost:5173',
     credentials: true
 }));
+app.use(cookieParser());
 app.use(express.json());
 
 // Session configuration

@@ -1,0 +1,30 @@
+type: http_request
+model: http_request
+id: rq_meTRg79Ngt
+createdAt: 2025-05-03T11:48:48.635019700
+updatedAt: 2025-05-13T09:13:00.556248900
+workspaceId: wk_mxbmXX2jVR
+folderId: fl_wRAbKd2BeH
+authentication: {}
+authenticationType: null
+body: {}
+bodyType: null
+description: ''
+headers:
+- enabled: true
+  name: Accept
+  value: application/json
+  id: null
+method: GET
+name: Get user by ID
+sortPriority: 1500.0
+url: ${[baseUrl]}/users/:id
+urlParameters:
+- enabled: true
+  name: :id
+  value: '1'
+  id: TsjuTHNyzP
+- enabled: true
+  name: ''
+  value: ''
+  id: fyKhpiApEW

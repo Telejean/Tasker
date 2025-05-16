@@ -1,0 +1,22 @@
+type: http_request
+model: http_request
+id: rq_6wHTouVwyR
+createdAt: 2025-05-03T11:48:48.617541900
+updatedAt: 2025-05-03T12:54:08.611007700
+workspaceId: wk_mxbmXX2jVR
+folderId: fl_wRAbKd2BeH
+authentication: {}
+authenticationType: null
+body: {}
+bodyType: null
+description: ''
+headers:
+- enabled: true
+  name: Accept
+  value: application/json
+  id: null
+method: GET
+name: Get all users
+sortPriority: 4000.0
+url: ${[baseUrl]}/users
+urlParameters: []

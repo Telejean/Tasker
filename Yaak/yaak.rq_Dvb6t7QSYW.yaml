@@ -1,0 +1,26 @@
+type: http_request
+model: http_request
+id: rq_Dvb6t7QSYW
+createdAt: 2025-05-13T10:17:47.830813200
+updatedAt: 2025-05-13T10:23:49.645286500
+workspaceId: wk_mxbmXX2jVR
+folderId: fl_wRAbKd2BeH
+authentication: {}
+authenticationType: null
+body: {}
+bodyType: null
+description: ''
+headers:
+- enabled: true
+  name: Accept
+  value: application/json
+  id: null
+method: GET
+name: Get full user by ID
+sortPriority: 1500.001
+url: ${[baseUrl]}/users/full/:id
+urlParameters:
+- enabled: true
+  name: :id
+  value: '1'
+  id: UtW44sZsdC

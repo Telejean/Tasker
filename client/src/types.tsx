@@ -46,7 +46,8 @@ export interface Team {
     id: number;
     name: string;
     projectId: number;
-    userTeams: UserTeam[];
+    userTeams?: UserTeam[];
+    users?: User[];
 }
 
 export interface UserTeam {
@@ -69,4 +70,11 @@ export interface User {
     iconBgColor?: string;
     tags: JSON;
     bio: string;
+    department?: Department;
+}
+
+
+export interface Department {
+    id: number;
+    departmentName: string;
 }

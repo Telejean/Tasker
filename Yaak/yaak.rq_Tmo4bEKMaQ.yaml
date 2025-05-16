@@ -1,0 +1,395 @@
+type: http_request
+model: http_request
+id: rq_Tmo4bEKMaQ
+createdAt: 2025-05-03T13:55:55.796762800
+updatedAt: 2025-05-03T14:02:22.820959600
+workspaceId: wk_mxbmXX2jVR
+folderId: fl_LVaGwZvZzS
+authentication: {}
+authenticationType: null
+body:
+  text: |-
+    {
+      "tasks": [
+        {
+          "name": "Finalize UI Design",
+          "description": "Complete the user interface mockups and prototypes.",
+          "deadline": "2025-05-10T17:00:00Z",
+          "priority": "High",
+          "projectId": 1
+        },
+        {
+          "name": "Implement User Authentication",
+          "description": "Develop the login and registration functionalities.",
+          "deadline": "2025-05-15T18:30:00Z",
+          "priority": "High",
+          "projectId": 2
+        },
+        {
+          "name": "Write API Documentation",
+          "description": "Document all the endpoints for the backend API.",
+          "deadline": "2025-05-22T12:00:00Z",
+          "priority": "Medium",
+          "projectId": 3
+        },
+        {
+          "name": "Database Schema Design",
+          "description": "Create the initial database schema and ER diagram.",
+          "deadline": "2025-05-05T10:00:00Z",
+          "priority": "High",
+          "projectId": 4
+        },
+        {
+          "name": "Conduct User Testing",
+          "description": "Gather feedback from users on the current prototype.",
+          "deadline": "2025-05-28T16:00:00Z",
+          "priority": "Medium",
+          "projectId": 1
+        },
+        {
+          "name": "Develop Core Logic",
+          "description": "Implement the main business logic of the application.",
+          "deadline": "2025-06-07T14:00:00Z",
+          "priority": "High",
+          "projectId": 2
+        },
+        {
+          "name": "Set up CI/CD Pipeline",
+          "description": "Configure the continuous integration and continuous deployment pipeline.",
+          "deadline": "2025-06-12T09:00:00Z",
+          "priority": "Medium",
+          "projectId": 3
+        },
+        {
+          "name": "Implement Data Validation",
+          "description": "Add validation rules for all user inputs.",
+          "deadline": "2025-05-18T11:30:00Z",
+          "priority": "Medium",
+          "projectId": 4
+        },
+        {
+          "name": "Design Mobile Responsiveness",
+          "description": "Ensure the UI adapts well to different screen sizes.",
+          "deadline": "2025-06-20T17:30:00Z",
+          "priority": "Medium",
+          "projectId": 1
+        },
+        {
+          "name": "Integrate Third-Party API",
+          "description": "Connect the application with the external service.",
+          "deadline": "2025-06-25T15:00:00Z",
+          "priority": "Medium",
+          "projectId": 2
+        },
+        {
+          "name": "Review Backend Code",
+          "description": "Perform a code review of the backend implementation.",
+          "deadline": "2025-05-25T13:00:00Z",
+          "priority": "Medium",
+          "projectId": 3
+        },
+        {
+          "name": "Refactor Database Queries",
+          "description": "Optimize the database queries for better performance.",
+          "deadline": "2025-06-03T16:30:00Z",
+          "priority": "Medium",
+          "projectId": 4
+        },
+        {
+          "name": "Create Unit Tests",
+          "description": "Write unit tests for all critical components.",
+          "deadline": "2025-05-30T10:30:00Z",
+          "priority": "High",
+          "projectId": 1
+        },
+        {
+          "name": "Implement Role-Based Access Control",
+          "description": "Set up permissions based on user roles.",
+          "deadline": "2025-06-05T19:00:00Z",
+          "priority": "High",
+          "projectId": 2
+        },
+        {
+          "name": "Deploy to Staging Environment",
+          "description": "Deploy the latest version to the staging server.",
+          "deadline": "2025-06-15T11:00:00Z",
+          "priority": "Medium",
+          "projectId": 3
+        },
+        {
+          "name": "Design Data Models",
+          "description": "Define the data structures for the application.",
+          "deadline": "2025-05-12T14:30:00Z",
+          "priority": "High",
+          "projectId": 4
+        },
+        {
+          "name": "Polish User Interface",
+          "description": "Refine the visual aspects and user experience.",
+          "deadline": "2025-06-28T18:00:00Z",
+          "priority": "Medium",
+          "projectId": 1
+        },
+        {
+          "name": "Secure API Endpoints",
+          "description": "Implement security measures for all API endpoints.",
+          "deadline": "2025-06-22T13:30:00Z",
+          "priority": "High",
+          "projectId": 2
+        },
+        {
+          "name": "Write Integration Tests",
+          "description": "Develop tests to ensure different components work together.",
+          "deadline": "2025-05-19T09:30:00Z",
+          "priority": "Medium",
+          "projectId": 3
+        },
+        {
+          "name": "Optimize Database Performance",
+          "description": "Tune the database for optimal speed and efficiency.",
+          "deadline": "2025-06-09T15:30:00Z",
+          "priority": "Medium",
+          "projectId": 4
+        },
+        {
+          "name": "Implement Search Functionality",
+          "description": "Add the ability to search for specific content.",
+          "deadline": "2025-05-24T11:00:00Z",
+          "priority": "Medium",
+          "projectId": 1
+        },
+        {
+          "name": "Handle Error Logging",
+          "description": "Set up a system for logging and tracking errors.",
+          "deadline": "2025-06-01T17:00:00Z",
+          "priority": "Medium",
+          "projectId": 2
+        },
+        {
+          "name": "Prepare Release Notes",
+          "description": "Document the changes and features for the upcoming release.",
+          "deadline": "2025-06-18T10:00:00Z",
+          "priority": "Low",
+          "projectId": 3
+        },
+        {
+          "name": "Set up Database Backups",
+          "description": "Configure regular backups of the application database.",
+          "deadline": "2025-05-27T16:30:00Z",
+          "priority": "Medium",
+          "projectId": 4
+        },
+        {
+          "name": "Improve Accessibility",
+          "description": "Ensure the application is accessible to users with disabilities.",
+          "deadline": "2025-06-30T14:30:00Z",
+          "priority": "Low",
+          "projectId": 1
+        },
+        {
+          "name": "Implement Password Reset",
+          "description": "Allow users to reset their forgotten passwords.",
+          "deadline": "2025-06-23T12:00:00Z",
+          "priority": "Medium",
+          "projectId": 2
+        },
+        {
+          "name": "Review Test Coverage",
+          "description": "Analyze the code coverage of the unit and integration tests.",
+          "deadline": "2025-05-16T15:00:00Z",
+          "priority": "Low",
+          "projectId": 3
+        },
+        {
+          "name": "Monitor Application Performance",
+          "description": "Set up monitoring tools to track application performance.",
+          "deadline": "2025-06-06T11:30:00Z",
+          "priority": "Medium",
+          "projectId": 4
+        },
+        {
+          "name": "Create User Guides",
+          "description": "Write documentation to help users understand the application.",
+          "deadline": "2025-05-21T18:30:00Z",
+          "priority": "Low",
+          "projectId": 1
+        },
+        {
+          "name": "Implement Email Notifications",
+          "description": "Set up email notifications for important events.",
+          "deadline": "2025-06-10T09:30:00Z",
+          "priority": "Medium",
+          "projectId": 2
+        },
+        {
+          "name": "Update Dependencies",
+          "description": "Update all project dependencies to the latest versions.",
+          "deadline": "2025-06-26T16:00:00Z",
+          "priority": "Low",
+          "projectId": 3
+        },
+        {
+          "name": "Plan for Scalability",
+          "description": "Consider future scalability requirements and design accordingly.",
+          "deadline": "2025-05-14T13:30:00Z",
+          "priority": "Medium",
+          "projectId": 4
+        },
+        {
+          "name": "Design Onboarding Process",
+          "description": "Create a smooth onboarding experience for new users.",
+          "deadline": "2025-05-08T17:30:00Z",
+          "priority": "Medium",
+          "projectId": 1
+        },
+        {
+          "name": "Implement Data Export",
+          "description": "Allow users to export their data in various formats.",
+          "deadline": "2025-06-02T15:00:00Z",
+          "priority": "Low",
+          "projectId": 2
+        },
+        {
+          "name": "Conduct Security Audit",
+          "description": "Perform a thorough security audit of the application.",
+          "deadline": "2025-06-17T14:00:00Z",
+          "priority": "High",
+          "projectId": 3
+        },
+        {
+          "name": "Optimize Image Loading",
+          "description": "Improve the loading speed of images in the application.",
+          "deadline": "2025-05-29T10:00:00Z",
+          "priority": "Low",
+          "projectId": 4
+        },
+        {
+          "name": "Implement Chat Feature",
+          "description": "Add a real-time chat functionality for users.",
+          "deadline": "2025-06-29T11:00:00Z",
+          "priority": "Medium",
+          "projectId": 1
+        },
+        {
+          "name": "Integrate Payment Gateway",
+          "description": "Connect the application with a payment processing service.",
+          "deadline": "2025-06-24T18:00:00Z",
+          "priority": "High",
+          "projectId": 2
+        },
+        {
+          "name": "Finalize API Endpoints",
+          "description": "Ensure all API endpoints are correctly implemented.",
+          "deadline": "2025-05-20T12:30:00Z",
+          "priority": "High",
+          "projectId": 3
+        },
+        {
+          "name": "Set up Logging Infrastructure",
+          "description": "Establish a centralized logging system for the application.",
+          "deadline": "2025-06-04T09:00:00Z",
+          "priority": "Medium",
+          "projectId": 4
+        },
+        {
+          "name": "Create Interactive Tutorials",
+          "description": "Develop interactive guides to help users learn the application.",
+          "deadline": "2025-05-11T15:30:00Z",
+          "priority": "Low",
+          "projectId": 1
+        },
+        {
+          "name": "Implement Two-Factor Authentication",
+          "description": "Add an extra layer of security with two-factor authentication.",
+          "deadline": "2025-06-08T13:00:00Z",
+          "priority": "Medium",
+          "projectId": 2
+        },
+        {
+          "name": "Review Security Measures",
+          "description": "Double-check all implemented security features.",
+          "deadline": "2025-06-21T17:00:00Z",
+          "priority": "High",
+          "projectId": 3
+        },
+        {
+          "name": "Optimize Front-end Performance",
+          "description": "Improve the loading speed and responsiveness of the front-end.",
+          "deadline": "2025-05-17T11:30:00Z",
+          "priority": "Medium",
+          "projectId": 4
+        },
+        {
+          "name": "Design Notification System",
+          "description": "Plan and design the in-app notification system.",
+          "deadline": "2025-05-06T19:00:00Z",
+          "priority": "Medium",
+          "projectId": 1
+        },
+        {
+          "name": "Implement Data Import",
+          "description": "Allow users to import data from external files.",
+          "deadline": "2025-06-13T10:30:00Z",
+          "priority": "Low",
+          "projectId": 2
+        },
+        {
+          "name": "Prepare Deployment Scripts",
+          "description": "Create scripts for automating the deployment process.",
+          "deadline": "2025-06-27T15:30:00Z",
+          "priority": "Medium",
+          "projectId": 3
+        },
+        {
+          "name": "Document Database Structure",
+          "description": "Create detailed documentation of the database schema.",
+          "deadline": "2025-05-23T09:30:00Z",
+          "priority": "Low",
+          "projectId": 4
+        },
+        {
+          "name": "Gather Final Feedback",
+          "description": "Collect any remaining feedback before the final release.",
+          "deadline": "2025-06-01T13:00:00Z",
+          "priority": "Medium",
+          "projectId": 1
+        },
+        {
+          "name": "Finalize Integration Tests",
+          "description": "Ensure all integration tests are passing.",
+          "deadline": "2025-06-19T16:30:00Z",
+          "priority": "High",
+          "projectId": 2
+        },
+        {
+          "name": "Perform Final Review",
+          "description": "Conduct a final review of the entire application.",
+          "deadline": "2025-05-26T14:30:00Z",
+          "priority": "High",
+          "projectId": 3
+        },
+        {
+          "name": "Prepare for Launch",
+          "description": "Final preparations before the application launch.",
+          "deadline": "2025-06-07T18:30:00Z",
+          "priority": "High",
+          "projectId": 4
+        }
+      ]
+    }
+bodyType: application/json
+description: Create a new task with assigned people
+headers:
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: null
+- enabled: true
+  name: Accept
+  value: application/json
+  id: null
+method: POST
+name: Create task bulk
+sortPriority: 13000.001
+url: ${[baseUrl]}/tasks/bulk
+urlParameters: []

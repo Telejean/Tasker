@@ -1,7 +1,8 @@
 import type { Request, Response } from 'express';
-import { Project, User, Task, Team, UserTeam } from '../models';
+import { Project, User, Task, Team, UserTeam, UserProject } from '../models';
 import { ProjectStatus } from '../types';
 import { Op } from 'sequelize';
+import sequelize from '../utils/sequelize';
 
 export const projectController = {
     async getAllProjects(req: Request, res: Response) {
@@ -75,7 +76,9 @@ export const projectController = {
     }, async createProject(req: Request, res: Response) {
         try {
             const { name, managerId, userIds, iconId = 1, icon, status = ProjectStatus.ACTIVE } = req.body;
-            
+            console.log(userIds);
+
+
             const project = await Project.create({
                 name,
                 iconId,
@@ -84,7 +87,7 @@ export const projectController = {
                 managerId
             });
 
-        
+
             const createdProject = await Project.findByPk(project.id, {
                 include: [
                     {
@@ -104,6 +107,25 @@ export const projectController = {
                     }
                 ]
             });
+
+            const transaction = await sequelize.transaction();
+            try {
+                const userProjects = userIds.map((u: number) => { return { userId: u, projectId: project.id } });
+                const createdUserProjects = await UserProject.bulkCreate(userProjects, {
+                    transaction,
+                    returning: true
+                })
+                await transaction.commit()
+
+                return res.status(201).json({
+                    message: `Successfully created ${createdUserProjects.length} users`,
+                    users: createdUserProjects.map(user => user.get({ plain: true }))
+                });
+
+            } catch (txError) {
+                await transaction.rollback();
+                throw txError;
+            }
 
             return res.status(201).json(createdProject);
         } catch (error) {
@@ -222,18 +244,12 @@ export const projectController = {
             console.error('Error deleting project:', error);
             return res.status(500).json({ error: 'Failed to delete project' });
         }
-    },    // Get projects where the current user is a member
+    },
     async getMyProjects(req: Request, res: Response) {
         try {
             const userId = (req.user as any)?.id;
+            const user = (req.user as any);
 
-            if (!userId) {
-                return res.status(401).json({ error: 'Authentication required' });
-            }
-
-            const user = req.user as any;
-
-            // For admin roles, show all projects
             if (user.isAdmin) {
                 const projects = await Project.findAll({
                     include: [

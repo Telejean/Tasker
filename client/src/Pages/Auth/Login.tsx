@@ -13,7 +13,7 @@ const Login = () => {
                     <Button
                         variant="soft"
                         size="3"
-                        onClick={() => window.location.href = `${API_URL}/auth/google`}
+                        onClick={() => window.location.href = `${API_URL}/auth/google/jwt`}
                     >
                         <FcGoogle style={{ marginRight: 8 }} />
                         Continue with Google

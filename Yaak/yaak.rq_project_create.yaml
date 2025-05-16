@@ -1,0 +1,34 @@
+type: http_request
+model: http_request
+id: rq_project_create
+createdAt: 2025-05-03T11:48:48.625539400
+updatedAt: 2025-05-13T09:13:22.774110300
+workspaceId: wk_mxbmXX2jVR
+folderId: fl_MyLrVw79WD
+authentication: {}
+authenticationType: null
+body:
+  text: |-
+    {
+      "name": "MMTI",
+      "iconId": 1,
+      "icon": "LuAmbulance",
+      "managerId": 1,
+      "userIds": [1, 12,13,14,15,16,17,18,19,20]
+    }
+bodyType: application/json
+description: Create a new project with manager and users
+headers:
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: null
+- enabled: true
+  name: Accept
+  value: application/json
+  id: null
+method: POST
+name: Create project
+sortPriority: 7000.0
+url: ${[baseUrl]}/projects
+urlParameters: []

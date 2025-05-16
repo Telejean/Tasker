@@ -1,0 +1,39 @@
+type: http_request
+model: http_request
+id: rq_task_update
+createdAt: 2025-05-03T11:48:48.644406200
+updatedAt: 2025-05-03T12:54:44.597937100
+workspaceId: wk_mxbmXX2jVR
+folderId: fl_LVaGwZvZzS
+authentication: {}
+authenticationType: null
+body:
+  text: |-
+    {
+      "name": "<string>",
+      "description": "<string>",
+      "deadline": "<date-time>",
+      "status": "<NOT_STARTED|IN_PROGRESS|COMPLETED|BLOCKED>",
+      "priority": "<string>",
+      "assignedPeopleIds": [<integer>]
+    }
+bodyType: application/json
+description: Update task details and assigned people
+headers:
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: null
+- enabled: true
+  name: Accept
+  value: application/json
+  id: null
+method: PUT
+name: Update task
+sortPriority: 14000.0
+url: ${[baseUrl]}/tasks/:id
+urlParameters:
+- enabled: true
+  name: :id
+  value: <integer>
+  id: null

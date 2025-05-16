@@ -1,0 +1,10 @@
+type: workspace
+model: workspace
+id: wk_mxbmXX2jVR
+createdAt: 2025-05-03T11:48:48.579448300
+updatedAt: 2025-05-14T08:59:03
+name: Taskr
+description: API for Taskr, an AI based task management system
+settingValidateCertificates: true
+settingFollowRedirects: true
+settingRequestTimeout: 0

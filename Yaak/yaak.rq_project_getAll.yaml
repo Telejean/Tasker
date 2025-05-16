@@ -1,0 +1,22 @@
+type: http_request
+model: http_request
+id: rq_project_getAll
+createdAt: 2025-05-03T11:48:48.617541900
+updatedAt: 2025-05-13T08:53:35.721218100
+workspaceId: wk_mxbmXX2jVR
+folderId: fl_MyLrVw79WD
+authentication: {}
+authenticationType: null
+body: {}
+bodyType: null
+description: Get all projects with manager and users info
+headers:
+- enabled: true
+  name: Accept
+  value: application/json
+  id: null
+method: GET
+name: Get all projects
+sortPriority: 2000.0
+url: ${[baseUrl]}/projects
+urlParameters: []

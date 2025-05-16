@@ -1,0 +1,33 @@
+type: http_request
+model: http_request
+id: rq_N3XQAPbywZ
+createdAt: 2025-05-03T11:48:48.625539400
+updatedAt: 2025-05-03T12:53:20.971330100
+workspaceId: wk_mxbmXX2jVR
+folderId: fl_wRAbKd2BeH
+authentication: {}
+authenticationType: null
+body:
+  text: |-
+    {
+      "name": "Rares",
+      "email": "rares@gmail.com",
+      "password": "1234",
+      "role": "Member"
+    }
+bodyType: application/json
+description: ''
+headers:
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: null
+- enabled: true
+  name: Accept
+  value: application/json
+  id: null
+method: POST
+name: Create a new user
+sortPriority: 0.0
+url: ${[baseUrl]}/users
+urlParameters: []

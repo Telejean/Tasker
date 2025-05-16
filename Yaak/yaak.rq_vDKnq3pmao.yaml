@@ -1,0 +1,165 @@
+type: http_request
+model: http_request
+id: rq_vDKnq3pmao
+createdAt: 2025-05-03T12:58:33.747559300
+updatedAt: 2025-05-15T11:06:55.309634
+workspaceId: wk_mxbmXX2jVR
+folderId: fl_wRAbKd2BeH
+authentication: {}
+authenticationType: null
+body:
+  text: |-
+    [
+      {
+        "name": "Smith",
+        "surname": "Alice",
+        "phoneNumber": "0724127363",
+        "email": "alice.smith@example.com",
+        "departmentId":1
+      },
+      {
+        "name": "Johnson",
+        "surname": "Bob",
+        "phoneNumber": "0724127366",
+        "email": "bob.johnson@example.com",
+        "departmentId":2
+      },
+      {
+        "name": "Brown",
+        "phoneNumber": "0724127367",
+        "surname": "Charlie",
+        "email": "charlie.brown@example.com",
+        "departmentId":2
+      },
+      {
+        "name": "Garcia",
+        "phoneNumber": "0724127368",
+        "surname": "Diana",
+        "email": "diana.garcia@example.com",
+        "departmentId":3
+      },
+      {
+        "name": "Williams",
+        "surname": "Ethan",
+        "phoneNumber": "0724127369",
+        "email": "ethan.williams@example.com",
+        "departmentId":4
+      },
+      {
+        "name": "Miller",
+        "surname": "Fiona",
+        "phoneNumber": "0724127370",
+        "email": "fiona.miller@example.com",
+        "departmentId":5
+      },
+      {
+        "name": "Davis",
+        "surname": "George",
+        "email": "george.davis@example.com",
+        "phoneNumber": "0724127371",
+        "departmentId":1
+      },
+      {
+        "name": "Wilson",
+        "surname": "Hannah",
+        "phoneNumber": "0724127372",
+        "email": "hannah.wilson@example.com",
+        "departmentId":2
+      },
+      {
+        "name": "Moore",
+        "surname": "Ian",
+        "phoneNumber": "0724127373",
+        "email": "ian.moore@example.com",
+        "departmentId":3
+      },
+      {
+        "name": "Taylor",
+        "surname": "Julia",
+        "phoneNumber": "0724127374",
+        "email": "julia.taylor@example.com",
+        "departmentId":4
+      },
+      {
+        "name": "Anderson",
+        "surname": "Kevin",
+        "phoneNumber": "0724127375",
+        "email": "kevin.anderson@example.com",
+        "departmentId":5
+      },
+      {
+        "name": "Thomas",
+        "surname": "Laura",
+        "phoneNumber": "0724127376",
+        "email": "laura.thomas@example.com",
+        "departmentId":1
+      },
+      {
+        "name": "Jackson",
+        "surname": "Michael",
+        "phoneNumber": "0724127377",
+        "email": "michael.jackson@example.com",
+        "departmentId":2
+      },
+      {
+        "name": "White",
+        "surname": "Nancy",
+        "phoneNumber": "0724127378",
+        "email": "nancy.white@example.com",
+        "departmentId":3
+      },
+      {
+        "name": "Harris",
+        "surname": "Oliver",
+        "phoneNumber": "0724127379",
+        "email": "oliver.harris@example.com",
+        "departmentId":4
+      },
+      {
+        "name": "Martin",
+        "surname": "Patricia",
+        "phoneNumber": "0724127380",
+        "email": "patricia.martin@example.com",
+        "departmentId":5
+      },
+      {
+        "name": "Adams",
+        "surname": "Quinn",
+        "phoneNumber": "0724127381",
+        "email": "quinn.adams@example.com",
+        "departmentId":1
+      },
+      {
+        "name": "Lewis",
+        "surname": "Ryan",
+        "phoneNumber": "0724127382",
+        "email": "ryan.lewis@example.com",
+        "departmentId":2
+      },
+      {
+        "name": "Clark",
+        "surname": "Sophia",
+        "phoneNumber": "0724127383",
+        "email": "sophia.clark@example.com",
+        "departmentId":3
+      },
+      {
+        "name": "Hall",
+        "surname": "Thomas",
+        "phoneNumber": "0724127384",
+        "email": "thomas.hall@example.com",
+        "departmentId":4
+      }
+    ]
+bodyType: application/json
+description: ''
+headers:
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: CunwA5hdTn
+method: POST
+name: Bulk Create
+sortPriority: -0.0001
+url: ${[ baseUrl ]}/users/bulk
+urlParameters: []

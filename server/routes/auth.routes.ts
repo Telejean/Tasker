@@ -21,7 +21,7 @@ router.get('/google/jwt/callback',
 router.post('/complete-registration', authController.completeRegistration as any);
 
 // Check auth status
-router.get('/status', authController.checkStatus);
+router.get('/status', authController.checkStatus as any);
 
 // Logout
 router.post('/logout', authController.logout);

@@ -12,6 +12,7 @@ import { User } from './User.model';
 import { UserPolicy } from './UserPolicy.model';
 import { UserTeam } from './UserTeam.model';
 import { Team } from './Team.model';
+import { UserProject } from './UserProjects.model';
 // Export all models
 export {
     AssignedPerson,
@@ -21,6 +22,7 @@ export {
     Project,
     ProjectPolicy,
     Rule,
+    UserProject,
     Task,
     TaskPolicy,
     User,
@@ -36,6 +38,7 @@ const models = [
     PermissionLog,
     Policy,
     Project,
+    UserProject,
     ProjectPolicy,
     Rule,
     Task,

@@ -1,0 +1,26 @@
+type: http_request
+model: http_request
+id: rq_task_delete
+createdAt: 2025-05-03T11:48:48.654078800
+updatedAt: 2025-05-03T12:54:46.750906500
+workspaceId: wk_mxbmXX2jVR
+folderId: fl_LVaGwZvZzS
+authentication: {}
+authenticationType: null
+body: {}
+bodyType: null
+description: Delete a task by ID
+headers:
+- enabled: true
+  name: Accept
+  value: application/json
+  id: null
+method: DELETE
+name: Delete task
+sortPriority: 15000.0
+url: ${[baseUrl]}/tasks/:id
+urlParameters:
+- enabled: true
+  name: :id
+  value: <integer>
+  id: null

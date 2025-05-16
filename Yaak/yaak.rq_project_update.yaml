@@ -1,0 +1,39 @@
+type: http_request
+model: http_request
+id: rq_project_update
+createdAt: 2025-05-03T11:48:48.644406200
+updatedAt: 2025-05-03T12:55:35.625448
+workspaceId: wk_mxbmXX2jVR
+folderId: fl_MyLrVw79WD
+authentication: {}
+authenticationType: null
+body:
+  text: |-
+    {
+      "name": "<string>",
+      "iconId": "<string>",
+      "icon": "<string>",
+      "status": "<ACTIVE|ARCHIVED|COMPLETED>",
+      "managerId": <integer>,
+      "userIds": [<integer>]
+    }
+bodyType: application/json
+description: Update project details, manager and users
+headers:
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: null
+- enabled: true
+  name: Accept
+  value: application/json
+  id: null
+method: PUT
+name: Update project
+sortPriority: 8000.0
+url: ${[baseUrl]}/projects/:id
+urlParameters:
+- enabled: true
+  name: :id
+  value: <integer>
+  id: null

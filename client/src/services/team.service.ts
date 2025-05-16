@@ -31,7 +31,9 @@ export const teamService = {
     /**
      * Create a new team
      */
-    async createTeam(teamData: { name: string; projectId: number; userIds?: number[] }) {
+    async createTeam(teamData: {
+        name: string; projectId: number; userIds?: number[]; userRoles: Record<number, string>
+    }) {
         try {
             const response = await axios.post(`${API_URL}/teams`, teamData, axiosConfig);
             return response.data;
@@ -44,7 +46,9 @@ export const teamService = {
     /**
      * Update an existing team
      */
-    async updateTeam(teamId: number, teamData: { name?: string; userIds?: number[] }) {
+    async updateTeam(teamId: number, teamData: {
+        name?: string; userIds?: number[]; userRoles: Record<number, string>
+    }) {
         try {
             const response = await axios.put(`${API_URL}/teams/${teamId}`, teamData, axiosConfig);
             return response.data;

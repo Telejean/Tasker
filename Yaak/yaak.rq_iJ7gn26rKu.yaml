@@ -1,0 +1,23 @@
+type: http_request
+model: http_request
+id: rq_iJ7gn26rKu
+createdAt: 2025-05-14T09:02:31.632731300
+updatedAt: 2025-05-15T11:01:35.614422
+workspaceId: wk_mxbmXX2jVR
+folderId: fl_fn6pfqAx3t
+authentication: {}
+authenticationType: null
+body:
+  text: "{\n  \"departments\" : \n  [\"IT\", \"FR\", \"EDU\", \"HR\", \"I&P\"]\n}"
+bodyType: application/json
+description: ''
+headers:
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: JfGtXCBqpf
+method: POST
+name: Create Departments Bulk
+sortPriority: 7000.0
+url: ${[ baseUrl ]}/departments/bulk
+urlParameters: []

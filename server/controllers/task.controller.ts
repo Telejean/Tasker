@@ -326,12 +326,8 @@ export const taskController = {
 
     async getTasksByProject(req: Request, res: Response) {
         try {
-            const userId = (req.user as any)?.id || 1;  //remove after dev
+            const userId = (req.user as any)?.id 
             const projectId = parseInt(req.params.id);
-
-            if (!userId) {
-                return res.status(401).json({ error: 'Authentication required' });
-            }
 
             const teams = await Team.findAll({
                 where: { projectId },
@@ -343,13 +339,22 @@ export const taskController = {
                 }]
             });
 
-            const project = await Project.findByPk(projectId);
+            const project = await Project.findByPk(projectId, {raw:true});
+            console.log()
+            console.log()
+            console.log()
+            console.log()
+            console.log({projectManagerId: project?.managerId, userId, adevar:project?.managerId===userId})
+            console.log()
+            console.log()
+            console.log()
+            console.log()
+
             const isProjectManager = project && project.managerId === userId;
 
             const user = req.user as any;
-            const isAdmin = user?.isAdmin;
 
-            if (teams.length === 0 && !isProjectManager && !isAdmin) {
+            if (teams.length === 0 && !isProjectManager) {
                 return res.status(403).json({
                     error: 'You do not have access to this project'
                 });

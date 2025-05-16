@@ -1,0 +1,29 @@
+type: http_request
+model: http_request
+id: rq_zyXxkKVXzB
+createdAt: 2025-05-13T09:30:36.198422
+updatedAt: 2025-05-14T08:42:02.918945400
+workspaceId: wk_mxbmXX2jVR
+folderId: fl_sKAyFeCNaD
+authentication: {}
+authenticationType: null
+body:
+  text: |-
+    {
+      "name":"IT_MMTI",
+      "projectId":1,
+      "userIds": [10, 11, 12, 13, 14]
+      "userRoles":
+    }
+bodyType: application/json
+description: ''
+headers:
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: 09suP45vtB
+method: POST
+name: CreateTeam
+sortPriority: 7000.0
+url: ${[ baseUrl ]}/teams
+urlParameters: []

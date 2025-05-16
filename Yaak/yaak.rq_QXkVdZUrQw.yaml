@@ -1,0 +1,26 @@
+type: http_request
+model: http_request
+id: rq_QXkVdZUrQw
+createdAt: 2025-05-14T09:00:11.948232400
+updatedAt: 2025-05-14T09:02:27.095006900
+workspaceId: wk_mxbmXX2jVR
+folderId: fl_fn6pfqAx3t
+authentication: {}
+authenticationType: null
+body:
+  text: |-
+    {
+      "departmentName" :"IT"
+    }
+bodyType: application/json
+description: ''
+headers:
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: BimdbrSqJx
+method: POST
+name: Create Department
+sortPriority: 7000.0
+url: ${[ baseUrl ]}/departments
+urlParameters: []

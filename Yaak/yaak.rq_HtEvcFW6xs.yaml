@@ -1,0 +1,22 @@
+type: http_request
+model: http_request
+id: rq_HtEvcFW6xs
+createdAt: 2025-05-14T07:45:18.159141100
+updatedAt: 2025-05-14T08:54:19.952520700
+workspaceId: wk_mxbmXX2jVR
+folderId: fl_sKAyFeCNaD
+authentication: {}
+authenticationType: null
+body: {}
+bodyType: null
+description: ''
+headers: []
+method: GET
+name: Get team by ID
+sortPriority: 7000.0
+url: ${[ baseUrl ]}/teams/:id
+urlParameters:
+- enabled: true
+  name: :id
+  value: '4'
+  id: 6btC48hyVw

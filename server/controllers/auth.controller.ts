@@ -6,20 +6,15 @@ import { createUserService } from '../services/user.service';
 import authorizationService from '../services/authorization.service';
 import jwt from 'jsonwebtoken';
 
-// JWT token generation function
-const generateToken = (user: any) => {
-    const payload = {
-        id: user.id,
-        email: user.email,
-        phoneNumber: user.phoneNumber,
-        // Add any other user data you want in the token
-    };
+/**
+ * JWT token generation function
+ */
 
-    // Get the secret key from environment variables or use a default (for development only)
+const generateToken = (user: any) => {
+
     const secret = process.env.JWT_SECRET || 'your-secret-key-here';
 
-    // Generate the token with a 24 hour expiration
-    return jwt.sign(payload, secret, { expiresIn: '24h' });
+    return jwt.sign(user, secret, { expiresIn: '24h' });
 };
 
 export const authController = {
@@ -51,11 +46,15 @@ export const authController = {
                 });
                 res.redirect(`${process.env.CLIENT_URL}/register?${params.toString()}`);
             } else {
-                // Generate JWT token for authenticated user
-                const token = generateToken(user);
+                const token = generateToken(user.dataValues);
 
-                // Redirect to front-end with token
-                res.redirect(`${process.env.CLIENT_URL}/auth/callback?token=${token}`);
+                res.cookie('token', token, {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === 'production',
+                    sameSite: 'lax',
+                    maxAge: 24 * 60 * 60 * 1000
+                });
+                res.redirect(`${process.env.CLIENT_URL}/auth/callback`);
             }
         } catch (error) {
             console.error('Google callback error:', error);
@@ -82,30 +81,25 @@ export const authController = {
             });
         } catch (error) {
             console.error('Registration error:', error);
-            res.status(500).json({ message: 'Error completing registration', error:error });
+            res.status(500).json({ message: 'Error completing registration', error: error });
         }
     },
 
-    // Login with email (returns JWT token)
     async login(req: Request, res: Response) {
         try {
             const { email } = req.body;
 
-            // Basic validation
             if (!email) {
                 return res.status(400).json({ message: 'Email is required' });
             }
 
-            // Find user by email
             const user = await User.findOne({ where: { email } });
             if (!user) {
                 return res.status(401).json({ message: 'User not found' });
             }
 
-            // Generate JWT token
             const token = generateToken(user);
 
-            // Return user data and token
             res.json({
                 user: {
                     id: user.id,
@@ -121,7 +115,6 @@ export const authController = {
         }
     },
 
-    // Handle logout
     async logout(req: Request, res: Response) {
         req.logout((err) => {
             if (err) {
@@ -131,21 +124,34 @@ export const authController = {
         });
     },
 
-    // Check user authentication status
     async checkStatus(req: Request, res: Response) {
-        if (req.isAuthenticated()) {
-            res.json({
+        try {
+            let token = req.cookies?.token;
+            if (!token && req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+                token = req.headers.authorization.split(' ')[1];
+            }
+            if (!token) {
+                return res.status(401).json({ isAuthenticated: false });
+            }
+            const secret = process.env.JWT_SECRET || 'your-secret-key-here';
+            let decoded: any;
+            try {
+                decoded = jwt.verify(token, secret);
+            } catch (err) {
+                return res.json({ isAuthenticated: false });
+            }
+            const userDB = await User.findByPk(decoded.id);
+            if (!userDB) return res.json({ isAuthenticated: false });
+            res.status(200).json({
                 isAuthenticated: true,
-                user: req.user
+                user: decoded
             });
-        } else {
-            res.json({
-                isAuthenticated: false
-            });
+        } catch (error) {
+            console.error('JWT status check error:', error);
+            res.status(401).json({ isAuthenticated: false });
         }
     },
 
-    // Check if current user has permission to perform an action on a resource
     async checkPermission(req: Request, res: Response) {
         try {
             if (!req.isAuthenticated()) {
@@ -173,7 +179,7 @@ export const authController = {
                 resourceType: resourceType as string,
                 resourceId: resourceId ? Number(resourceId) : undefined
             });
-            console.log({context: req.query, hasPermission:hasPermission})
+            console.log({ context: req.query, hasPermission: hasPermission })
             res.status(200).json({ hasPermission });
         } catch (error) {
             console.error('Error checking permission:', error);

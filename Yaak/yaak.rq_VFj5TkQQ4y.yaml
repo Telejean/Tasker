@@ -1,0 +1,22 @@
+type: http_request
+model: http_request
+id: rq_VFj5TkQQ4y
+createdAt: 2025-05-13T19:05:51.228050900
+updatedAt: 2025-05-14T07:45:05.369257300
+workspaceId: wk_mxbmXX2jVR
+folderId: fl_sKAyFeCNaD
+authentication: {}
+authenticationType: null
+body: {}
+bodyType: null
+description: ''
+headers: []
+method: GET
+name: Get project teams
+sortPriority: 7000.0
+url: ${[ baseUrl ]}/teams/project/:projectId
+urlParameters:
+- enabled: true
+  name: :projectId
+  value: '1'
+  id: QFcsjEGafW

@@ -1,0 +1,22 @@
+type: http_request
+model: http_request
+id: rq_task_getAll
+createdAt: 2025-05-03T11:48:48.617541900
+updatedAt: 2025-05-03T12:54:31.095967900
+workspaceId: wk_mxbmXX2jVR
+folderId: fl_LVaGwZvZzS
+authentication: {}
+authenticationType: null
+body: {}
+bodyType: null
+description: Get all tasks with project and assigned people info
+headers:
+- enabled: true
+  name: Accept
+  value: application/json
+  id: null
+method: GET
+name: Get all tasks
+sortPriority: 10000.0
+url: ${[baseUrl]}/tasks
+urlParameters: []

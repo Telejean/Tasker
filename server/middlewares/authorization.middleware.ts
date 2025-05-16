@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import  AuthorizationService  from '../services/authorization.service';
+import jwt from 'jsonwebtoken';
+import { User } from '../models/User.model';
 
 export const checkPermission = (
     actionType: string,
@@ -37,7 +39,6 @@ export const checkPermission = (
                 }
             };
 
-            // Check if user is authorized
             const result = await AuthorizationService.isAuthorized(authRequest);
 
             if (!result.allowed) {
@@ -48,7 +49,6 @@ export const checkPermission = (
                 });
             }
 
-            // User is authorized, proceed to the route handler
             next();
         } catch (error) {
             console.error('Error checking permission:', error);
@@ -58,4 +58,32 @@ export const checkPermission = (
             });
         }
     };
+};
+
+export const jwtAuth = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        let token = req.cookies?.token;
+        if (!token && req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+            token = req.headers.authorization.split(' ')[1];
+        }
+        if (!token) {
+            return res.status(401).json({ error: 'Unauthorized', message: 'No token provided' });
+        }
+        const secret = process.env.JWT_SECRET || 'your-secret-key-here';
+        let decoded: any;
+        try {
+            decoded = jwt.verify(token, secret);
+        } catch (err) {
+            return res.status(401).json({ error: 'Unauthorized', message: 'Invalid or expired token' });
+        }
+        const userDB = await User.findByPk(decoded.id);
+        if (!userDB) {
+            return res.status(401).json({ error: 'Unauthorized', message: 'User not found' });
+        }
+        req.user = userDB;
+        next();
+    } catch (error) {
+        console.error('JWT auth middleware error:', error);
+        res.status(500).json({ error: 'Internal Server Error', message: 'Error authenticating token' });
+    }
 };

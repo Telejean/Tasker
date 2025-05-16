@@ -4,6 +4,8 @@ import { User } from './User.model';
 import { ProjectStatus } from '../types';
 import { ProjectPolicy } from './ProjectPolicy.model';
 import { Team } from './Team.model';
+import { UserProject } from './UserProjects.model';
+import { UserPolicy } from './UserPolicy.model';
 
 @Table
 export class Project extends Model {
@@ -50,4 +52,8 @@ export class Project extends Model {
 
     @HasMany(() => ProjectPolicy)
     policies!: ProjectPolicy[];
+
+    @BelongsToMany(()=>User, ()=>UserProject)
+    users!: User[];
+
 }

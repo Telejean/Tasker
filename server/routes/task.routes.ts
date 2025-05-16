@@ -1,13 +1,14 @@
 import { Router } from 'express';
 import { taskController } from '../controllers/index';
+import { jwtAuth } from '../middlewares/authorization.middleware';
 
 const router = Router();
 
 router.get('/', taskController.getAllTasks as any);
 
-router.get('/my-tasks', taskController.getMyTasks as any);
+router.get('/my-tasks', jwtAuth as any, taskController.getMyTasks as any);
 
-router.get('/project/:id', taskController.getTasksByProject as any);
+router.get('/project/:id', jwtAuth as any, taskController.getTasksByProject as any);
 
 router.get('/:id', taskController.getTaskById as any);
 

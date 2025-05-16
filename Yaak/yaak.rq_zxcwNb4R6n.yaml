@@ -1,0 +1,18 @@
+type: http_request
+model: http_request
+id: rq_zxcwNb4R6n
+createdAt: 2025-05-04T15:37:57.391889700
+updatedAt: 2025-05-04T23:15:19.898672100
+workspaceId: wk_mxbmXX2jVR
+folderId: fl_tch9ELDbWs
+authentication: {}
+authenticationType: null
+body: {}
+bodyType: null
+description: ''
+headers: []
+method: GET
+name: Reset
+sortPriority: 4000.0
+url: ${[ baseUrl ]}/utils/sync
+urlParameters: []

@@ -84,7 +84,7 @@ const ProjectPage = () => {
 
                 setProject(formattedProject);
 
-                const usersData = await userService.getAllUsers();
+                const usersData = await userService.getUsersFromProject(parseInt(id));
                 setAllUsers(usersData);
 
                 const tasksData = await taskService.getTasksByProject(parseInt(id));

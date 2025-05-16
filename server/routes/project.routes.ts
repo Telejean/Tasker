@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { projectController } from '../controllers/index';
+import { jwtAuth } from '../middlewares/authorization.middleware';
 
 const router = Router();
 
@@ -7,7 +8,7 @@ const router = Router();
 router.get('/', projectController.getAllProjects as any);
 
 // GET project by ID
-router.get('/my-projects', projectController.getMyProjects as any);
+router.get('/my-projects',jwtAuth as any, projectController.getMyProjects as any);
 
 router.get('/:id', projectController.getProjectById as any);
 

@@ -1,18 +1,10 @@
 import { Request, Response } from 'express';
-import { User } from '../models/User.model';
-import { Project } from '../models/Project.model';
-// Fix import for Task - it uses CommonJS module exports
 import { Task } from '../models/Task.model';
 import { AssignedPerson } from '../models/AssignedPerson.model';
 import { UserRoles } from '../types';
-// Fix import for sequelize - it uses default export
 import sequelize from '../utils/sequelize';
 import { createUserService } from '../services/user.service';
-import { Department } from '../models/Department.model';
-import { Team } from '../models/Team.model';
-import { UserPolicy } from '../models/UserPolicy.model';
-import { Policy } from '../models/Policy.model';
-import { PermissionLog } from '../models/PermissionLog.model';
+import { UserProject, UserPolicy, PermissionLog, Policy, Team, Department, Project, User } from '../models';
 
 export const userController = {
 
@@ -20,14 +12,51 @@ export const userController = {
     async getAllUsers(req: Request, res: Response) {
         try {
             const users = await User.findAll({
+                attributes: { exclude: ["departmentId", "createdAt", "updatedAt"] },
                 include: [
                     {
                         model: AssignedPerson,
                         include: [{ model: Task, include: [Project] }]
+                    },
+                    {
+                        model: Department,
+                        attributes: ['id', 'departmentName']
                     }
                 ]
             });
             return res.status(200).json(users);
+        } catch (error) {
+            console.error('Error getting users:', error);
+
+            return res.status(500).json({
+                error: 'Unexpected error while retrieving users',
+                details: error instanceof Error ? error.message : 'Unknown error'
+            });
+        }
+    },
+
+    async getUsersByProject(req: Request, res: Response) {
+        try {
+            const projectId = req.params.id;
+
+            const users = await User.findAll({
+                include: [
+                    {
+                        model: Project,
+                        as: 'projects',
+                        where: { id: projectId },
+                        attributes: [],
+                        through: { attributes: [] },
+                    },
+                    {
+                        model: Department,
+                        attributes: ['id', 'departmentName']
+                    }
+                ],
+                attributes: { exclude: ["departmentId", "createdAt", "updatedAt"] }
+            });
+
+            res.status(200).json(users);
         } catch (error) {
             console.error('Error getting users:', error);
 
@@ -50,10 +79,15 @@ export const userController = {
             }
 
             const user = await User.findByPk(userId, {
+                attributes: { exclude: ["departmentId", "createdAt", "updatedAt"] },
                 include: [
                     {
                         model: AssignedPerson,
                         include: [{ model: Task, include: [Project] }]
+                    },
+                    {
+                        model: Department,
+                        attributes: ['id', 'departmentName']
                     }
                 ]
             });
@@ -134,13 +168,12 @@ export const userController = {
                 });
             }
 
-            // Use Sequelize transaction for bulk creation
             const transaction = await sequelize.transaction();
 
             try {
                 const userData = users.map(user => {
-                    const { name, surname, phoneNumber, email, role } = user;
-                    return { name, surname, phoneNumber, email, role };
+                    const { name, surname, phoneNumber, email, role, departmentId } = user;
+                    return { name, surname, phoneNumber, email, role, departmentId };
                 });
 
 
@@ -189,6 +222,7 @@ export const userController = {
             }
 
             const user = await User.findByPk(userId, {
+                attributes: { exclude: ["departmentId"] },
                 include: [
                     {
                         model: Department
@@ -244,15 +278,12 @@ export const userController = {
                 return res.status(404).json({ error: 'User not found' });
             }
 
-            // Convert to plain object to modify before sending
             const fullUserData = user.get({ plain: true });
 
-            // Calculate additional statistics
             const assignedTasksCount = fullUserData.tasks?.length || 0;
             const teamsCount = fullUserData.teams?.length || 0;
             const managedProjectsCount = fullUserData.managedProjects?.length || 0;
 
-            // Add summary statistics to response
             fullUserData.statistics = {
                 assignedTasksCount,
                 teamsCount,
