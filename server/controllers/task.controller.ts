@@ -18,17 +18,23 @@ export const taskController = {
                     },
                     {
                         model: AssignedPerson,
-                        as: 'assignedPeople',
                         include: [
                             {
                                 model: User,
-                                attributes: ['id', 'name', 'email']
+                                attributes: {exclude: ['team', 'createdAt', 'updatedAt']},
                             }
                         ]
                     }
                 ]
             });
-            return res.status(200).json(tasks);
+
+            const flattenedTasks = tasks.map(task => {
+                const t = task.toJSON();
+                t.assignedUsers = (t.assignedUsers || []).map((ap: any) => ap.user);
+                return t;
+            });
+
+            return res.status(200).json(flattenedTasks);
         } catch (error) {
             console.error('Error getting tasks:', error);
             return res.status(500).json({ error: 'Failed to retrieve tasks' });
@@ -49,7 +55,7 @@ export const taskController = {
                         include: [
                             {
                                 model: User,
-                                attributes: ['id', 'name', 'email']
+                                attributes: {exclude: ['team', 'createdAt', 'updatedAt']},
                             }
                         ]
                     }
@@ -60,7 +66,10 @@ export const taskController = {
                 return res.status(404).json({ error: 'Task not found' });
             }
 
-            return res.status(200).json(task);
+            const t = task.toJSON();
+            t.assignedUsers = (t.assignedUsers || []).map((ap: any) => ap.user);
+
+            return res.status(200).json(t);
         } catch (error) {
             console.error('Error getting task:', error);
             return res.status(500).json({ error: 'Failed to retrieve task aaaaaaaaaaaa' });
@@ -69,18 +78,22 @@ export const taskController = {
 
     async createTask(req: Request, res: Response) {
         try {
-            const { name, description, deadline, projectId, assignedUserIds, status = TaskStatus.NOT_STARTED } = req.body;
+            const { name, description, creatorId, deadline, projectId, priority, status = TaskStatus.NOT_STARTED } = req.body;
+            const assignedUserIds = req.body.assignedPeople || [];
 
-            // Create the task
+            console.log('Date:', req.body.deadline);
+            console.log('Date:', new Date(req.body.deadline));
+
             const task = await Task.create({
                 name,
                 description,
-                deadline: new Date(deadline),
+                creatorId,
+                deadline: deadline,
                 status,
-                projectId
+                projectId,
+                priority
             });
 
-            // Create the assigned user relations
             if (assignedUserIds && assignedUserIds.length > 0) {
                 const assignedPeople = assignedUserIds.map((userId: number) => ({
                     taskId: task.id,
@@ -90,7 +103,6 @@ export const taskController = {
                 await AssignedPerson.bulkCreate(assignedPeople);
             }
 
-            // Fetch the complete task with associations
             const createdTaskWithAssociations = await Task.findByPk(task.id, {
                 include: [
                     {
@@ -98,17 +110,22 @@ export const taskController = {
                     },
                     {
                         model: AssignedPerson,
-                        as: 'assignedPeople',
                         include: [
                             {
-                                model: User
+                                model: User,
+                                attributes: {exclude: ['team', 'createdAt', 'updatedAt']},
                             }
                         ]
                     }
                 ]
             });
 
-            return res.status(201).json(createdTaskWithAssociations);
+            const t = createdTaskWithAssociations?.toJSON();
+            if (t) {
+                t.assignedUsers = (t.assignedUsers || []).map((ap: any) => ap.user);
+            }
+
+            return res.status(201).json(t);
         } catch (error) {
             console.error('Error creating task:', error);
             return res.status(500).json({ error: 'Failed to create task' });
@@ -159,11 +176,9 @@ export const taskController = {
 
                 await Promise.all(assignedPersonPromises);
 
-                // Return the created tasks with their IDs
                 return createdTasks.map(task => task.id);
             });
 
-            // Fetch all created tasks with their associations
             const createdTasksWithAssociations = await Task.findAll({
                 where: {
                     id: {
@@ -176,11 +191,10 @@ export const taskController = {
                     },
                     {
                         model: AssignedPerson,
-                        as: 'assignedPeople',
                         include: [
                             {
                                 model: User,
-                                attributes: ['id', 'name', 'email']
+                                attributes: {exclude: ['team', 'createdAt', 'updatedAt']},
                             }
                         ]
                     }
@@ -242,10 +256,10 @@ export const taskController = {
                     },
                     {
                         model: AssignedPerson,
-                        as: 'assignedPeople',
                         include: [
                             {
-                                model: User
+                                model: User,
+                                attributes: {exclude: ['team', 'createdAt', 'updatedAt']},
                             }
                         ]
                     }
@@ -269,7 +283,6 @@ export const taskController = {
                 return res.status(404).json({ error: 'Task not found' });
             }
 
-            // Delete the task (associated records will be deleted due to cascade constraints)
             await Task.destroy({
                 where: { id: taskId }
             });
@@ -281,48 +294,62 @@ export const taskController = {
         }
     },
 
-    // Get tasks assigned to the current user
-    async getMyTasks(req: Request, res: Response) {
-        try {
-            const userId = (req.user as any)?.id;
+async getMyTasks(req: Request, res: Response) {
+    try {
+        const userId = (req.user as any)?.id;
 
-            if (!userId) {
-                return res.status(401).json({ error: 'Authentication required' });
-            }
-
-            const tasks = await Task.findAll({
-                include: [
-                    {
-                        model: Project
-                    },
-                    {
-                        model: AssignedPerson,
-                        where: { userId },
-                        required: true,
-                        include: [
-                            {
-                                model: User,
-                                attributes: ['id', 'name', 'email']
-                            }
-                        ]
-                    },
-                    {
-                        model: User,
-                        as: 'creator',
-                        attributes: ['id', 'name', 'email']
-                    }
-                ],
-                order: [
-                    ['deadline', 'ASC']
-                ]
-            });
-
-            return res.status(200).json(tasks);
-        } catch (error) {
-            console.error('Error getting user tasks:', error);
-            return res.status(500).json({ error: 'Failed to retrieve tasks' });
+        if (!userId) {
+            return res.status(401).json({ error: 'Authentication required' });
         }
-    },
+
+        const assignedTaskIds = await AssignedPerson.findAll({
+            where: { userId },
+            attributes: ['taskId'],
+            raw: true
+        }).then(assignments => assignments.map(a => a.taskId));
+
+        const tasks = await Task.findAll({
+            where: {
+                id: {
+                    [Op.in]: assignedTaskIds
+                }
+            },
+            include: [
+                {
+                    model: Project
+                },
+                {
+                    model: AssignedPerson,
+                    include: [
+                        {
+                            model: User,
+                            attributes: {exclude: ['team', 'createdAt', 'updatedAt']},
+                        }
+                    ]
+                },
+                {
+                    model: User,
+                    as: 'creator',
+                    attributes: ['id', 'name', 'email']
+                }
+            ],
+            order: [
+                ['deadline', 'ASC']
+            ]
+        });
+
+        const flattenedTasks = tasks.map(task => {
+            const t = task.toJSON();
+            t.assignedUsers = (t.assignedUsers || []).map((ap: any) => ap.user);
+            return t;
+        });
+
+        return res.status(200).json(flattenedTasks);
+    } catch (error) {
+        console.error('Error getting user tasks:', error);
+        return res.status(500).json({ error: 'Failed to retrieve tasks' });
+    }
+},
 
     async getTasksByProject(req: Request, res: Response) {
         try {
@@ -340,15 +367,7 @@ export const taskController = {
             });
 
             const project = await Project.findByPk(projectId, {raw:true});
-            console.log()
-            console.log()
-            console.log()
-            console.log()
-            console.log({projectManagerId: project?.managerId, userId, adevar:project?.managerId===userId})
-            console.log()
-            console.log()
-            console.log()
-            console.log()
+
 
             const isProjectManager = project && project.managerId === userId;
 
@@ -386,7 +405,13 @@ export const taskController = {
                 ]
             });
 
-            return res.status(200).json(tasks);
+            const flattenedTasks = tasks.map(task => {
+                const t = task.toJSON();
+                t.assignedUsers = (t.assignedUsers || []).map((ap: any) => ap.user);
+                return t;
+            });
+
+            return res.status(200).json(flattenedTasks);
         } catch (error) {
             console.error('Error getting project tasks:', error);
             return res.status(500).json({ error: 'Failed to retrieve tasks' });

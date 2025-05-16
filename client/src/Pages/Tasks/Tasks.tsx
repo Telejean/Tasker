@@ -59,17 +59,8 @@ const Tasks = () => {
         setLoading(true);
         const tasksData = await taskService.getMyTasks();
 
-        // Transform the task data to match the expected format
-        const formattedTasks = tasksData.map((task: any) => ({
-          id: task.id,
-          projectName: task.project?.name || "No Project",
-          name: task.name,
-          deadline: task.deadline ? parseDate(new Date(task.deadline).toISOString().split('T')[0]) : null,
-          description: task.description || "",
-          assignedPeople: task.assignedPeople?.map((person: any) => person.user?.name || "Unknown") || [],
-          status: task.status?.toLowerCase() || "not-started",
-          priority: task.priority || "medium"
-        }));
+        const formattedTasks = taskService.formatTask(tasksData);
+
 
         setTasks(formattedTasks);
         setError("");

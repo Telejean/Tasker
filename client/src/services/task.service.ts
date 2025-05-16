@@ -1,7 +1,21 @@
 import axios from 'axios';
 import { API_URL, axiosConfig } from '../config/api';
+import { Task } from '@/types';
+import { parseDate } from '@internationalized/date';
 
 export const taskService = {
+    formatTask(tasksData: Task[]){
+        return tasksData.map((task: any) => ({
+                  id: task.id,
+                  projectName: task.project?.name || "No Project",
+                  name: task.name,
+                  deadline: task.deadline ? parseDate(new Date(task.deadline).toISOString().split('T')[0]) : null,
+                  description: task.description || "",
+                  status: task.status || "Not Started",
+                  assignedPeople: task.assignedUsers.map((person: any) => person.name +" " + person.surname || "Unknown") || [],
+                  priority: task.priority || "medium"
+                }));
+    },
     /**
      * Get all tasks assigned to the current user
      */
@@ -44,7 +58,7 @@ export const taskService = {
     /**
      * Create a new task
      */
-    async createTask(taskData: any) {
+    async createTask(taskData: Task) {
         try {
             const response = await axios.post(`${API_URL}/tasks`, taskData, axiosConfig);
             return response.data;

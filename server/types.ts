@@ -114,9 +114,10 @@ export interface Task {
     status: typeof TaskStatus[keyof typeof TaskStatus];
     priority: string;
     projectId: number;
-    project: Project;
-    assignedPeople: User[];
-    policies: TaskPolicy[];
+    project?: Project;
+    assignedPeople?: User[];
+    assignedPeopleIds?: number[];
+    policies?: TaskPolicy[];
 }
 
 export interface Policy {

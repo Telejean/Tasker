@@ -1,49 +1,63 @@
-import { Table, Column, Model, DataType, ForeignKey, BelongsTo, HasMany } from 'sequelize-typescript';
-import { Project } from './Project.model';
-import { AssignedPerson } from './AssignedPerson.model';
-import { User } from './User.model';
+import {
+  Table,
+  Column,
+  Model,
+  DataType,
+  ForeignKey,
+  BelongsTo,
+  HasMany,
+} from "sequelize-typescript";
+import { Project } from "./Project.model";
+import { AssignedPerson } from "./AssignedPerson.model";
+import { User } from "./User.model";
 
 @Table
 export class Task extends Model {
-    @Column({
-        type: DataType.STRING,
-        allowNull: false,
-    })
-    name!: string;
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  name!: string;
 
-    @Column({
-        type: DataType.TEXT,
-        allowNull: true,
-    })
-    description?: string;
+  @Column({
+    type: DataType.TEXT,
+    allowNull: true,
+  })
+  description?: string;
 
-    @Column({
-        type: DataType.DATE,
-        allowNull: true,
-    })
-    deadline?: Date;
+  @Column({
+    type: DataType.TEXT,
+    allowNull: false,
+  })
+  priority?: string;
 
-    @Column({
-        type: DataType.STRING,
-        allowNull: false,
-        defaultValue: 'NOT_STARTED',
-    })
-    status!: string;
+  @Column({
+    type: DataType.DATE,
+    allowNull: true,
+  })
+  deadline?: Date;
 
-    @ForeignKey(() => User)
-    @Column
-    creatorId!: number;
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+    defaultValue: "NOT_STARTED",
+  })
+  status!: string;
 
-    @BelongsTo(() => User)
-    creator!: User;
+  @ForeignKey(() => User)
+  @Column
+  creatorId!: number;
 
-    @ForeignKey(() => Project)
-    @Column
-    projectId!: number;
+  @BelongsTo(() => User)
+  creator!: User;
 
-    @BelongsTo(() => Project)
-    project!: Project;
+  @ForeignKey(() => Project)
+  @Column
+  projectId!: number;
 
-    @HasMany(() => AssignedPerson)
-    assignedUsers!: User[];
+  @BelongsTo(() => Project)
+  project!: Project;
+
+  @HasMany(() => AssignedPerson)
+  assignedUsers!: User[];
 }

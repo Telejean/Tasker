@@ -26,15 +26,15 @@ const Kanban = ({ tasks } : {tasks:Task[]}) => {
     const [columns, setColumns] = useState({
         'not-started': {
             title: 'Not Started',
-            items: tasks.filter(task => task.status === 'not-started')
+            items: tasks.filter(task => task.status === 'NOT_STARTED')
         },
         'in-progress': {
             title: 'In Progress',
-            items: tasks.filter(task => task.status === 'in-progress')
+            items: tasks.filter(task => task.status === 'IN_PROGRESS')
         },
         'completed': {
             title: 'Completed',
-            items: tasks.filter(task => task.status === 'completed')
+            items: tasks.filter(task => task.status === 'COMPLETED')
         }
     });
 
@@ -48,24 +48,23 @@ const Kanban = ({ tasks } : {tasks:Task[]}) => {
         setColumns({
             'not-started': {
                 title: 'Not Started',
-                items: tasks.filter(task => task.status === 'not-started')
+                items: tasks.filter(task => task.status === 'NOT_STARTED')
             },
             'in-progress': {
                 title: 'In Progress',
-                items: tasks.filter(task => task.status === 'in-progress')
+                items: tasks.filter(task => task.status === 'IN_PROGRESS')
             },
             'completed': {
                 title: 'Completed',
-                items: tasks.filter(task => task.status === 'completed')
+                items: tasks.filter(task => task.status === 'COMPLETED')
             }
         });
     }, [tasks])
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
-            // Prevent drag operations when clicking on task card content
             activationConstraint: {
-                distance: 8, // Require 8px of movement before activating drag
+                distance: 8, 
             },
         }), 
         useSensor(KeyboardSensor, {

@@ -2,7 +2,7 @@ type: http_request
 model: http_request
 id: rq_task_getAll
 createdAt: 2025-05-03T11:48:48.617541900
-updatedAt: 2025-05-03T12:54:31.095967900
+updatedAt: 2025-05-16T11:02:46.143239700
 workspaceId: wk_mxbmXX2jVR
 folderId: fl_LVaGwZvZzS
 authentication: {}
@@ -18,5 +18,5 @@ headers:
 method: GET
 name: Get all tasks
 sortPriority: 10000.0
-url: ${[baseUrl]}/tasks
+url: ${[ baseURL ]}/tasks
 urlParameters: []

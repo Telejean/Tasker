@@ -1,14 +1,17 @@
 import { DateValue } from "react-aria-components";
 
 export interface Task {
-    id: number;
-    projectName: string;
+    id?: number;
     name: string;
-    deadline: DateValue;
+    deadline: string;
     description: string;
+    creatorId: number;
     assignedPeople: string[];
-    status: 'completed' | 'in-progress' | 'not-started';
+    status: 'COMPLETED' | 'IN_PROGRESS' | 'NOT_STARTED';
     priority: string;
+    projectId?: number;
+    project?: Project;
+    projectName?: string;
 }
 
 export interface RangeValue<T> {

@@ -15,6 +15,7 @@ import { useAtom } from "jotai";
 import { LuPencil } from "react-icons/lu";
 import ProjectModal from "../../Components/ProjectCard/ProjectModal";
 import { userService } from "@/services/user.service";
+import  {TasksAdd}  from "@/Components/TasksAdd/TasksAdd";
 
 const ProjectPage = () => {
     const { id } = useParams();
@@ -55,6 +56,29 @@ const ProjectPage = () => {
         }
     };
 
+    const handleAddTask = async (newTaskData: any) => {
+        if (!project) return;
+        try {
+            const createdTask = await taskService.createTask({
+                ...newTaskData,
+                projectId: project.id
+            });
+            const formattedTask: Task = {
+                id: createdTask.id,
+                projectName: createdTask.project?.name || project.name,
+                name: createdTask.name,
+                deadline: createdTask.deadline ? parseDate(new Date(createdTask.deadline).toISOString().split('T')[0]) : parseDate('2000-01-01'),
+                description: createdTask.description || "",
+                assignedPeople: (createdTask.assignedPeople?.map((person: any) => person.user?.name || "Unknown")) || [],
+                status: createdTask.status?.toLowerCase() || "not-started",
+                priority: createdTask.priority || "medium"
+            };
+            setTasks((prev: Task[]) => [...prev, formattedTask]);
+        } catch (err) {
+            console.error("Error creating task:", err);
+        }
+    };
+
     useEffect(() => {
         const fetchProjectData = async () => {
             try {
@@ -65,10 +89,8 @@ const ProjectPage = () => {
                     return;
                 }
 
-                // Fetch project details
                 const projectData = await projectService.getProjectById(parseInt(id));
 
-                // Transform project data to match the UI format
                 const formattedProject = {
                     id: projectData.id,
                     name: projectData.name,
@@ -77,7 +99,7 @@ const ProjectPage = () => {
                     managerId: projectData.managerId,
                     completion: projectData.completion || 0,
                     iconId: projectData.iconId || 1,
-                    icon: projectData.icon || "LuFile", // Default icon
+                    icon: projectData.icon || "LuFile",
                     status: projectData.status?.toLowerCase() || "active",
                     description: projectData.description || ""
                 };
@@ -180,9 +202,8 @@ const ProjectPage = () => {
                             <Box>
                                 <Flex justify="between" align="center" mb="2">
                                     <Heading as="h3">Tasks</Heading>
-
                                     <Permission action="create" resourceType="task" resourceId={project.id}>
-                                        <Button size="2">Add Task</Button>
+                                        <TasksAdd onAddTask={handleAddTask} projectId={project.id} />
                                     </Permission>
                                 </Flex>
 
@@ -215,7 +236,6 @@ const ProjectPage = () => {
                         Files View (Coming Soon)
                     </Tabs.Content>
 
-                    {/* Settings tab content */}
                     <Tabs.Content value="settings">
                         <Flex direction="column" gap="6">
                             <Box>
@@ -248,7 +268,6 @@ const ProjectPage = () => {
                                 </Card>
                             </Box>
 
-                            {/* Policy assignments section - only for administrators */}
                             <Permission action="manage" resourceType="policy">
                                 <Box>
                                     <Heading as="h3" mb="4">Policy Assignments</Heading>
