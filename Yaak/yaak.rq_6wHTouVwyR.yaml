@@ -2,11 +2,12 @@ type: http_request
 model: http_request
 id: rq_6wHTouVwyR
 createdAt: 2025-05-03T11:48:48.617541900
-updatedAt: 2025-05-03T12:54:08.611007700
+updatedAt: 2025-05-17T07:38:48.593172700
 workspaceId: wk_mxbmXX2jVR
 folderId: fl_wRAbKd2BeH
-authentication: {}
-authenticationType: null
+authentication:
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwibmFtZSI6IlZpyJlhbiIsInN1cm5hbWUiOiJSYXJlyJkiLCJlbWFpbCI6InJhcmVzdmlzYW5hbmRyZWlAZ21haWwuY29tIiwicGhvbmVOdW1iZXIiOiIwNzI0MTI3MzY1IiwidGVhbSI6bnVsbCwidGFncyI6bnVsbCwiYmlvIjoiY2V2YSBibGFibGFibGFibGFibGEgYmxhYmxhIGJsYWJsYWJsYWJsYSBibGEgYmxhYmxhYmxhIiwiaXNBZG1pbiI6dHJ1ZSwiY3JlYXRlZEF0IjoiMjAyNS0wNS0xN1QwNzoxMToyMS45OThaIiwidXBkYXRlZEF0IjoiMjAyNS0wNS0xN1QwNzoxMToyMS45OThaIiwiZGVwYXJ0bWVudElkIjpudWxsLCJpYXQiOjE3NDc0Njc1MTAsImV4cCI6MTc0NzU1MzkxMH0.XwatE35z9jiJ6k-cWTIz1ZKYxQdJ1RSW6xyjuaAwCSo
+authenticationType: bearer
 body: {}
 bodyType: null
 description: ''

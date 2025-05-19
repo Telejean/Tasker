@@ -1,28 +1,25 @@
 import axios from 'axios';
 import { API_URL, axiosConfig } from '../config/api';
-import { Task } from '@/types';
-import { parseDate } from '@internationalized/date';
+import { Task } from '@my-types/types';
+import { DateValue, parseDate } from '@internationalized/date';
 
 export const taskService = {
-    formatTask(tasksData: Task[]){
-        return tasksData.map((task: any) => ({
-                  id: task.id,
-                  projectName: task.project?.name || "No Project",
-                  name: task.name,
-                  deadline: task.deadline ? parseDate(new Date(task.deadline).toISOString().split('T')[0]) : null,
-                  description: task.description || "",
-                  status: task.status || "Not Started",
-                  assignedPeople: task.assignedUsers.map((person: any) => person.name +" " + person.surname || "Unknown") || [],
-                  priority: task.priority || "medium"
-                }));
+   dateValueToString(date: DateValue): Date {
+        const month = date.month;
+        const day = date.day;
+        const year = date.year;
+        return new Date(`${year}/${month}/${day}`);
     },
     /**
      * Get all tasks assigned to the current user
      */
-    async getMyTasks() {
+    async getMyTasks() :Promise<Task[]> {
         try {
             const response = await axios.get(`${API_URL}/tasks/my-tasks`, axiosConfig);
-            return response.data;
+            const tasks = response.data.map((task: Task) => {
+                return {...task, deadline: new Date(task.deadline)};
+            });
+            return tasks;
         } catch (error) {
             console.error('Error fetching my tasks:', error);
             throw error;
@@ -35,7 +32,10 @@ export const taskService = {
     async getTasksByProject(projectId: number) {
         try {
             const response = await axios.get(`${API_URL}/tasks/project/${projectId}`, axiosConfig);
-            return response.data;
+              const tasks = response.data.map((task: Task) => {
+                return {...task, deadline: new Date(task.deadline)};
+            });
+            return tasks;
         } catch (error) {
             console.error(`Error fetching tasks for project ${projectId}:`, error);
             throw error;

@@ -1,7 +1,6 @@
 import { Table, Column, Model, DataType, HasMany, ForeignKey, BelongsTo, BelongsToMany } from 'sequelize-typescript';
 import { Task } from './Task.model';
 import { User } from './User.model';
-import { ProjectStatus } from '../types';
 import { ProjectPolicy } from './ProjectPolicy.model';
 import { Team } from './Team.model';
 import { UserProject } from './UserProjects.model';
@@ -28,9 +27,15 @@ export class Project extends Model {
     icon!: string;
 
     @Column({
-        type: DataType.ENUM(...Object.values(ProjectStatus)),
+        type: DataType.TEXT,
+        allowNull: true,
+    })
+    description!: string;
+
+    @Column({
+        type: DataType.STRING,
         allowNull: false,
-        defaultValue: ProjectStatus.ACTIVE,
+        defaultValue: "ACTIVE",
     })
     status!: string;
 
@@ -53,7 +58,20 @@ export class Project extends Model {
     @HasMany(() => ProjectPolicy)
     policies!: ProjectPolicy[];
 
-    @BelongsToMany(()=>User, ()=>UserProject)
-    users!: User[];
+    @BelongsToMany(() => User, () => UserProject)
+    members!: User[];
+
+    @Column({
+        type: DataType.DATE,
+        allowNull: false,
+    })
+    startDate!: Date;
+
+    @Column({
+        type: DataType.DATE,
+        allowNull: false,
+    })
+    endDate!: Date;
+
 
 }

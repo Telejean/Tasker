@@ -1,9 +1,10 @@
 import { Router } from 'express';
 import { userController } from '../controllers/index';
+import { parseJWT } from '../middlewares/authorization.middleware';
 
 const router = Router();
 
-router.get('/', userController.getAllUsers as any);
+router.get('/', parseJWT, userController.getAllUsers as any);
 
 router.get('/full/:id', userController.getFullUser as any);
 

@@ -14,7 +14,7 @@ import { LuPlus, LuPencil, LuTrash2 } from 'react-icons/lu';
 import { teamService } from '../../services/team.service';
 import TeamMembersTable from './TeamMembersTable';
 import TeamModal from './TeamModal';
-import { User, Team } from '../../types';
+import { User, Team } from '@my-types/types';
 
 interface TeamListProps {
     projectId: number;
@@ -37,7 +37,6 @@ const TeamList = ({ projectId, availableUsers, projectManager }: TeamListProps) 
         try {
             setLoading(true);
             const teamsData = await teamService.getTeamsByProject(projectId);
-            console.log('Loaded teams:', teamsData);
             setTeams(teamsData);
         } catch (err) {
             setError('Failed to load teams');
@@ -169,14 +168,14 @@ const TeamList = ({ projectId, availableUsers, projectManager }: TeamListProps) 
             )}
 
             {/* Team Create/Edit Modal */}
-                    <TeamModal
-                        open={teamModalOpen}
-                        onOpenChange={setTeamModalOpen}
-                        projectId={projectId}
-                        team={selectedTeam}
-                        onTeamSaved={loadTeams}
-                        availableUsers={availableUsers}
-                    />
+            <TeamModal
+                open={teamModalOpen}
+                onOpenChange={setTeamModalOpen}
+                projectId={projectId}
+                team={selectedTeam}
+                onTeamSaved={loadTeams}
+                availableUsers={availableUsers}
+            />
 
             <Dialog.Root open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
                 <Dialog.Content>

@@ -2,11 +2,11 @@ type: http_request
 model: http_request
 id: rq_mifLq2kaCt
 createdAt: 2025-05-16T11:09:31.313423300
-updatedAt: 2025-05-16T11:16:55.397019400
+updatedAt: 2025-05-17T13:45:36.014889200
 workspaceId: wk_mxbmXX2jVR
 folderId: fl_LVaGwZvZzS
 authentication:
-  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjEsIm5hbWUiOiJWaciZYW4iLCJzdXJuYW1lIjoiUmFyZciZIiwiZW1haWwiOiJyYXJlc3Zpc2FuYW5kcmVpQGdtYWlsLmNvbSIsInBob25lTnVtYmVyIjoiMDcyNDEyNzM2NSIsInRlYW0iOm51bGwsInRhZ3MiOm51bGwsImJpbyI6IkJ1bmEgeml1YSAgYmxhIGJsYWJsYSBibGFibGEgYmxhIGJsYSBibGFibGEgYmxhIGJsYSBibGFibGEgYmxhIGJsYSBibGEgYmxhIGJsYWJsYSBibGEgYmxhIGJsYWJsYSBibGFibGEgYmxhIGJsYSBibGEiLCJpc0FkbWluIjp0cnVlLCJjcmVhdGVkQXQiOiIyMDI1LTA1LTE2VDA5OjMwOjI0LjkzNVoiLCJ1cGRhdGVkQXQiOiIyMDI1LTA1LTE2VDA5OjMwOjI0LjkzNVoiLCJkZXBhcnRtZW50SWQiOm51bGwsImlhdCI6MTc0NzM5NDIwNSwiZXhwIjoxNzQ3NDgwNjA1fQ.qoPqQpOG6-sJl8y_GHuv8jI4AqHiu_g31XiPTGpzh0o
+  token: ${[ token ]}
 authenticationType: bearer
 body: {}
 bodyType: null
@@ -15,5 +15,5 @@ headers: []
 method: GET
 name: Get my tasks
 sortPriority: 12000.0
-url: ${[ baseURL ]}/tasks/my-tasks
+url: ${[ baseUrl ]}/tasks/my-tasks
 urlParameters: []

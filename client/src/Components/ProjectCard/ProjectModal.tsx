@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Dialog, Flex, Button, Text, Box, Select, TextField } from '@radix-ui/themes';
 import { projectService } from '../../services/project.service';
 import { userService } from '../../services/user.service';
-import { User } from '../../types';
+import { User } from '@my-types/types';
 import * as LuIcons from 'react-icons/lu'
 import React from 'react';
 

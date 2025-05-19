@@ -6,7 +6,7 @@ import { Grid, Box, Flex, ScrollArea, Text } from '@radix-ui/themes';
 import { useEffect, useState } from 'react';
 import { taskService } from '@/services/task.service';
 import { projectService } from '@/services/project.service';
-import { Project, Task } from '@/types';
+import { Project, Task } from '@my-types/types';
 import { parseDate } from '@internationalized/date';
 
 const Home = () => {

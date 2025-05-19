@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import  AuthorizationService  from '../services/authorization.service';
+import AuthorizationService from '../services/authorization.service';
 import jwt from 'jsonwebtoken';
 import { User } from '../models/User.model';
 
@@ -87,3 +87,33 @@ export const jwtAuth = async (req: Request, res: Response, next: NextFunction) =
         res.status(500).json({ error: 'Internal Server Error', message: 'Error authenticating token' });
     }
 };
+
+
+export const parseJWT = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        let token = req.cookies?.token;
+
+        if (!token && req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+            token = req.headers.authorization.split(' ')[1];
+        }
+        if (!token) {
+            return next();
+        }
+
+        const secret = process.env.JWT_SECRET || 'your-secret-key-here';
+        let decoded: any;
+
+        decoded = jwt.verify(token, secret);
+
+        const userDB = await User.findByPk(decoded.id);
+        if (!userDB) {
+            return next();
+        }
+
+        req.user = userDB;
+        next();
+    } catch (error) {
+        console.log("Error parsing the jwt token", error)
+        res.status(500).json({ error: 'Internal Server Error', message: 'Error parsing the token' });
+    }
+}

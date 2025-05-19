@@ -20,19 +20,19 @@ import TaskCardOverlay from './TaskCardOverlay';
 import TaskDetailDialog from '../TaskDetailDialog/TaskDetailDialog';
 import { useAtom } from 'jotai';
 import { tasksAtom } from '../../Pages/Tasks/Tasks';
-import { Task } from '@/types';
+import { Task } from '@my-types/types';
 
 const Kanban = ({ tasks } : {tasks:Task[]}) => {
     const [columns, setColumns] = useState({
-        'not-started': {
+        'NOT_STARTED': {
             title: 'Not Started',
             items: tasks.filter(task => task.status === 'NOT_STARTED')
         },
-        'in-progress': {
+        'IN_PROGRESS': {
             title: 'In Progress',
             items: tasks.filter(task => task.status === 'IN_PROGRESS')
         },
-        'completed': {
+        'COMPLETED': {
             title: 'Completed',
             items: tasks.filter(task => task.status === 'COMPLETED')
         }
@@ -46,15 +46,15 @@ const Kanban = ({ tasks } : {tasks:Task[]}) => {
 
     useEffect(() => {
         setColumns({
-            'not-started': {
+            'NOT_STARTED': {
                 title: 'Not Started',
                 items: tasks.filter(task => task.status === 'NOT_STARTED')
             },
-            'in-progress': {
+            'IN_PROGRESS': {
                 title: 'In Progress',
                 items: tasks.filter(task => task.status === 'IN_PROGRESS')
             },
-            'completed': {
+            'COMPLETED': {
                 title: 'Completed',
                 items: tasks.filter(task => task.status === 'COMPLETED')
             }

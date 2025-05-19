@@ -6,6 +6,7 @@ import {
     useReactTable,
 } from '@tanstack/react-table'
 import { Avatar, Box, Flex, Table } from '@radix-ui/themes'
+import { useNavigate } from 'react-router';
 
 interface TeamMember {
     id: number;
@@ -21,6 +22,8 @@ interface TeamMembersTableProps {
 }
 
 const TeamMembersTable = ({ teamMembers, projectManager }: TeamMembersTableProps) => {
+    const navigate = useNavigate();
+
     const data: TeamMember[] = useMemo(
         () =>
             projectManager
@@ -86,7 +89,14 @@ const TeamMembersTable = ({ teamMembers, projectManager }: TeamMembersTableProps
             </Table.Header>
             <Table.Body>
                 {table.getRowModel().rows.map(row => (
-                    <Table.Row key={row.id}>
+                    <Table.Row
+                        key={row.id}
+                        style={{ cursor: "pointer" }}
+                        onClick={() => {
+                            console.log("click")
+                            navigate(`/profile/${row.original.id}`);
+                        }}
+                    >
                         {row.getVisibleCells().map(cell => (
                             <Table.Cell key={cell.id}>
                                 {flexRender(cell.column.columnDef.cell, cell.getContext())}

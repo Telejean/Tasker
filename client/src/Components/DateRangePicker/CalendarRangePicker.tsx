@@ -1,4 +1,4 @@
-import { Button, CalendarCell, CalendarGrid, DateInput, DateRangePicker, DateSegment, Dialog, Group, Heading, Popover, RangeCalendar } from 'react-aria-components';
+import { Button, CalendarCell, CalendarGrid, DateInput, DateRangePicker, DateSegment, Dialog, Group, Heading, I18nProvider, Popover, RangeCalendar } from 'react-aria-components';
 import "../../assets/Style/ReactAria/DateRangePicker.css";
 import { DateRangePickerStateContext } from 'react-aria-components';
 import { useContext } from 'react';
@@ -11,7 +11,8 @@ const DateRangePickerClearButton = () => {
             className="clear-button"
             aria-label="Clear"
             onPress={() => {
-                calendarState.setValue(null);
+                if(calendarState)
+                    calendarState.setValue(null);
             }}
         >
             ✕
@@ -21,29 +22,31 @@ const DateRangePickerClearButton = () => {
 
 const CalendarRangePicker = ({ ...props }) => {
     return (
-        <DateRangePicker {...props}>
-            <Group className="date-range-input-group">
-                <DateInput slot="start">
-                    {(segment) => <DateSegment segment={segment} />}
-                </DateInput>
-                <span aria-hidden="true">–</span>
-                <DateInput slot="end">
-                    {(segment) => <DateSegment segment={segment} />}
-                </DateInput>
-                <DateRangePickerClearButton />
-            </Group>
+        <I18nProvider locale="en-RO-u-ca-gregory">
+            <DateRangePicker {...props}>
+                <Group className="date-range-input-group">
+                    <DateInput slot="start">
+                        {(segment) => <DateSegment segment={segment} />}
+                    </DateInput>
+                    <span aria-hidden="true">-</span>
+                    <DateInput slot="end">
+                        {(segment) => <DateSegment segment={segment} />}
+                    </DateInput>
+                    <DateRangePickerClearButton />
+                </Group>
 
-            <RangeCalendar>
-                <header>
-                    <Button slot="previous">◀</Button>
-                    <Heading />
-                    <Button slot="next">▶</Button>
-                </header>
-                <CalendarGrid>
-                    {(date) => <CalendarCell date={date} />}
-                </CalendarGrid>
-            </RangeCalendar>
-        </DateRangePicker>
+                <RangeCalendar>
+                    <header>
+                        <Button slot="previous">◀</Button>
+                        <Heading />
+                        <Button slot="next">▶</Button>
+                    </header>
+                    <CalendarGrid>
+                        {(date) => <CalendarCell date={date} />}
+                    </CalendarGrid>
+                </RangeCalendar>
+            </DateRangePicker>
+        </I18nProvider>
     );
 }
 

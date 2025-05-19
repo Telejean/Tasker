@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Dialog, Flex, Button, TextField, Text, Select, Box } from '@radix-ui/themes';
 import { teamService } from '../../services/team.service';
-import { User, Team, Department } from '../../types';
+import { User, Team, Department } from '@my-types/types';
 
 const ROLE_OPTIONS = [
     { value: 'MEMBER', label: 'Member' },
@@ -52,7 +52,6 @@ export const TeamModal = ({
                 deptMap.set(u.department.id, u.department);
             }
         });
-        console.log('Departments:', deptMap);
         return Array.from(deptMap.values());
     }, [availableUsers]);
 

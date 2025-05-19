@@ -1,7 +1,7 @@
 import { Box, Heading, ScrollArea, Flex } from '@radix-ui/themes';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import KanbanTaskCard from './KanbanTaskCard';
-import { Task } from '@/types';
+import { Task } from '@my-types/types';
 
 const KanbanColumn = ({ title, tasks, onTaskClick }:{title: string, tasks: Task[], onTaskClick: (task: Task) => void}) => {
     return (
@@ -18,7 +18,7 @@ const KanbanColumn = ({ title, tasks, onTaskClick }:{title: string, tasks: Task[
             >
                 <ScrollArea style={{ height: '100%' }}>
                     <SortableContext
-                        items={tasks.map(task => task.id)}
+                        items={tasks.filter(task => task.id !== undefined).map(task => task.id as string | number)}
                         strategy={verticalListSortingStrategy}
                     >
                         <Flex direction="column" gap="2">

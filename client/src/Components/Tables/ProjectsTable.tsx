@@ -1,26 +1,18 @@
-import {
-    flexRender,
-    createColumnHelper,
-    getCoreRowModel,
-    useReactTable,
-    SortingState,
-    getSortedRowModel
-} from '@tanstack/react-table'
-import { Avatar, Box, Flex, Table, Progress } from '@radix-ui/themes'
+import { flexRender, createColumnHelper, getCoreRowModel, useReactTable, SortingState, getSortedRowModel } from '@tanstack/react-table'
+import { Avatar, Box, Flex, Table, Progress, Badge, Text } from '@radix-ui/themes'
 import { useState } from 'react'
 import * as Icons from "react-icons/lu";
 import ProjectActions from './ProjectActions'
 import { useNavigate } from 'react-router-dom';
 import "./table.css"
-
-import { Project } from '@/types'
+import { Project } from '@my-types/types';
 
 const ProjectsTable = ({ data }: { data: Project[] }) => {
     const [sorting, setSorting] = useState<SortingState>([])
     const navigate = useNavigate();
 
+
     const handleRowClick = (projectId: number, event: React.MouseEvent) => {
-        // Prevent navigation if clicking on action buttons
         if ((event.target as HTMLElement).closest('[data-action-button]')) {
             return;
         }
@@ -30,16 +22,13 @@ const ProjectsTable = ({ data }: { data: Project[] }) => {
     const handleCopyLink = (id: number) => {
         const projectUrl = `${window.location.origin}/projects/${id}`;
         navigator.clipboard.writeText(projectUrl);
-        // You might want to add a toast notification here
     };
 
     const handleArchive = (id: number) => {
-        // Implement archive logic
         console.log('Archive project:', id);
     };
 
     const handleDelete = (id: number) => {
-        // Implement delete logic
         console.log('Delete project:', id);
     };
 
@@ -56,24 +45,29 @@ const ProjectsTable = ({ data }: { data: Project[] }) => {
         }),
         columnHelper.accessor("name", {
             id: "name",
-            cell: info => info.getValue(),
+            cell: info => (<Text weight='bold' size='3'>{info.getValue()}</Text>),
             header: "Project Name"
         }),
         columnHelper.accessor("members", {
             id: "members",
             cell: info => (
-                <Flex gap="1" wrap="wrap">
-                    {info.getValue().map((member, index) => (
+                <Flex gap="1" wrap="wrap" align='center'>
+                    {info.getValue().slice(0, 3).map((member, index) => (
                         <Avatar
                             key={index}
                             size="1"
                             radius="full"
-                            fallback={member[0]}
+                            fallback={member.name.charAt(0)}
                         />
                     ))}
+                    {info.getValue().length > 3 && (
+                        <Badge variant="soft">
+                            +{info.getValue().length - 3}
+                        </Badge>
+                    )}
                 </Flex>
             ),
-            header: "Team Members"
+            header: "Members"
         }),
         columnHelper.accessor("manager", {
             id: "manager",
@@ -82,9 +76,9 @@ const ProjectsTable = ({ data }: { data: Project[] }) => {
                     <Avatar
                         size="1"
                         radius="full"
-                        fallback={info.getValue()[0]}
+                        fallback={info.getValue().name.slice(0, 1)}
                     />
-                    {info.getValue()}
+                    {info.getValue().name + " " + info.getValue().surname}
                 </Flex>
             ),
             header: "Manager"

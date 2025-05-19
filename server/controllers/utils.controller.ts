@@ -5,7 +5,7 @@ import sq from '../utils/sequelize';
 export const utilsController = {
     syncDatabase : async (req: Request, res: Response): Promise<void> => {
         try {
-            await sq.sync({ force: true }); 
+            await sq.sync({ alter: true }); 
             res.status(200).json({ message: 'Database synchronized successfully.' });
         } catch (error : any) {
             console.error('Error synchronizing database:', error);

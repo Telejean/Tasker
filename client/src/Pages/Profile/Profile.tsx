@@ -1,21 +1,43 @@
 import { useState, useEffect } from 'react';
 import { Box, Flex, Heading, Button, TextField, Text, Tabs, Card, Avatar } from '@radix-ui/themes';
-import { UserProfile } from '@/types';
 import ProfileIconSelector from '@/Components/ProfileIconSelector/ProfileIconSelector';
 import ColorPicker from '@/Components/ColorPicker/ColorPicker';
 import * as Icons from 'react-icons/lu';
 import { userAtom } from '@/App';
 import { useAtom } from 'jotai';
+import { useParams } from 'react-router-dom';
+import { userService } from '@/services/user.service';
 import axios from 'axios';
 import { API_URL, axiosConfig } from '@/config/api';
 
 const Profile = () => {
-    const [profile, setProfile] = useAtom(userAtom);
+    const [currentUser] = useAtom(userAtom);
+    const { userId } = useParams();
+    const [profile, setProfile] = useState(currentUser);
     const [isEditing, setIsEditing] = useState(false);
-    const [selectedIcon, setSelectedIcon] = useState(profile.iconName);
-    const [selectedColor, setSelectedColor] = useState(profile.iconBgColor);
+    const [selectedIcon, setSelectedIcon] = useState(profile?.iconName);
+    const [selectedColor, setSelectedColor] = useState(profile?.iconBgColor);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
+    console.log(userId)
+    // Determine if this is the current user's profile
+    const isOwnProfile = currentUser && userId && String(currentUser.id) === String(userId);
+
+    // Fetch user data by ID
+    useEffect(() => {
+        const fetchProfile = async () => {
+            if (!userId) return;
+            try {
+                const user = await userService.getUserById(Number(userId));
+                setProfile(user);
+                setSelectedIcon(user.iconName);
+                setSelectedColor(user.iconBgColor);
+            } catch (err) {
+                setError('Failed to load profile');
+            }
+        };
+        fetchProfile();
+    }, [userId]);
 
     // Update profile on the backend
     const handleSaveProfile = async () => {
@@ -50,11 +72,21 @@ const Profile = () => {
     };
 
     // Get the actual icon component based on the icon name
-    const IconComponent = Icons[profile.iconName as keyof typeof Icons] || Icons.LuUser;
+    const IconComponent = Icons[profile?.iconName as keyof typeof Icons] || Icons.LuUser;
+
+    if (!profile) {
+        return (
+            <Box p="6">
+                <Text size="5" color="gray">Loading profile...</Text>
+            </Box>
+        );
+    }
 
     return (
         <Box width="100%" p="6">
-            <Heading as="h1" size="8" mb="6">My Profile</Heading>
+            <Heading as="h1" size="8" mb="6">
+                {isOwnProfile ? "My Profile" : `${profile.name}'s Profile`}
+            </Heading>
 
             {error && (
                 <Card size="2" color="red" mb="4">
@@ -83,9 +115,10 @@ const Profile = () => {
                         <Heading as="h2" size="6">{profile.name}</Heading>
                         <Text size="2" color="gray">{profile.role}</Text>
 
-                        {!isEditing ? (
+                        {isOwnProfile && !isEditing ? (
                             <Button onClick={() => setIsEditing(true)}>Edit Profile</Button>
-                        ) : (
+                        ) : null}
+                        {isOwnProfile && isEditing && (
                             <Flex gap="2">
                                 <Button color="gray" variant="soft" onClick={() => setIsEditing(false)}>Cancel</Button>
                                 <Button onClick={handleSaveProfile} disabled={isLoading}>
@@ -101,7 +134,7 @@ const Profile = () => {
                     <Tabs.Root defaultValue="details">
                         <Tabs.List>
                             <Tabs.Trigger value="details">Profile Details</Tabs.Trigger>
-                            {isEditing && <Tabs.Trigger value="appearance">Appearance</Tabs.Trigger>}
+                            {isOwnProfile && isEditing && <Tabs.Trigger value="appearance">Appearance</Tabs.Trigger>}
                         </Tabs.List>
 
                         <Box py="4">
@@ -109,7 +142,7 @@ const Profile = () => {
                                 <Flex direction="column" gap="4">
                                     <Box>
                                         <Text as="div" size="2" weight="bold" mb="1">Name</Text>
-                                        {isEditing ? (
+                                        {isOwnProfile && isEditing ? (
                                             <TextField.Root
                                                 defaultValue={profile.name}
                                                 onChange={(e) => setProfile(prev => ({ ...prev, name: e.target.value }))}
@@ -121,7 +154,7 @@ const Profile = () => {
 
                                     <Box>
                                         <Text as="div" size="2" weight="bold" mb="1">Email</Text>
-                                        {isEditing ? (
+                                        {isOwnProfile && isEditing ? (
                                             <TextField.Root
                                                 defaultValue={profile.email}
                                                 onChange={(e) => setProfile(prev => ({ ...prev, email: e.target.value }))}
@@ -133,7 +166,7 @@ const Profile = () => {
 
                                     <Box>
                                         <Text as="div" size="2" weight="bold" mb="1">Phone</Text>
-                                        {isEditing ? (
+                                        {isOwnProfile && isEditing ? (
                                             <TextField.Root
                                                 defaultValue={profile.phoneNumber || ''}
                                                 onChange={(e) => setProfile(prev => ({ ...prev, phoneNumber: e.target.value }))}
@@ -145,19 +178,19 @@ const Profile = () => {
 
                                     <Box>
                                         <Text as="div" size="2" weight="bold" mb="1">Department</Text>
-                                        {isEditing ? (
+                                        {isOwnProfile && isEditing ? (
                                             <TextField.Root
-                                                defaultValue={profile.department || ''}
+                                                defaultValue={profile.department?.departmentName || ''}
                                                 onChange={(e) => setProfile(prev => ({ ...prev, department: e.target.value }))}
                                             />
                                         ) : (
-                                            <Text>{profile.department || 'Not provided'}</Text>
+                                            <Text>{profile.department?.departmentName || 'Not provided'}</Text>
                                         )}
                                     </Box>
 
                                     <Box>
                                         <Text as="div" size="2" weight="bold" mb="1">Bio</Text>
-                                        {isEditing ? (
+                                        {isOwnProfile && isEditing ? (
                                             <TextField.Root
                                                 defaultValue={profile.bio || ''}
                                                 onChange={(e) => setProfile(prev => ({ ...prev, bio: e.target.value }))}
@@ -170,23 +203,25 @@ const Profile = () => {
                             </Tabs.Content>
 
                             <Tabs.Content value="appearance">
-                                <Flex direction="column" gap="4">
-                                    <Box>
-                                        <Text as="div" size="2" weight="bold" mb="2">Profile Icon</Text>
-                                        <ProfileIconSelector
-                                            selectedIcon={selectedIcon}
-                                            onSelectIcon={setSelectedIcon}
-                                        />
-                                    </Box>
+                                {isOwnProfile && (
+                                    <Flex direction="column" gap="4">
+                                        <Box>
+                                            <Text as="div" size="2" weight="bold" mb="2">Profile Icon</Text>
+                                            <ProfileIconSelector
+                                                selectedIcon={selectedIcon}
+                                                onSelectIcon={setSelectedIcon}
+                                            />
+                                        </Box>
 
-                                    <Box>
-                                        <Text as="div" size="2" weight="bold" mb="2">Background Color</Text>
-                                        <ColorPicker
-                                            selectedColor={selectedColor}
-                                            onSelectColor={setSelectedColor}
-                                        />
-                                    </Box>
-                                </Flex>
+                                        <Box>
+                                            <Text as="div" size="2" weight="bold" mb="2">Background Color</Text>
+                                            <ColorPicker
+                                                selectedColor={selectedColor}
+                                                onSelectColor={setSelectedColor}
+                                            />
+                                        </Box>
+                                    </Flex>
+                                )}
                             </Tabs.Content>
                         </Box>
                     </Tabs.Root>

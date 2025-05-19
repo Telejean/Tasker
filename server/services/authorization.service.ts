@@ -32,13 +32,7 @@ class AuthorizationService {
   /**
    * Check if a user has permission to perform an action on a resource
    */
-  async checkPermission({
-    userId,
-    action,
-    resourceType,
-    resourceId,
-    projectId
-  }: PermissionCheckParams): Promise<boolean> {
+  async checkPermission({ userId, action, resourceType, resourceId, projectId }: PermissionCheckParams): Promise<boolean> {
     try {
       // Get user with role
       const user = await User.findByPk(userId);

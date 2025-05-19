@@ -2,7 +2,7 @@ type: http_request
 model: http_request
 id: rq_task_getById
 createdAt: 2025-05-03T11:48:48.635019700
-updatedAt: 2025-05-16T11:23:37.275025300
+updatedAt: 2025-05-17T11:56:46.890267300
 workspaceId: wk_mxbmXX2jVR
 folderId: fl_LVaGwZvZzS
 authentication: {}
@@ -18,13 +18,9 @@ headers:
 method: GET
 name: Get task by ID
 sortPriority: 12000.0
-url: ${[ baseURL ]}/tasks/:id
+url: ${[ baseUrl ]}/tasks/:id
 urlParameters:
 - enabled: true
   name: :id
-  value: '3'
-  id: 7bds6XAZy4
-- enabled: true
-  name: ''
-  value: ''
-  id: W2nY2Kc2mJ
+  value: '2'
+  id: nigmM3d3s6

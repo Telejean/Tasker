@@ -2,26 +2,20 @@ import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
 import { User } from '../models/User.model';
-import { UserRoles } from '../types';
 
-// JWT configuration
 const jwtOptions = {
     jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
     secretOrKey: process.env.JWT_SECRET || 'your-secret-key-here'
 };
 
-// Add JWT strategy
 passport.use(new JwtStrategy(jwtOptions, async (payload, done) => {
     try {
-        // Find the user specified in token
         const user = await User.findByPk(payload.id);
 
-        // If user doesn't exist, handle it
         if (!user) {
             return done(null, false);
         }
 
-        // Otherwise, return the user
         return done(null, user);
     } catch (error) {
         return done(error, false);

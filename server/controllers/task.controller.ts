@@ -1,5 +1,4 @@
 import type { Request, Response } from 'express';
-import { TaskStatus } from '../types';
 import { Task } from '../models/Task.model';
 import { Project } from '../models/Project.model';
 import { AssignedPerson } from '../models/AssignedPerson.model';
@@ -72,17 +71,14 @@ export const taskController = {
             return res.status(200).json(t);
         } catch (error) {
             console.error('Error getting task:', error);
-            return res.status(500).json({ error: 'Failed to retrieve task aaaaaaaaaaaa' });
+            return res.status(500).json({ error: 'Failed to retrieve task' });
         }
     },
 
     async createTask(req: Request, res: Response) {
         try {
-            const { name, description, creatorId, deadline, projectId, priority, status = TaskStatus.NOT_STARTED } = req.body;
+            const { name, description, creatorId, deadline, projectId, priority, status = "NOT_STARTED" } = req.body;
             const assignedUserIds = req.body.assignedPeople || [];
-
-            console.log('Date:', req.body.deadline);
-            console.log('Date:', new Date(req.body.deadline));
 
             const task = await Task.create({
                 name,
@@ -149,7 +145,7 @@ export const taskController = {
                         name: task.name,
                         description: task.description,
                         deadline: task.deadline ? new Date(task.deadline) : null,
-                        status: task.status || TaskStatus.NOT_STARTED,
+                        status: task.status || "NOT_STARTED",
                         projectId: task.projectId
                     })),
                     { transaction: t }

@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import { User } from '../models/User.model';
-import { UserRoles } from '../types';
 import passport from 'passport';
 import { createUserService } from '../services/user.service';
 import authorizationService from '../services/authorization.service';
@@ -179,7 +178,6 @@ export const authController = {
                 resourceType: resourceType as string,
                 resourceId: resourceId ? Number(resourceId) : undefined
             });
-            console.log({ context: req.query, hasPermission: hasPermission })
             res.status(200).json({ hasPermission });
         } catch (error) {
             console.error('Error checking permission:', error);

@@ -2,7 +2,7 @@ type: http_request
 model: http_request
 id: rq_vDKnq3pmao
 createdAt: 2025-05-03T12:58:33.747559300
-updatedAt: 2025-05-16T09:28:56.450074700
+updatedAt: 2025-05-17T07:12:30.658916200
 workspaceId: wk_mxbmXX2jVR
 folderId: fl_wRAbKd2BeH
 authentication: {}
@@ -161,5 +161,5 @@ headers:
 method: POST
 name: Bulk Create
 sortPriority: -0.0001
-url: ${[ baseURL ]}/users/bulk
+url: ${[ baseUrl ]}/users/bulk
 urlParameters: []

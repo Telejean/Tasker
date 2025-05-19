@@ -4,11 +4,11 @@ import { Project } from './Project.model';
 import { Department } from './Department.model';
 import { UserPolicy } from './UserPolicy.model';
 import { PermissionLog } from './PermissionLog.model';
-import { UserRoles } from '../types';
 import { UserTeam } from './UserTeam.model';
 import { Task } from './Task.model';
 import { Team } from './Team.model';
 import { UserProject } from './UserProjects.model';
+import { PerformanceStats, UserAvailability, UserSkills } from '@my-types/types';
 
 @Table
 export class User extends Model {
@@ -44,11 +44,6 @@ export class User extends Model {
     })
     team!: string;
 
-    @Column({
-        type: DataType.JSON,
-        allowNull: true,
-    })
-    tags!: JSON;
 
     @Column({
         type: DataType.TEXT,
@@ -86,4 +81,36 @@ export class User extends Model {
 
     @BelongsToMany(() => Project, () => UserProject)
     projects!: Project[];
+
+    //AI
+
+    @Column({
+        type: DataType.JSON,
+        allowNull: true,
+    })
+    tags!: JSON;
+
+    @Column({
+        type: DataType.NUMBER,
+        allowNull: true,
+    })
+    workload!: number;
+
+    @Column({
+        type: DataType.JSON,
+        allowNull: true,
+    })
+    performanceStats!: PerformanceStats;
+
+    @Column({
+        type: DataType.JSON,
+        allowNull: true,
+    })
+    skills!: UserSkills;
+
+    @Column({
+        type: DataType.JSON,
+        allowNull: true,
+    })
+    availability!: UserAvailability;
 }

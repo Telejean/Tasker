@@ -1,20 +1,10 @@
 import { error } from 'console';
 import { User as UserModel } from '../models/User.model';
-import { User, UserRoles } from '../types';
 import sequelize from '../utils/sequelize';
+import {User} from "@my-types/types"
 
-interface CreateUserDto {
-    name: string;
-    surname: string;
-    email: string;
-    phoneNumber: string;
-    role: typeof UserRoles[keyof typeof UserRoles];
-    tags?: JSON;
-    bio?: string;
-    departmentId: number;
-}
 
-export const validateUserDataService = async (userData: CreateUserDto): Promise<void> => {
+export const validateUserDataService = async (userData: any): Promise<void> => {
     try {
         if (!userData.name) {
             throw new Error("Field 'name' is missing")
@@ -64,7 +54,7 @@ export const validateUserDataService = async (userData: CreateUserDto): Promise<
     }
 }
 
-export const createUserService = async (userData: CreateUserDto) => {
+export const createUserService = async (userData: any) => {
     try {
         const newUser = await UserModel.create({ ...userData });
         return newUser.toJSON() as User;
@@ -77,7 +67,7 @@ export const createUserService = async (userData: CreateUserDto) => {
 }
 
 
-export const createBulkUsersService = async (users: CreateUserDto[]) => {
+export const createBulkUsersService = async (users: any[]) => {
     const transaction = await sequelize.transaction();
 
     try {

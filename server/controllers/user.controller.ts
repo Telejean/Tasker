@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import { Task } from '../models/Task.model';
 import { AssignedPerson } from '../models/AssignedPerson.model';
-import { UserRoles } from '../types';
 import sequelize from '../utils/sequelize';
 import { createUserService } from '../services/user.service';
 import { UserProject, UserPolicy, PermissionLog, Policy, Team, Department, Project, User } from '../models';
@@ -10,6 +9,7 @@ export const userController = {
 
 
     async getAllUsers(req: Request, res: Response) {
+
         try {
             const users = await User.findAll({
                 attributes: { exclude: ["departmentId", "createdAt", "updatedAt"] },
@@ -22,8 +22,16 @@ export const userController = {
                         model: Department,
                         attributes: ['id', 'departmentName']
                     }
-                ]
+                ],
+
             });
+
+            if (req.user) {
+                const { id } = req.user as any;
+                const parsedUsers = users.filter(u => u.id !== id);
+                return res.status(200).json(parsedUsers);
+            }
+
             return res.status(200).json(users);
         } catch (error) {
             console.error('Error getting users:', error);
@@ -113,7 +121,7 @@ export const userController = {
                 surname: req.body.surname,
                 email: req.body.email,
                 phoneNumber: req.body.phoneNumber,
-                role: req.body.role || UserRoles.MEMBER,
+                role: req.body.role || "MEMBER",
                 tags: req.body.tags,
                 bio: req.body.bio,
                 departmentId: req.body.departmentId,

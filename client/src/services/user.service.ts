@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { API_URL, axiosConfig } from '../config/api';
-import { User } from '../types';
+import { User } from '@my-types/types';
 
 export const userService = {
     /**
@@ -16,8 +16,8 @@ export const userService = {
         }
     },
 
-    async getUsersFromProject(projectId:number) : Promise<User[]>{
-        try{
+    async getUsersFromProject(projectId: number): Promise<User[]> {
+        try {
             const response = await axios.get(`${API_URL}/users/project/${projectId}`)
             return response.data;
         } catch (error) {

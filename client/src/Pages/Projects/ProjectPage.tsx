@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Box, Flex, Heading, Tabs, Text, Button, Card, Dialog } from "@radix-ui/themes";
 import { useParams } from "react-router-dom";
 import TasksTable from "@/Components/Tables/TasksTable";
-import { Project, Task, User } from "@/types";
+import { Project, Task, User } from "@my-types/types";
 import TeamList from "@/Components/Tables/TeamList";
 import Kanban from "@/Components/Kanban/Kanban";
 import { projectService } from "@/services/project.service";
@@ -15,7 +15,8 @@ import { useAtom } from "jotai";
 import { LuPencil } from "react-icons/lu";
 import ProjectModal from "../../Components/ProjectCard/ProjectModal";
 import { userService } from "@/services/user.service";
-import  {TasksAdd}  from "@/Components/TasksAdd/TasksAdd";
+import { TasksAdd } from "@/Components/TasksAdd/TasksAdd";
+import ProjectMembersTable from "@/Components/Tables/ProjectMembersTable";
 
 const ProjectPage = () => {
     const { id } = useParams();
@@ -63,17 +64,9 @@ const ProjectPage = () => {
                 ...newTaskData,
                 projectId: project.id
             });
-            const formattedTask: Task = {
-                id: createdTask.id,
-                projectName: createdTask.project?.name || project.name,
-                name: createdTask.name,
-                deadline: createdTask.deadline ? parseDate(new Date(createdTask.deadline).toISOString().split('T')[0]) : parseDate('2000-01-01'),
-                description: createdTask.description || "",
-                assignedPeople: (createdTask.assignedPeople?.map((person: any) => person.user?.name || "Unknown")) || [],
-                status: createdTask.status?.toLowerCase() || "not-started",
-                priority: createdTask.priority || "medium"
-            };
-            setTasks((prev: Task[]) => [...prev, formattedTask]);
+           
+            setTasks(createdTasks => [...tasks, createdTask]);
+            setProjectModalOpen(false);
         } catch (err) {
             console.error("Error creating task:", err);
         }
@@ -91,39 +84,28 @@ const ProjectPage = () => {
 
                 const projectData = await projectService.getProjectById(parseInt(id));
 
-                const formattedProject = {
-                    id: projectData.id,
-                    name: projectData.name,
-                    teams: projectData.teams || [],
-                    manager: projectData.manager || { id: 0, name: "Unknown" },
-                    managerId: projectData.managerId,
-                    completion: projectData.completion || 0,
-                    iconId: projectData.iconId || 1,
-                    icon: projectData.icon || "LuFile",
-                    status: projectData.status?.toLowerCase() || "active",
-                    description: projectData.description || ""
-                };
+                // const formattedProject = {
+                //     id: projectData.id,
+                //     name: projectData.name,
+                //     teams: projectData.teams || [],
+                //     manager: projectData.manager || { id: 0, name: "Unknown" },
+                //     managerId: projectData.managerId,
+                //     completion: projectData.completion || 0,
+                //     iconId: projectData.iconId || 1,
+                //     icon: projectData.icon || "LuFile",
+                //     status: projectData.status?.toLowerCase() || "active",
+                //     description: projectData.description || ""
+                // };
 
-                setProject(formattedProject);
+                setProject(projectData);
 
                 const usersData = await userService.getUsersFromProject(parseInt(id));
                 setAllUsers(usersData);
 
                 const tasksData = await taskService.getTasksByProject(parseInt(id));
-
-                const formattedTasks = tasksData.map((task: any) => ({
-                    id: task.id,
-                    projectName: task.project?.name || "No Project",
-                    name: task.name,
-                    deadline: task.deadline ? parseDate(new Date(task.deadline).toISOString().split('T')[0]) : null,
-                    description: task.description || "",
-                    assignedPeople: task.assignedPeople?.map((person: any) => person.user?.name || "Unknown") || [],
-                    status: task.status?.toLowerCase() || "not-started",
-                    priority: task.priority || "medium"
-                }));
-
-                setTasks(formattedTasks);
-
+                console.log("Tasks data:", tasksData);
+                setTasks(tasksData);
+                
             } catch (err) {
                 console.error("Error fetching project data:", err);
                 setError("Failed to load project data");
@@ -147,23 +129,23 @@ const ProjectPage = () => {
                 </Card>
             </Box>
         );
-    } 
-    
+    }
+
     return (
-        <Box width="100%" p="4">               
-         <Flex justify="between" align="baseline" mb="4">
-            <Heading as="h1">{project.name}</Heading>
-            {isAdmin && (
-                <Button
-                    variant="soft"
-                    color="indigo"
-                    onClick={() => setProjectModalOpen(true)}
-                >
-                    <LuPencil />
-                    Edit Project
-                </Button>
-            )}
-        </Flex>
+        <Box width="100%" p="4">
+            <Flex justify="between" align="baseline" mb="4">
+                <Heading as="h1">{project.name}</Heading>
+                {isAdmin && (
+                    <Button
+                        variant="soft"
+                        color="indigo"
+                        onClick={() => setProjectModalOpen(true)}
+                    >
+                        <LuPencil />
+                        Edit Project
+                    </Button>
+                )}
+            </Flex>
 
             {projectModalOpen && (
                 <ProjectModal
@@ -220,6 +202,12 @@ const ProjectPage = () => {
                                     availableUsers={allUsers}
                                     projectManager={project.manager}
                                 />
+                            </Box>
+                            <Box>
+                                <Flex justify="between" align="center" mb="2">
+                                    <Heading as="h3">Project Members</Heading>
+                                </Flex>
+                                    <ProjectMembersTable data={{ members: project.members, manager: project.manager }} />
                             </Box>
                         </Flex>
                     </Tabs.Content>
@@ -281,7 +269,7 @@ const ProjectPage = () => {
                         </Flex>
                     </Tabs.Content>
                 </Flex>
-            </Tabs.Root>  
+            </Tabs.Root>
 
             <ProjectModal
                 open={projectModalOpen}
@@ -293,6 +281,7 @@ const ProjectPage = () => {
                         const updatedProject = await projectService.getProjectById(project.id);
 
                         setProject({
+                            ...updatedProject,
                             id: updatedProject.id,
                             name: updatedProject.name,
                             teams: updatedProject.teams || [],

@@ -7,29 +7,57 @@ import {
   SortingState,
   getSortedRowModel,
 } from "@tanstack/react-table";
-import { Avatar, Box, Flex, Table } from "@radix-ui/themes";
-import { Task } from "@/types";
+import { Avatar, Badge, Box, Flex, Table } from "@radix-ui/themes";
+import { Task, User } from "@my-types/types";
 import { useState } from "react";
 import TaskDetailDialog from "@/Components/TaskDetailDialog/TaskDetailDialog";
 import { tasksAtom } from "@/Pages/Tasks/Tasks";
 import { useAtom } from "jotai";
 import "./table.css";
+import { taskService } from "@/services/task.service";
 
 const TasksTable = ({ data }: { data: Task[] }) => {
+
+  console.log("TasksTable data", data);
+
+    const getBadgeColor = (status: Task['status']) => {
+        switch (status) {
+            case 'NOT_STARTED': return 'amber';
+            case 'IN_PROGRESS': return 'blue';
+            case 'COMPLETED': return 'green';
+            default: return 'gray';
+        }
+    }
+  const getPriorityColor = (priority: Task['priority']) => {
+      switch (priority) {
+          case 'LOW': return 'green';
+          case 'MEDIUM': return 'yellow';
+          case 'HIGH': return 'red';
+          default: return 'gray';
+      }
+  }
+
   const [sorting, setSorting] = useState<SortingState>([]);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
   const [, setTasks] = useAtom(tasksAtom);
-  const handleTaskUpdate = (updatedTask: Task) => {
-    setTasks((prev) => {
-      const updatedTasks = prev.map((task) => {
-        if (task.id === updatedTask.id) {
-          return { ...task, ...updatedTask };
-        }
-        return task;
+
+  const handleTaskUpdate = async (updatedTask: Task) => {
+    try {
+      const response = await taskService.updateTask(updatedTask.id, updatedTask)
+      setTasks((prev) => {
+        const updatedTasks = prev.map((task) => {
+          if (task.id === updatedTask.id) {
+            return { ...task, ...updatedTask };
+          }
+          return task;
+        });
+        return updatedTasks;
       });
-      return updatedTasks;
-    });
+    } catch (error) {
+      console.error("Error updating task:", error);
+      return;
+    }
   };
 
   const columnHelper = createColumnHelper<Task>();
@@ -41,48 +69,48 @@ const TasksTable = ({ data }: { data: Task[] }) => {
     }),
     columnHelper.accessor("deadline", {
       id: "deadline",
-      cell: (info) => info.getValue().toString(),
+      cell: (info) => info.getValue().toLocaleDateString('ro-RO'),
       sortingFn: (rowA, rowB) => {
-        const dateA = rowA.original.deadline.toDate("Europe/Bucharest");
-        const dateB = rowB.original.deadline.toDate("Europe/Bucharest");
+        const dateA = rowA.original.deadline;
+        const dateB = rowB.original.deadline;
 
         return dateA < dateB ? -1 : dateA > dateB ? 1 : 0;
       },
       header: "Deadline",
     }),
-    columnHelper.accessor("assignedPeople", {
-      id: "assignedPeople",
+    columnHelper.accessor("assignedUsers", {
+      id: "assignedUsers",
       cell: (info) => (
         <Flex gap="1">
           {info
             ?.getValue()
             ?.slice(0, 3)
-            .map((collaborator: string, i: number) => (
+            .map((member: User, i: number) => (
               <Avatar
                 key={i}
                 size="1"
-                fallback={collaborator.charAt(0)}
+                fallback={member.name.charAt(0)}
                 radius="full"
-                title={collaborator}
+                title={member.name}
               />
             ))}
         </Flex>
       ),
       header: "Collaborators",
     }),
-    columnHelper.accessor("projectName", {
-      id: "projectName",
-      cell: (info) => info.getValue(),
+    columnHelper.accessor("project", {
+      id: "project",
+      cell: (info) => info.getValue().name,
       header: "Project",
     }),
     columnHelper.accessor("status", {
       id: "status",
-      cell: (info) => info.getValue(),
+      cell: (info) => <Badge color={getBadgeColor(info.getValue())}>{info.getValue().toLowerCase()}</Badge>,
       header: "Status",
     }),
     columnHelper.accessor("priority", {
       id: "priority",
-      cell: (info) => info.getValue(),
+      cell: (info) => <Badge color={getPriorityColor(info.getValue())}>{info.getValue().toLowerCase()}</Badge>,
       header: "Priority",
     }),
   ];
@@ -117,9 +145,9 @@ const TasksTable = ({ data }: { data: Task[] }) => {
                   {header.isPlaceholder
                     ? null
                     : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
+                      header.column.columnDef.header,
+                      header.getContext()
+                    )}
                   {{
                     asc: " ↑",
                     desc: " ↓",

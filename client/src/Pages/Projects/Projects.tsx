@@ -3,7 +3,7 @@ import s from './Projects.module.css'
 import ProjectsTable from '@/Components/Tables/ProjectsTable'
 import ProjectSearchFilters from '@/Components/ProjectSearchFilters/ProjectSearchFilters'
 import { atom, useAtom } from 'jotai';
-import { Project, ProjectFilters } from '@/types';
+import { Project, ProjectFilters } from '@my-types/types';
 import { useState, useEffect } from "react";
 import { projectService } from '@/services/project.service';
 import { Box, Text, Button } from '@radix-ui/themes';
@@ -52,36 +52,21 @@ const Projects = () => {
     const [user] = useAtom(userAtom);
     const [projectModalOpen, setProjectModalOpen] = useState(false);
 
-    const isAdmin = user?.isAdmin || false; useEffect(() => {
+    const isAdmin = user?.isAdmin || false; 
+    
+    useEffect(() => {
         const fetchProjects = async () => {
-            try {
-                setLoading(true);
-                const projectsData = await projectService.getMyProjects();
+            const projects = await projectService.getMyProjects();
+            setProjects(projects);
+        }
 
-                const formattedProjects = projectsData.map((project: any) => ({
-                    id: project.id,
-                    name: project.name,
-                    members: project.teams?.flatMap((team: any) =>
-                        team.users?.map((user: any) => user.name) || []
-                    ) || [],
-                    manager: project.manager?.name || "Unknown",
-                    completion: project.completion || 0,
-                    iconId: project.iconId || 1,
-                    icon: "LuFile", // Default icon
-                    status: project.status?.toLowerCase() || "active"
-                }));
-
-                setProjects(formattedProjects);
-                setError("");
-            } catch (err) {
+        fetchProjects()
+            .then(() => setLoading(false))
+            .catch((err) => {
                 console.error("Error fetching projects:", err);
                 setError("Failed to load projects");
-            } finally {
                 setLoading(false);
-            }
-        };
-
-        fetchProjects();
+            });
     }, [setProjects]);
 
     const displayedProjects = filteredProjects.filter((project: Project) =>

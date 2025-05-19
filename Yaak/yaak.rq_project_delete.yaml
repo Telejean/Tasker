@@ -2,7 +2,7 @@ type: http_request
 model: http_request
 id: rq_project_delete
 createdAt: 2025-05-03T11:48:48.654078800
-updatedAt: 2025-05-03T12:55:37.731469100
+updatedAt: 2025-05-17T07:10:42.607462400
 workspaceId: wk_mxbmXX2jVR
 folderId: fl_MyLrVw79WD
 authentication: {}
@@ -17,7 +17,7 @@ headers:
   id: null
 method: DELETE
 name: Delete project
-sortPriority: 9000.0
+sortPriority: 7500.0
 url: ${[baseUrl]}/projects/:id
 urlParameters:
 - enabled: true

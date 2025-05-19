@@ -3,7 +3,7 @@ import { Box, Card, Flex, Heading, Button, TextField, TextArea, Select, Text, Ta
 import axios from 'axios';
 import { API_URL, axiosConfig } from '@/config/api';
 import { LuPlus, LuTrash } from 'react-icons/lu';
-import { RuleEffect, UserRoles } from '@/types';
+import { RuleEffect, UserRoles } from '@my-types/types';
 
 interface PolicyFormData {
     name: string;

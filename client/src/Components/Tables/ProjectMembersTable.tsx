@@ -5,52 +5,62 @@ import {
     useReactTable,
 } from '@tanstack/react-table'
 import { Avatar, Box, Flex, Table } from '@radix-ui/themes'
-
-interface ProjectMember {
-    name: string;
-    role: 'manager' | 'member';
-    avatar?: string;
-}
+import { User } from '@my-types/types';
+import { useNavigate } from 'react-router';
 
 interface ProjectMembersTableProps {
-    members: string[];
-    manager: string;
+    data: {
+        members: User[]
+        manager: User
+    }
 }
 
-const ProjectMembersTable = ({ members, manager }: ProjectMembersTableProps) => {
-    const data: ProjectMember[] = [
-        { name: manager, role: 'manager' },
-        ...members.map(member => ({ name: member, role: 'member' as const }))
-    ]
+const ProjectMembersTable = ({ data }: ProjectMembersTableProps) => {
+    const { members, manager } = data;
 
-    const columnHelper = createColumnHelper<ProjectMember>()
+    const navigate = useNavigate();
+
+
+    const columnHelper = createColumnHelper<User>();
     const columns = [
         columnHelper.accessor("name", {
             id: "name",
             cell: info => (
                 <Flex align="center" gap="2">
-                    <Avatar 
-                        size="2" 
-                        radius="full" 
-                        fallback={info.getValue()[0]} 
+                    <Avatar
+                        size="2"
+                        radius="full"
+                        fallback={info.row.original.name?.[0] || '?'}
                     />
-                    {info.getValue()}
+                    {
+                        info.getValue() + " " + info.row.original.surname
+                    }
                 </Flex>
             ),
-            header: "Name"
+            header: "Member"
+        }),
+        columnHelper.accessor("email", {
+            id: "email",
+            cell: info => info.getValue(),
+            header: "Email"
+        }),
+        columnHelper.accessor("phoneNumber", {
+            id: "phoneNumber",
+            cell: info => info.getValue(),
+            header: "Phone Number"
         }),
         columnHelper.accessor("role", {
             id: "role",
             cell: info => info.getValue(),
             header: "Role"
         })
-    ]
+    ];
 
     const table = useReactTable({
-        data,
+        data: members,
         columns,
         getCoreRowModel: getCoreRowModel(),
-    })
+    });
 
     return (
         <Box>
@@ -69,7 +79,11 @@ const ProjectMembersTable = ({ members, manager }: ProjectMembersTableProps) => 
                 </Table.Header>
                 <Table.Body>
                     {table.getRowModel().rows.map(row => (
-                        <Table.Row key={row.id}>
+                        <Table.Row
+                            key={row.id}
+                            style={{ cursor: "pointer" }}
+                            onClick={() => navigate(`/profile/${row.original.id}`)}
+                        >
                             {row.getVisibleCells().map(cell => (
                                 <Table.Cell key={cell.id}>
                                     {flexRender(

@@ -6,7 +6,7 @@ import {
 } from '@tanstack/react-table'
 import "./table.css"
 import { Box, Table } from '@radix-ui/themes'
-import { Task } from '@/types';
+import { Task } from '@my-types/types';
 
 const TableSmall = ({ data }: { data: Task[] }) => {
 

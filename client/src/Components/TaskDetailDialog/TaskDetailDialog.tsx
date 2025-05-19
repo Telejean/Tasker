@@ -1,62 +1,55 @@
-import {
-  Box,
-  Flex,
-  Text,
-  Badge,
-  Dialog,
-  TextField,
-  TextArea,
-  Select,
-  Button,
-} from "@radix-ui/themes";
+import { Box, Flex, Text, Badge, Dialog, TextField, TextArea, Select, Button } from "@radix-ui/themes";
 import { CalendarDatePicker } from "../DatePicker/CalendarDatePicker";
-import { use, useEffect, useState } from "react";
-import { parseDate } from "@internationalized/date";
-import { Task } from "@/types";
+import { useEffect, useState } from "react";
+import {  DateValue, parseDate, parseDateTime } from "@internationalized/date";
+import { Task, User } from "@my-types/types";
+import { taskService } from "../../Services/task.service";
 
-const TaskDetailDialog = ({
-  task,
-  open,
-  onOpenChange,
-  onTaskUpdate,
-}: {
+type TaskWithDateValue = Omit<Task, "deadline"> & { deadline: DateValue };
+
+
+const TaskDetailDialog = ({ task, open, onOpenChange, onTaskUpdate}: {
   task: Task;
   open: boolean;
   onOpenChange: React.Dispatch<React.SetStateAction<boolean>>;
   onTaskUpdate: (task: Task) => void;
 }) => {
-  const [editedTask, setEditedTask] = useState({ ...task });
-  console.log("TaskDetailDialog", task);
+
+  const [editedTask, setEditedTask] = useState<TaskWithDateValue>({
+    ...task,
+    deadline: parseDate(task.deadline.toISOString().slice(0, 10)),
+  });
 
   useEffect(() => {
-    setEditedTask({ ...task });
+    setEditedTask({
+      ...task,
+      deadline: parseDate(task.deadline.toISOString().slice(0, 10)),
+    });
   }, [open, task]);
 
-  const getCalendarDate = (dateString) => {
-    try {
-      return parseDate(dateString);
-    } catch (e) {
-      console.error("Invalid date format:", e);
-      return null;
-    }
+  const handleDateChange = (date: DateValue) => {
+    setEditedTask((prev) => ({
+      ...prev,
+      deadline: date,
+    }));
   };
-
-  const handleStatusChange = (value) => {
+  const handleStatusChange = (value: string) => {
     setEditedTask((prev) => ({
       ...prev,
       status: value,
     }));
   };
 
-  const handleDateChange = (date) => {
+
+  const handlePriorityChange = (value: string) => {
     setEditedTask((prev) => ({
       ...prev,
-      deadline: date,
+      priority: value,
     }));
   };
 
   const handleSave = () => {
-    onTaskUpdate(editedTask);
+    onTaskUpdate({...editedTask, deadline: taskService.dateValueToString(editedTask.deadline)});
     onOpenChange(false);
   };
 
@@ -102,12 +95,7 @@ const TaskDetailDialog = ({
             </Text>
             <Select.Root
               value={editedTask.status}
-              onValueChange={(val) =>
-                setEditedTask((prev) => ({
-                  ...prev,
-                  status: val as "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED",
-                }))
-              }
+              onValueChange={handleStatusChange}
             >
               <Select.Trigger />
               <Select.Content>
@@ -117,15 +105,14 @@ const TaskDetailDialog = ({
               </Select.Content>
             </Select.Root>
           </label>
+
           <label>
             <Text as="div" size="2" mb="1" weight="bold">
               Priority
             </Text>
             <Select.Root
               value={editedTask.priority}
-              onValueChange={(val) =>
-                setEditedTask((prev) => ({ ...prev, priority: val }))
-              }
+              onValueChange={handlePriorityChange}
             >
               <Select.Trigger />
               <Select.Content>
@@ -150,18 +137,18 @@ const TaskDetailDialog = ({
             <Text as="div" size="2" mb="1" weight="bold">
               Project
             </Text>
-            <TextField.Root value={editedTask.projectName || ""} readOnly />
+            <TextField.Root value={editedTask.project?.name || ""} readOnly />
           </label>
 
-          {editedTask.assignedPeople && (
+          {editedTask.assignedUsers && (
             <Box>
               <Text as="div" size="2" mb="1" weight="bold">
                 Collaborators
               </Text>
               <Flex gap="1" wrap="wrap">
-                {editedTask.assignedPeople.map((collaborator, index) => (
-                  <Badge key={index} variant="soft">
-                    {collaborator}
+                {editedTask.assignedUsers.map((user: User, index: number) => (
+                  <Badge key={user.id || index} variant="soft">
+                    {user.name} {user.surname}
                   </Badge>
                 ))}
               </Flex>

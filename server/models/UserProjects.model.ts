@@ -18,5 +18,10 @@ export class UserProject extends Model {
     @BelongsTo(() => Project)
     project!: Project;
 
-
+    @Column({
+        type: DataType.STRING,
+        allowNull: false,
+        defaultValue: "MEMBER"
+    })
+    role!: string;
 }

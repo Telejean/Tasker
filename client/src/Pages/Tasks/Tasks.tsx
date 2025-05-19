@@ -3,7 +3,7 @@ import TasksFilter from "../../Components/TasksFilter/TasksFilter";
 import { TasksAdd } from "../../Components/TasksAdd/TasksAdd";
 import { atom, useAtom } from 'jotai'
 import Kanban from "../../Components/Kanban/Kanban";
-import { RangeValue, SortOptions, Task, TaskFilters } from "@/types"
+import { RangeValue, SortOptions, Task, TaskFilters } from "@my-types/types"
 import { DateValue } from "react-aria-components";
 import TasksTable from "@/Components/Tables/TasksTable";
 import TasksSort from "@/Components/TasksSort";
@@ -30,14 +30,18 @@ const filteredTasksAtom = atom((get) => {
       const taskValue = task[filterKey];
 
       if (filterKey === "deadline") {
-        const deadlineFilter = filterValue as RangeValue<DateValue>;
+        const deadlineFilter = filterValue as RangeValue<Date>;
         if (filterValue == null) return true;
         return task.deadline >= deadlineFilter.start && task.deadline <= deadlineFilter.end;
       }
 
       if (Array.isArray(filterValue)) {
         if (filterValue.length === 0) return true;
-        return filterValue.includes(taskValue as string);
+        if (Array.isArray(taskValue)) {
+          return taskValue.some(val => filterValue.includes(val));
+        } else {
+          return filterValue.includes(taskValue);
+        }
       } else {
         if (filterValue === "") return true;
         return taskValue === filterValue;
@@ -58,11 +62,7 @@ const Tasks = () => {
       try {
         setLoading(true);
         const tasksData = await taskService.getMyTasks();
-
-        const formattedTasks = taskService.formatTask(tasksData);
-
-
-        setTasks(formattedTasks);
+        setTasks(tasksData);
         setError("");
       } catch (err) {
         console.error("Error fetching tasks:", err);

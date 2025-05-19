@@ -18,9 +18,10 @@
       "noImplicitAny": true,
       "noUnusedLocals": true,
       "paths": {
-        "@/*": ["./src/*"]
-      },
+        "@/*": ["./src/*"],
+        "@my-types/*": ["../shared/types"]
+      }
     },
-    "include": ["src"],
-    "references": [{ "path": "./tsconfig.node.json" }]
+    "include": ["src", "../shared/types.ts"],
+    "exclude": ["node_modules", "dist"]
   }

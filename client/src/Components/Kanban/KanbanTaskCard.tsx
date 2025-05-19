@@ -2,7 +2,7 @@ import { Card, Flex, Text, Avatar, Heading, Badge, Box } from '@radix-ui/themes'
 import { format } from 'date-fns';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Task } from '@/types';
+import { Task } from '@my-types/types';
 
 // Task card component (sortable)
 const KanbanTaskCard = ({ task, onTaskClick } : {task:Task, onTaskClick: (task: Task) => void}) => {
@@ -14,16 +14,14 @@ const KanbanTaskCard = ({ task, onTaskClick } : {task:Task, onTaskClick: (task: 
         transition
     } = useSortable({ id: task.id });
 
-    // Format the deadline date
     const deadlineDate = new Date(task.deadline.toString());
     const formattedDate = format(deadlineDate, 'MMM d, yyyy');
 
-    // Determine badge color based on status
     const getBadgeColor = (status: Task['status']) => {
         switch (status) {
-            case 'not-started': return 'amber';
-            case 'in-progress': return 'blue';
-            case 'completed': return 'green';
+            case 'NOT_STARTED': return 'amber';
+            case 'IN_PROGRESS': return 'blue';
+            case 'COMPLETED': return 'green';
             default: return 'gray';
         }
     };
@@ -35,7 +33,6 @@ const KanbanTaskCard = ({ task, onTaskClick } : {task:Task, onTaskClick: (task: 
     };
 
     const handleCardClick = (e:any) => {
-        // Prevent triggering drag when clicking to view details
         if (e.target.closest('.card-content')) {
             onTaskClick(task);
             e.stopPropagation();
@@ -56,28 +53,28 @@ const KanbanTaskCard = ({ task, onTaskClick } : {task:Task, onTaskClick: (task: 
                     <Text size="1" color="gray">{task.description}</Text>
 
                     <Flex justify="between" align="center">
-                        <Badge color={getBadgeColor(task.status)}>{task.status}</Badge>
+                        <Badge color={getBadgeColor(task.status)}>{task.status.toLowerCase()}</Badge>
                         <Text size="1">Due: {formattedDate}</Text>
                     </Flex>
 
-                    <Text size="1" weight="bold" mb="1">Project: {task.projectName}</Text>
+                    <Text size="1" weight="bold" mb="1">Project: {task.project.name}</Text>
 
-                    {task.assignedPeople && task.assignedPeople.length > 0 && (
+                    {task.assignedUsers && task.assignedUsers.length > 0 && (
                         <Box>
                             <Text size="1" weight="bold" mb="1">Collaborators:</Text>
                             <Flex gap="1" wrap="wrap">
-                                {task.assignedPeople.slice(0, 3).map((collaborator, i) => (
+                                {task.assignedUsers.slice(0, 3).map((member, i) => (
                                     <Avatar
                                         key={i}
                                         size="1"
-                                        fallback={collaborator.charAt(0)}
+                                        fallback={member.name.charAt(0)}
                                         radius="full"
-                                        title={collaborator}
+                                        title={member.name + " " + member.surname}
                                     />
                                 ))}
-                                {task.assignedPeople.length > 3 && (
+                                {task.assignedUsers.length > 3 && (
                                     <Badge variant="soft">
-                                        +{task.assignedPeople.length - 3}
+                                        +{task.assignedUsers.length - 3}
                                     </Badge>
                                 )}
                             </Flex>

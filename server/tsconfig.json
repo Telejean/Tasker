@@ -13,12 +13,8 @@
     "rootDir": ".",
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./*"
-      ],
-      "@my-types/*": [
-        "../types/*"
-      ]
+      "@/*": ["./*"],
+      "@my-types/*": ["../shared/types"]
     },
     "allowImportingTsExtensions": false,
     "resolveJsonModule": true,
@@ -27,7 +23,9 @@
   },
   "include": [
     "**/*.ts",
-    "server.js"
+    "server.ts",
+    "../shared/types.ts"
+
   ],
   "exclude": [
     "node_modules",

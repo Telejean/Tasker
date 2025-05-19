@@ -1,6 +1,5 @@
 import type { Request, Response } from 'express';
 import { Project, User, Task, Team, UserTeam, UserProject } from '../models';
-import { ProjectStatus } from '../types';
 import { Op } from 'sequelize';
 import sequelize from '../utils/sequelize';
 
@@ -26,6 +25,12 @@ export const projectController = {
                     },
                     {
                         model: Task
+                    },
+                    {
+                        model: User,
+                        as: 'users',
+                        through: { attributes: [] },
+                        attributes: { exclude: ["departmentId", "createdAt", "updatedAt"] },
                     }
                 ]
             });
@@ -34,9 +39,12 @@ export const projectController = {
             console.error('Error getting projects:', error);
             return res.status(500).json({ error: 'Failed to retrieve projects' });
         }
-    }, async getProjectById(req: Request, res: Response) {
+    },
+
+    async getProjectById(req: Request, res: Response) {
         try {
-            const projectId = parseInt(req.params.id); const project = await Project.findByPk(projectId, {
+            const projectId = parseInt(req.params.id);
+            let project = await Project.findByPk(projectId, {
                 include: [
                     {
                         model: User,
@@ -60,23 +68,40 @@ export const projectController = {
                                 model: User,
                             }
                         ]
+                    },
+                    {
+                        model: User,
+                        as: 'members',
+                        through: { attributes: ['role'] },
+                        attributes: { exclude: ["departmentId", "createdAt", "updatedAt"] },
                     }
                 ]
             });
 
+
+
             if (!project) {
                 return res.status(404).json({ error: 'Project not found' });
             }
+
+            project = project.get({ plain: true }) as Project;
+
+            project.members = project.members.map((member: any) => {
+                const { UserProject, ...rest } = member;
+                return { ...rest, role: UserProject.role };
+            })
+
 
             return res.status(200).json(project);
         } catch (error) {
             console.error('Error getting project:', error);
             return res.status(500).json({ error: 'Failed to retrieve project' });
         }
-    }, async createProject(req: Request, res: Response) {
+    },
+
+    async createProject(req: Request, res: Response) {
         try {
-            const { name, managerId, userIds, iconId = 1, icon, status = ProjectStatus.ACTIVE } = req.body;
-            console.log(userIds);
+            const { name, managerId, userIds, iconId = 1, icon, status = "ACTIVE" } = req.body;
 
 
             const project = await Project.create({
@@ -127,41 +152,36 @@ export const projectController = {
                 throw txError;
             }
 
-            return res.status(201).json(createdProject);
         } catch (error) {
             console.error('Error creating project:', error);
             return res.status(500).json({ error: 'Failed to create project' });
         }
-    }, async updateProject(req: Request, res: Response) {
+    },
+
+    async updateProject(req: Request, res: Response) {
         try {
             const projectId = parseInt(req.params.id);
             const { name, status, iconId, icon, userIds } = req.body;
 
-            // Find the project by ID
             const project = await Project.findByPk(projectId);
 
             if (!project) {
                 return res.status(404).json({ error: 'Project not found' });
             }
 
-            // Update project fields
             if (name !== undefined) project.name = name;
             if (status !== undefined) project.status = status;
             if (iconId !== undefined) project.iconId = iconId;
             if (icon !== undefined) project.icon = icon;
 
-            // Save the changes
             await project.save();
 
-            // Update users in the default team if provided
             if (userIds && userIds.length >= 0) {
-                // Find the default team
                 const defaultTeam = await Team.findOne({
                     where: { projectId }
                 });
 
                 if (defaultTeam) {
-                    // Get current team members excluding the owner
                     const currentUserTeams = await UserTeam.findAll({
                         where: {
                             teamId: defaultTeam.id,
@@ -171,22 +191,19 @@ export const projectController = {
 
                     const currentUserIds = currentUserTeams.map(ut => ut.userId);
 
-                    // Determine users to remove and users to add
                     const usersToRemove = currentUserIds.filter(id => !userIds.includes(id));
                     const usersToAdd = userIds.filter((id: number) => !currentUserIds.includes(id));
 
-                    // Remove users no longer in the team
                     if (usersToRemove.length > 0) {
                         await UserTeam.destroy({
                             where: {
                                 teamId: defaultTeam.id,
                                 userId: usersToRemove,
-                                userRole: { [Op.ne]: 'OWNER' } // Don't remove owner
+                                userRole: { [Op.ne]: 'OWNER' }
                             }
                         });
                     }
 
-                    // Add new users to the team
                     if (usersToAdd.length > 0) {
                         const newUserTeams = usersToAdd.map((userId: number) => ({
                             userId,
@@ -199,7 +216,6 @@ export const projectController = {
                 }
             }
 
-            // Fetch the updated project with associations
             const updatedProject = await Project.findByPk(projectId, {
                 include: [
                     {
@@ -213,9 +229,15 @@ export const projectController = {
                             {
                                 model: User,
                                 through: { attributes: [] },
-                                attributes: ['id', 'name', 'email']
+                                attributes: { exclude: ["departmentId", "createdAt", "updatedAt"] },
                             }
                         ]
+                    },
+                    {
+                        model: User,
+                        as: 'users',
+                        through: { attributes: [] },
+                        attributes: { exclude: ["departmentId", "createdAt", "updatedAt"] },
                     }
                 ]
             });
@@ -245,6 +267,7 @@ export const projectController = {
             return res.status(500).json({ error: 'Failed to delete project' });
         }
     },
+
     async getMyProjects(req: Request, res: Response) {
         try {
             const userId = (req.user as any)?.id;
@@ -264,9 +287,15 @@ export const projectController = {
                                 {
                                     model: User,
                                     through: { attributes: [] },
-                                    attributes: ['id', 'name', 'email']
+                                    attributes: { exclude: ["departmentId", "createdAt", "updatedAt"] },
                                 }
                             ]
+                        },
+                        {
+                            model: User,
+                            as: 'users',
+                            through: { attributes: ['role'] },
+                            attributes: { exclude: ["departmentId", "createdAt", "updatedAt"] },
                         }
                     ],
                     order: [
@@ -277,13 +306,12 @@ export const projectController = {
                 return res.status(200).json(projects);
             }
 
-            // For regular users, show only projects they're members of
-            const projects = await Project.findAll({
+            let projects = await Project.findAll({
                 include: [
                     {
                         model: User,
                         as: 'manager',
-                        attributes: ['id', 'name', 'email']
+                        attributes: { exclude: ["departmentId", "createdAt", "updatedAt"] },
                     },
                     {
                         model: Team,
@@ -293,20 +321,37 @@ export const projectController = {
                                 through: {
                                     where: { userId: userId }
                                 },
-                                attributes: ['id', 'name', 'email']
+                                attributes: { exclude: ["departmentId", "createdAt", "updatedAt"] },
                             }
                         ]
+                    },
+                    {
+                        model: User,
+                        as: 'members',
+                        through: { attributes: ['role'] },
+                        attributes: { exclude: ["departmentId", "createdAt", "updatedAt"] },
                     }
                 ],
                 where: {
                     [Op.or]: [
-                        { managerId: userId } // Projects where user is the manager
+                        { managerId: userId }
                     ]
                 },
                 order: [
                     ['createdAt', 'DESC']
                 ]
             });
+
+            projects = projects.map(p => p.get({ plain: true }));
+
+
+            projects = projects.map((project: Project) => {
+                project.members = project.members.map((member: any) => {
+                    const { UserProject, ...rest } = member;
+                    return { ...rest, role: UserProject.role };
+                })
+                return project;
+            })
 
             return res.status(200).json(projects);
         } catch (error) {

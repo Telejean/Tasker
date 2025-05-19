@@ -6,6 +6,7 @@ import {
   ForeignKey,
   BelongsTo,
   HasMany,
+  AllowNull,
 } from "sequelize-typescript";
 import { Project } from "./Project.model";
 import { AssignedPerson } from "./AssignedPerson.model";
@@ -33,7 +34,7 @@ export class Task extends Model {
 
   @Column({
     type: DataType.DATE,
-    allowNull: true,
+    allowNull: false,
   })
   deadline?: Date;
 
@@ -60,4 +61,44 @@ export class Task extends Model {
 
   @HasMany(() => AssignedPerson)
   assignedUsers!: User[];
+
+  //AI
+
+  @Column({
+    type:DataType.JSON,
+    allowNull:true
+  })
+  tags?: JSON
+
+   @Column({
+    type: DataType.DATE,
+    allowNull: true,
+  })
+  completedAt?: Date;
+
+  @Column({
+    type: DataType.NUMBER,
+    allowNull: true,
+  })
+  estimatedDuration?: number;
+
+
+  @Column({
+    type: DataType.NUMBER,
+    allowNull: true,
+  })
+  actualDuration?: number;
+
+  @Column({
+    type: DataType.NUMBER,
+    allowNull: true,
+  })
+  completionConfidence?: number;
+
+    @Column({
+    type: DataType.NUMBER,
+    allowNull: true,
+  })
+  difficulty?: number;
+
 }

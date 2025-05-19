@@ -10,9 +10,9 @@ const TaskCardOverlay = ({ task }) => {
     // Determine badge color based on status
     const getBadgeColor = (status) => {
         switch (status) {
-            case 'not-started': return 'amber';
-            case 'in-progress': return 'blue';
-            case 'completed': return 'green';
+            case 'NOT_STARTED': return 'amber';
+            case 'IN_PROGRESS': return 'blue';
+            case 'COMPLETED': return 'green';
             default: return 'gray';
         }
     };
