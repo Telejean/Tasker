@@ -18,19 +18,19 @@ const generateToken = (user: any) => {
 
 export const authController = {
     // Google OAuth callback handler
-    async handleGoogleCallback(req: Request, res: Response) {
-        const user = req.user as { isNewUser: boolean; email: string; googleProfile: { name: string; surname: string } };
-        if (user?.isNewUser) {
-            const params = new URLSearchParams({
-                email: user.email,
-                name: user.googleProfile.name,
-                surname: user.googleProfile.surname
-            });
-            res.redirect(`${process.env.CLIENT_URL}/register?${params.toString()}`);
-        } else {
-            res.redirect(`${process.env.CLIENT_URL}/home`);
-        }
-    },
+    // async handleGoogleCallback(req: Request, res: Response) {
+    //     const user = req.user as { isNewUser: boolean; email: string; googleProfile: { name: string; surname: string } };
+    //     if (user?.isNewUser) {
+    //         const params = new URLSearchParams({
+    //             email: user.email,
+    //             name: user.googleProfile.name,
+    //             surname: user.googleProfile.surname
+    //         });
+    //         res.redirect(`${process.env.CLIENT_URL}/register?${params.toString()}`);
+    //     } else {
+    //         res.redirect(`${process.env.CLIENT_URL}/home`);
+    //     }
+    // },
 
     // Google login that returns JWT
     async handleGoogleCallbackJWT(req: Request, res: Response) {
@@ -71,6 +71,8 @@ export const authController = {
             }
 
             const user = await createUserService(req.body)
+            const token = generateToken(user);
+            console.log('User created:', token);
 
             req.login(user, (err) => {
                 if (err) {
@@ -115,12 +117,12 @@ export const authController = {
     },
 
     async logout(req: Request, res: Response) {
-        req.logout((err) => {
-            if (err) {
-                return res.status(500).json({ error: 'Error logging out' });
-            }
-            res.json({ success: true });
+        res.clearCookie('token', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
         });
+        res.json({ success: true });
     },
 
     async checkStatus(req: Request, res: Response) {

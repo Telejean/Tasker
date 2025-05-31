@@ -19,6 +19,8 @@ import { TasksAdd } from "@/Components/TasksAdd/TasksAdd";
 import ProjectMembersTable from "@/Components/Tables/ProjectMembersTable";
 
 const ProjectPage = () => {
+    console.log("ProjectPage component rendered");
+    
     const { id } = useParams();
     const [project, setProject] = useState<Project | null>(null);
     const [tasks, setTasks] = useState<Task[]>([]);
@@ -35,7 +37,7 @@ const ProjectPage = () => {
         try {
             setLoading(true);
             const projectData = await projectService.getProjectById(parseInt(id));
-
+            console.log("Project data:", projectData);
             const formattedProject = {
                 id: projectData.id,
                 name: projectData.name,

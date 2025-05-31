@@ -1,0 +1,110 @@
+type: http_request
+model: http_request
+id: rq_MgcQoiarrz
+createdAt: 2025-05-30T21:09:59.103593
+updatedAt: 2025-05-31T18:43:12.805681100
+workspaceId: wk_mxbmXX2jVR
+folderId: fl_7DrrkTwJrW
+authentication: {}
+authenticationType: null
+body:
+  text: |
+    [
+      {
+        "task_id": 1,
+        "task_type": "bug",
+        "priority": "LOW",
+        "duration": 20,
+        "subtasks": 8,
+        "deadline": "2025-06-05T12:00:00Z",
+        "created_at": "2025-05-30T09:00:00Z",
+        "description_length": 250,
+        "comments_count": 1,
+        "assigned_team_size": 1,
+        "user_availability": 10,
+        "no_curr_assigned_tasks": 7,
+        "tasks_completed": 5,
+        "user_past_completion": 0.60,
+        "avg_completion_time": 1.8
+      },
+      {
+        "task_id": 2,
+        "task_type": "feature",
+        "priority": "LOW",
+        "duration": 15,
+        "subtasks": 5,
+        "deadline": "2025-06-07T12:00:00Z",
+        "created_at": "2025-05-28T09:00:00Z",
+        "description_length": 200,
+        "comments_count": 2,
+        "assigned_team_size": 2,
+        "user_availability": 20,
+        "no_curr_assigned_tasks": 5,
+        "tasks_completed": 10,
+        "user_past_completion": 0.65,
+        "avg_completion_time": 1.6
+      },
+      {
+        "task_id": 3,
+        "task_type": "bug",
+        "priority": "MEDIUM",
+        "duration": 10,
+        "subtasks": 4,
+        "deadline": "2025-06-10T12:00:00Z",
+        "created_at": "2025-05-25T09:00:00Z",
+        "description_length": 150,
+        "comments_count": 3,
+        "assigned_team_size": 2,
+        "user_availability": 30,
+        "no_curr_assigned_tasks": 4,
+        "tasks_completed": 15,
+        "user_past_completion": 0.70,
+        "avg_completion_time": 1.4
+      },
+      {
+        "task_id": 4,
+        "task_type": "feature",
+        "priority": "MEDIUM",
+        "duration": 8,
+        "subtasks": 3,
+        "deadline": "2025-06-12T12:00:00Z",
+        "created_at": "2025-05-20T09:00:00Z",
+        "description_length": 100,
+        "comments_count": 5,
+        "assigned_team_size": 3,
+        "user_availability": 40,
+        "no_curr_assigned_tasks": 3,
+        "tasks_completed": 25,
+        "user_past_completion": 0.75,
+        "avg_completion_time": 1.2
+      },
+      {
+        "task_id": 5,
+        "task_type": "feature",
+        "priority": "HIGH",
+        "duration": 10,
+        "subtasks": 2,
+        "deadline": "2025-06-15T12:00:00Z",
+        "created_at": "2025-05-15T09:00:00Z",
+        "description_length": 80,
+        "comments_count": 8,
+        "assigned_team_size": 2,
+        "user_availability": 45,
+        "no_curr_assigned_tasks": 3,
+        "tasks_completed": 30,
+        "user_past_completion": 0.80,
+        "avg_completion_time": 1.1
+      }
+    ]
+bodyType: application/json
+description: ''
+headers:
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: Th4RXMMWXc
+method: POST
+name: BatchPredictPossitive
+sortPriority: 0.0
+url: ${[ py_url ]}/predict_batch
+urlParameters: []

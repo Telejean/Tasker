@@ -26,7 +26,6 @@ const Register = () => {
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         setError("");
-
         try {
             const { data } = await axios.post(
                 `${API_URL}/auth/complete-registration`,
@@ -34,7 +33,8 @@ const Register = () => {
                 axiosConfig
             );
             setUser(data.user);
-            navigate("/home");
+            console.log("User created:", data.user);
+            navigate("/login");
         } catch (err) {
             if (axios.isAxiosError(err)) {
                 setError(err.response?.data?.message || "Registration failed");

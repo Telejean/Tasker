@@ -91,7 +91,7 @@ export class User extends Model {
     tags!: JSON;
 
     @Column({
-        type: DataType.NUMBER,
+        type: DataType.FLOAT,
         allowNull: true,
     })
     workload!: number;

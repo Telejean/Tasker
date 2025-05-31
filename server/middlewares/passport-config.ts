@@ -61,7 +61,6 @@ passport.use(new GoogleStrategy({
         });
 
 
-
         if (existingUser) {
             return done(null, existingUser);
         }
@@ -75,6 +74,7 @@ passport.use(new GoogleStrategy({
             }
         });
     } catch (error) {
+        console.error('Error in Google strategy:', error);
         return done(error as Error);
     }
 }));

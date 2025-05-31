@@ -50,55 +50,56 @@ function App() {
   return (
     <>
       {
-     !loading ? (
-      user ? (
-        <>
-          <Navbar />
-          <Flex>
-            <Sidebar />
-            <Box id={s.mainContainer}>
-              <Routes>
-                <Route path="/home" element={<Home />} />
-                <Route path="/tasks" element={<Tasks />} />
-                <Route path="/projects" element={<Projects />} />
-                <Route path="/projects/:id" element={<ProjectPage />} />
-                <Route path="/profile/:userId" element={<Profile />} />
-                <Route
-                  path="/admin/policies"
-                  element={
-                    <Permission
-                      action="manage"
-                      resourceType="policy"
-                      fallback={
-                        <Box p="6">
-                          <Text size="5" color="red">
-                            You don't have permission to manage policies.
-                            This area is restricted to administrators.
-                          </Text>
-                        </Box>
+        !loading ? (
+          user ? (
+            <>
+              <Navbar />
+              <Flex>
+                <Sidebar />
+                <Box id={s.mainContainer}>
+                  <Routes>
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/home" element={<Home />} />
+                    <Route path="/tasks" element={<Tasks />} />
+                    <Route path="/projects" element={<Projects />} />
+                    <Route path="/projects/:id" element={<ProjectPage />} />
+                    <Route path="/profile/:userId" element={<Profile />} />
+                    <Route
+                      path="/admin/policies"
+                      element={
+                        <Permission
+                          action="manage"
+                          resourceType="policy"
+                          fallback={
+                            <Box p="6">
+                              <Text size="5" color="red">
+                                You don't have permission to manage policies.
+                                This area is restricted to administrators.
+                              </Text>
+                            </Box>
+                          }
+                        >
+                          <PolicyManagement />
+                        </Permission>
                       }
-                    >
-                      <PolicyManagement />
-                    </Permission>
-                  }
-                />
-                <Route path="*" element={<Navigate to="/home" replace />} />
-              </Routes>
-            </Box>
-          </Flex>
-        </>
-      ) : (
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="*" element={<Navigate to="/login" replace />} />
-        </Routes>
-      )
+                    />
+                    <Route path="*" element={<Navigate to="/caca" replace />} />
+                  </Routes>
+                </Box>
+              </Flex>
+            </>
+          ) : (
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="*" element={<Navigate to="/login" replace />} />
+            </Routes>
+          )
 
-    ):(
-      loading
-    )
-    }
+        ) : (
+          loading
+        )
+      }
     </>
   )
 }

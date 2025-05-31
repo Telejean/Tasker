@@ -28,7 +28,7 @@ export const projectController = {
                     },
                     {
                         model: User,
-                        as: 'users',
+                        as: 'members',
                         through: { attributes: [] },
                         attributes: { exclude: ["departmentId", "createdAt", "updatedAt"] },
                     }
@@ -101,17 +101,17 @@ export const projectController = {
 
     async createProject(req: Request, res: Response) {
         try {
-            const { name, managerId, userIds, iconId = 1, icon, status = "ACTIVE" } = req.body;
-
+            const { name, managerId, userIds, iconId = 1, icon, status = "ACTIVE", startDate, endDate } = req.body;
 
             const project = await Project.create({
                 name,
                 iconId,
                 icon,
                 status,
-                managerId
+                managerId,
+                startDate,
+                endDate
             });
-
 
             const createdProject = await Project.findByPk(project.id, {
                 include: [
@@ -144,7 +144,8 @@ export const projectController = {
 
                 return res.status(201).json({
                     message: `Successfully created ${createdUserProjects.length} users`,
-                    users: createdUserProjects.map(user => user.get({ plain: true }))
+                    users: createdUserProjects.map(user => user.get({ plain: true })),
+                    project: createdProject // include the created project with startDate and endDate
                 });
 
             } catch (txError) {
@@ -161,7 +162,7 @@ export const projectController = {
     async updateProject(req: Request, res: Response) {
         try {
             const projectId = parseInt(req.params.id);
-            const { name, status, iconId, icon, userIds } = req.body;
+            const { name, status, iconId, icon, userIds, startDate, endDate } = req.body;
 
             const project = await Project.findByPk(projectId);
 
@@ -173,6 +174,8 @@ export const projectController = {
             if (status !== undefined) project.status = status;
             if (iconId !== undefined) project.iconId = iconId;
             if (icon !== undefined) project.icon = icon;
+            if (startDate !== undefined) project.startDate = startDate;
+            if (endDate !== undefined) project.endDate = endDate;
 
             await project.save();
 

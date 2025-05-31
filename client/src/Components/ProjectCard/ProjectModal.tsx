@@ -27,10 +27,14 @@ const ProjectModal = ({ open, onOpenChange, projectId, onProjectSaved }) => {
         name: '',
         manager: null as number | null,
         userIds: [] as number[],
-        iconId: 1
+        iconId: 1,
+        startDate: '',
+        endDate: ''
     });
     const [managerSearch, setManagerSearch] = useState('');
     const [showManagerDropdown, setShowManagerDropdown] = useState(false);
+    const [startDate, setStartDate] = useState<string>('');
+    const [endDate, setEndDate] = useState<string>('');
 
     const isEditMode = !!projectId;
 
@@ -38,8 +42,10 @@ const ProjectModal = ({ open, onOpenChange, projectId, onProjectSaved }) => {
         return name !== originalFormState.name ||
             manager !== originalFormState.manager ||
             iconId !== originalFormState.iconId ||
-            JSON.stringify(userIds.sort()) !== JSON.stringify(originalFormState.userIds.sort());
-    }, [name, manager, userIds, iconId, originalFormState]);
+            JSON.stringify(userIds.sort()) !== JSON.stringify(originalFormState.userIds.sort()) ||
+            startDate !== originalFormState.startDate ||
+            endDate !== originalFormState.endDate;
+    }, [name, manager, userIds, iconId, originalFormState, startDate, endDate]);
 
     // Handle modal close with confirmation if needed
     const handleCloseRequest = useCallback(() => {
@@ -83,6 +89,8 @@ const ProjectModal = ({ open, onOpenChange, projectId, onProjectSaved }) => {
                     setName(project.name);
                     setManager(project.managerId);
                     setIconId(project.iconId || 1);
+                    setStartDate(project.startDate ? project.startDate.slice(0, 10) : '');
+                    setEndDate(project.endDate ? project.endDate.slice(0, 10) : '');
                     // Extract user IDs from the teams
                     const allUserIds: number[] = [];
 
@@ -103,7 +111,9 @@ const ProjectModal = ({ open, onOpenChange, projectId, onProjectSaved }) => {
                         name: project.name,
                         manager: project.managerId,
                         userIds: [...new Set(allUserIds)],
-                        iconId: project.iconId || 1
+                        iconId: project.iconId || 1,
+                        startDate: project.startDate ? project.startDate.slice(0, 10) : '',
+                        endDate: project.endDate ? project.endDate.slice(0, 10) : ''
                     });
                 } catch (err) {
                     setError('Failed to load project data');
@@ -120,12 +130,16 @@ const ProjectModal = ({ open, onOpenChange, projectId, onProjectSaved }) => {
             setManager(null);
             setUserIds([]);
             setIconId(1);
+            setStartDate('');
+            setEndDate('');
             setError('');
             setOriginalFormState({
                 name: '',
                 manager: null,
                 userIds: [],
-                iconId: 1
+                iconId: 1,
+                startDate: '',
+                endDate: ''
             });
         }
     }, [projectId, open]); const handleSave = async () => {
@@ -143,8 +157,26 @@ const ProjectModal = ({ open, onOpenChange, projectId, onProjectSaved }) => {
             return;
         }
 
+        if (!startDate) {
+            setError('Project start date is required');
+            return;
+        }
+
+        if (!endDate) {
+            setError('Project end date is required');
+            return;
+        }
+
         try {
             setIsLoading(true);
+            console.log('Saving project:', {
+                name,
+                manager,
+                userIds,
+                iconId,
+                startDate,
+                endDate
+            });
 
             const projectData = {
                 name: name.trim(),
@@ -152,7 +184,9 @@ const ProjectModal = ({ open, onOpenChange, projectId, onProjectSaved }) => {
                 userIds,
                 iconId,
                 icon: `icon-${iconId}`,
-                status: 'ACTIVE'
+                status: 'ACTIVE',
+                startDate,
+                endDate
             };
 
             if (isEditMode && projectId) {
@@ -351,6 +385,28 @@ const ProjectModal = ({ open, onOpenChange, projectId, onProjectSaved }) => {
                                 </Text>
                             )}
                         </Box>
+                    </Box>
+                    <Box>
+                        <Text as="div" size="2" mb="1" weight="bold">
+                            Start Date
+                        </Text>
+                        <TextField.Root
+                            type="date"
+                            value={startDate}
+                            onChange={e => setStartDate(e.target.value)}
+                            style={{ borderColor: !startDate && error ? 'var(--color-error)' : undefined }}
+                        />
+                    </Box>
+                    <Box>
+                        <Text as="div" size="2" mb="1" weight="bold">
+                            End Date
+                        </Text>
+                        <TextField.Root
+                            type="date"
+                            value={endDate}
+                            onChange={e => setEndDate(e.target.value)}
+                            style={{ borderColor: !endDate && error ? 'var(--color-error)' : undefined }}
+                        />
                     </Box>
 
                     {error && (

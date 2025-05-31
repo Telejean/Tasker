@@ -26,11 +26,11 @@ export const userController = {
 
             });
 
-            if (req.user) {
-                const { id } = req.user as any;
-                const parsedUsers = users.filter(u => u.id !== id);
-                return res.status(200).json(parsedUsers);
-            }
+            // if (req.user) {
+            //     const { id } = req.user as any;
+            //     const parsedUsers = users.filter(u => u.id !== id);
+            //     return res.status(200).json(parsedUsers);
+            // }
 
             return res.status(200).json(users);
         } catch (error) {

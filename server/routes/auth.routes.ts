@@ -6,10 +6,10 @@ const router = Router();
 
 // Google OAuth routes
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
-router.get('/google/callback',
-    passport.authenticate('google', { failureRedirect: '/login' }),
-    authController.handleGoogleCallback
-);
+// router.get('/google/callback',
+//     passport.authenticate('google', { failureRedirect: '/login' }),
+//     authController.handleGoogleCallback
+// );
 
 // JWT Google OAuth route (alternative to session-based auth)
 router.get('/google/jwt', passport.authenticate('google', { scope: ['profile', 'email'] }));

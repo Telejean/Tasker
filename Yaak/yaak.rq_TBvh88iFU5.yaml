@@ -1,0 +1,18 @@
+type: http_request
+model: http_request
+id: rq_TBvh88iFU5
+createdAt: 2025-05-22T08:43:20.493238400
+updatedAt: 2025-05-22T08:44:09.187933900
+workspaceId: wk_mxbmXX2jVR
+folderId: fl_tch9ELDbWs
+authentication: {}
+authenticationType: null
+body: {}
+bodyType: null
+description: ''
+headers: []
+method: GET
+name: Reset Force
+sortPriority: 4000.001
+url: ${[ baseUrl ]}/utils/sync?force=true
+urlParameters: []

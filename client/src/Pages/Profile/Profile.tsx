@@ -5,10 +5,12 @@ import ColorPicker from '@/Components/ColorPicker/ColorPicker';
 import * as Icons from 'react-icons/lu';
 import { userAtom } from '@/App';
 import { useAtom } from 'jotai';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { userService } from '@/services/user.service';
 import axios from 'axios';
 import { API_URL, axiosConfig } from '@/config/api';
+import Cookies from 'js-cookie';
+import AuthorizationService from '@/services/authorization.service';
 
 const Profile = () => {
     const [currentUser] = useAtom(userAtom);
@@ -19,6 +21,7 @@ const Profile = () => {
     const [selectedColor, setSelectedColor] = useState(profile?.iconBgColor);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
+    const navigate = useNavigate();
     console.log(userId)
     // Determine if this is the current user's profile
     const isOwnProfile = currentUser && userId && String(currentUser.id) === String(userId);
@@ -71,6 +74,12 @@ const Profile = () => {
         }
     };
 
+    // Sign out the user
+    const handleSignOut = () => {
+        console.log('Signing out...');
+        AuthorizationService.handleSignOut()
+    };
+
     // Get the actual icon component based on the icon name
     const IconComponent = Icons[profile?.iconName as keyof typeof Icons] || Icons.LuUser;
 
@@ -84,9 +93,16 @@ const Profile = () => {
 
     return (
         <Box width="100%" p="6">
-            <Heading as="h1" size="8" mb="6">
-                {isOwnProfile ? "My Profile" : `${profile.name}'s Profile`}
-            </Heading>
+            <Flex justify="between" align="center" mb="4">
+                <Heading as="h1" size="8">
+                    {isOwnProfile ? "My Profile" : `${profile.name}'s Profile`}
+                </Heading>
+                {isOwnProfile && (
+                    <Button color="red" variant="soft" onClick={handleSignOut}>
+                        Sign Out
+                    </Button>
+                )}
+            </Flex>
 
             {error && (
                 <Card size="2" color="red" mb="4">

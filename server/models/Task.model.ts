@@ -65,40 +65,45 @@ export class Task extends Model {
   //AI
 
   @Column({
-    type:DataType.JSON,
-    allowNull:true
+    type: DataType.JSON,
+    allowNull: true
   })
   tags?: JSON
 
-   @Column({
+  @Column({
     type: DataType.DATE,
     allowNull: true,
   })
   completedAt?: Date;
 
   @Column({
-    type: DataType.NUMBER,
+    type: DataType.FLOAT,
     allowNull: true,
   })
   estimatedDuration?: number;
 
-
   @Column({
-    type: DataType.NUMBER,
+    type: DataType.FLOAT,
     allowNull: true,
   })
   actualDuration?: number;
 
   @Column({
-    type: DataType.NUMBER,
+    type: DataType.FLOAT,
     allowNull: true,
   })
   completionConfidence?: number;
 
-    @Column({
-    type: DataType.NUMBER,
+  @Column({
+    type: DataType.FLOAT,
     allowNull: true,
   })
   difficulty?: number;
+
+  @Column({
+    type: DataType.TEXT,
+    allowNull: true,
+  })
+  type?: string;
 
 }

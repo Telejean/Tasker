@@ -57,6 +57,7 @@ const Projects = () => {
     useEffect(() => {
         const fetchProjects = async () => {
             const projects = await projectService.getMyProjects();
+            console.log("Fetched projects:", projects);
             setProjects(projects);
         }
 

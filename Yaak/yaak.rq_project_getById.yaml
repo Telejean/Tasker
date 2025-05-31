@@ -2,7 +2,7 @@ type: http_request
 model: http_request
 id: rq_project_getById
 createdAt: 2025-05-03T11:48:48.635019700
-updatedAt: 2025-05-12T15:24:40.125344100
+updatedAt: 2025-05-20T06:59:45.035463
 workspaceId: wk_mxbmXX2jVR
 folderId: fl_MyLrVw79WD
 authentication: {}
@@ -22,9 +22,5 @@ url: ${[baseUrl]}/projects/:id
 urlParameters:
 - enabled: true
   name: :id
-  value: '1'
-  id: xmSXhjVSNV
-- enabled: true
-  name: ''
-  value: ''
-  id: 69JGCRyYJZ
+  value: '2'
+  id: BXr2YzJJSv

@@ -8,6 +8,9 @@ import "./table.css"
 import { Project } from '@my-types/types';
 
 const ProjectsTable = ({ data }: { data: Project[] }) => {
+
+    console.log("ProjectsTable data:", data);   
+
     const [sorting, setSorting] = useState<SortingState>([])
     const navigate = useNavigate();
 

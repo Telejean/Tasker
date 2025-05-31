@@ -13,7 +13,7 @@ import { serializeDate } from "@/services/date.service";
 
 export const TasksAdd = ({ onAddTask, projectId, }: {
     onAddTask: (cb: (prev: any[]) => any[]) => void;
-    selectedProjectId?: number;
+    projectId: number;
 }) => {
     const [taskName, setTaskName] = useState("");
     const [deadline, setDeadline] = useState("");
@@ -21,7 +21,7 @@ export const TasksAdd = ({ onAddTask, projectId, }: {
     const [selectedProjectId, setSelectedProjectId] = useState("");
     const [availableProjects, setAvailableProjects] = useState<Project[]>([]);
     const [showWarning, setShowWarning] = useState(false);
-    const [collaborators, setCollaborators] = useState<string[]>([]);
+    const [collaborators, setCollaborators] = useState<number[]>([]);
     const [allUsers, setAllUsers] = useState<any[]>([]);
     const [collaboratorSearch, setCollaboratorSearch] = useState("");
     const [user] = useAtom(userAtom);
@@ -81,7 +81,7 @@ export const TasksAdd = ({ onAddTask, projectId, }: {
         }
         let newTask: Task = {
             name: taskName,
-            deadline: serializeDate(deadline).toISOString(),
+            deadline: serializeDate(deadline),
             creatorId: user.id,
             description: description,
             projectId: projectId || parseInt(selectedProjectId),

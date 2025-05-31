@@ -1,0 +1,55 @@
+# Python cache and compiled files
+__pycache__/
+*.py[cod]
+*.so
+*.pyd
+*.pyo
+
+# Virtual environment
+.venv/
+env/
+venv/
+ENV/
+*.env
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Data files
+*.csv
+*.tsv
+*.xlsx
+*.xls
+*.parquet
+*.h5
+*.hdf5
+
+# Model artifacts
+*.h5
+*.keras
+*.pkl
+*.joblib
+*.sav
+*.model
+*.onnx
+
+# FastAPI/Starlette logs
+*.log
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# VSCode and PyCharm settings (optional)
+.vscode/
+.idea/
+
+# Test output
+htmlcov/
+coverage.xml
+*.cover
+*.py,cover
+
+# Misc
+*.bak
+*.swp

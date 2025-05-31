@@ -139,6 +139,11 @@ export const AuthorizationService = {
             console.error(`Error removing policy assignment from ${resourceType}:`, error);
             throw error;
         }
+    },
+
+    async handleSignOut() {
+        await axios.post(`${API_URL}/auth/logout`, {}, axiosConfig);
+        window.location.reload();
     }
 };
 
