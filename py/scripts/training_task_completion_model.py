@@ -23,24 +23,20 @@ from tensorflow.keras.callbacks import EarlyStopping
 import matplotlib.pyplot as plt
 
 
-# Set random seeds for reproducibility
 random.seed(42)
 np.random.seed(42)
 tf.random.set_seed(42)
 
-# --- Configuration ---
 MODEL_SAVE_DIR = "../app/models/trained_models"
 MODEL_FILENAME = "task_completion_prediction_model_nn.keras"
 PREPROCESSOR_FILENAME = "preprocessor_nn.pkl"
 MODEL_PATH = os.path.join(MODEL_SAVE_DIR, MODEL_FILENAME)
 PREPROCESSOR_PATH = os.path.join(MODEL_SAVE_DIR, PREPROCESSOR_FILENAME)
 
-# --- 1. Data Preprocessing and Feature Engineering ---
 def preprocess_data(df):
     print("Preprocessing data...")
 
-    # Define features
-    categorical_features = ['task_type']  # Only task_type is one-hot encoded
+    categorical_features = ['task_type']
     numerical_features = [
         'duration',
         'priority',
@@ -57,7 +53,6 @@ def preprocess_data(df):
         'avg_completion_time'
     ]
 
-    # Preprocessing pipeline for numerical + low-cardinality categoricals
     preprocessor = ColumnTransformer(
         transformers=[
             ('num', StandardScaler(), numerical_features),
@@ -71,7 +66,6 @@ def preprocess_data(df):
 
     return X_num_cat, y, preprocessor
 
-# --- 2. Build and Train the Neural Network Model ---
 def build_and_train_model(X_train, y_train, input_dim):
     print("Building and training a more complex neural network...")
 
@@ -102,7 +96,6 @@ def build_and_train_model(X_train, y_train, input_dim):
     print("Neural network training complete.")
     return model, history
 
-# --- 3. Evaluate the Model ---
 def evaluate_model(model, preprocessor, X_test, y_test):
     print("Evaluating the model...")
 
@@ -124,7 +117,6 @@ def evaluate_model(model, preprocessor, X_test, y_test):
     print("\nConfusion Matrix:")
     print(cm)
 
-# --- 4. Save the Trained Model and Preprocessor ---
 def save_model_and_preprocessor(model, preprocessor):
     print("Saving model and preprocessor...")
     os.makedirs(MODEL_SAVE_DIR, exist_ok=True)
@@ -133,24 +125,18 @@ def save_model_and_preprocessor(model, preprocessor):
     print(f"Neural network model saved to {MODEL_PATH}")
     print(f"Preprocessor saved to {PREPROCESSOR_PATH}")
 
-# --- Main Training Process ---
 if __name__ == "__main__":
-    # 1. Load Data
     raw_data = pd.read_csv("synth_data_set_v2.csv")
 
-    # 2. Preprocess Data and Engineer Features
     X_num_cat, y, preprocessor = preprocess_data(raw_data)
 
-    # 3. Split Data (before fitting the preprocessor)
     X_train, X_test, y_train, y_test = train_test_split(
         X_num_cat, y, test_size=0.25, random_state=42, stratify=y
     )
 
-    # 4. Fit the preprocessor *only* on the training data
     X_train_processed = preprocessor.fit_transform(X_train)
     X_test_processed = preprocessor.transform(X_test)
 
-    # 5. Build and Train the Neural Network Model
     input_dim = X_train_processed.shape[1]
 
     trained_model, history = build_and_train_model(
@@ -176,11 +162,9 @@ if __name__ == "__main__":
     plt.show()
 
 
-    # 6. Evaluate the Model
     evaluate_model(
         trained_model, preprocessor,
         X_test, y_test
     )
 
-    # 7. Save the Model and Preprocessor
     save_model_and_preprocessor(trained_model, preprocessor)

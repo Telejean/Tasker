@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 def generate_synthetic_data(n_samples=1000, random_state=42):
     np.random.seed(random_state)
 
-    # Feature distributions
     assigned_team_size = np.clip(np.random.normal(loc=2, scale=1, size=n_samples), 1, 5).astype(int)
     duration = np.clip(np.random.normal(loc=7, scale=3, size=n_samples), 1, 14).astype(int)
     priority = np.random.choice([1, 2, 3], n_samples, p=[0.3, 0.5, 0.2])
@@ -60,7 +59,7 @@ def generate_synthetic_data(n_samples=1000, random_state=42):
     )
 
     probability_of_completion = 1 / (1 + np.exp(-(completion_propensity - np.mean(completion_propensity)) / np.std(
-        completion_propensity)))  # Center and scale propensity
+        completion_propensity)))
     threshold = 0.35
     print(completion_propensity.to_string())
     # print(probability_of_completion.to_string())

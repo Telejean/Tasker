@@ -2,7 +2,7 @@ type: http_request
 model: http_request
 id: rq_YQvvaNod9v
 createdAt: 2025-05-30T21:10:44.907759
-updatedAt: 2025-05-31T18:34:11.056813100
+updatedAt: 2025-06-01T10:34:43.320482800
 workspaceId: wk_mxbmXX2jVR
 folderId: fl_7DrrkTwJrW
 authentication: {}
@@ -13,7 +13,7 @@ body:
       {
         "task_id": 1,
         "task_type": "feature",
-        "priority": "MEDIUM",
+        "priority": "HIGH",
         "duration": 12,
         "subtasks": 2,
         "deadline": "2025-06-15T12:00:00Z",
@@ -21,7 +21,7 @@ body:
         "description_length": 120,
         "comments_count": 5,
         "assigned_team_size": 3,
-        "user_availability": 50,
+        "user_availability": 80,
         "no_curr_assigned_tasks": 6,
         "tasks_completed": 20,
         "user_past_completion": 0.9,

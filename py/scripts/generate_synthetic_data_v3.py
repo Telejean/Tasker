@@ -133,25 +133,22 @@ def generate_synthetic_data(n_samples=1000, random_state=42):
     scaled_features = scaler.fit_transform(df[features_to_scale])
     scaled_df = pd.DataFrame(scaled_features, columns=features_to_scale, index=df.index)
 
-    # Define weights for propensity score
-    # These determine the "ground truth" logic your NN will try to learn
-    # Positive weight -> increases propensity to complete on time
-    # Negative weight -> decreases propensity
+
     weights = {
         "duration": -0.15,
-        "priority": 0.05, # Higher priority gets more attention
+        "priority": 0.05,
         "subtasks": -0.10,
         "deadline_days": 0.15,
         "created_to_deadline": 0.03,
-        "user_past_completion": 0.30, # Strong factor
-        "task_type_numeric": 0.05, # documentation (2) > feature (1) > bug (0)
+        "user_past_completion": 0.30,
+        "task_type_numeric": 0.05,
         "description_length": -0.02,
         "comments_count": 0.02,
         "assigned_team_size": 0.03,
-        "user_availability": 0.20, # Total hours available is important
-        "no_curr_assigned_tasks": -0.10, # More other tasks, less focus
-        "tasks_completed": 0.10, # Experience
-        "avg_completion_time": -0.20, # Higher (slower) is bad
+        "user_availability": 0.20,
+        "no_curr_assigned_tasks": -0.10,
+        "tasks_completed": 0.10,
+        "avg_completion_time": -0.20,
     }
 
     completion_propensity = pd.Series(np.zeros(len(df)), index=df.index)
@@ -162,22 +159,19 @@ def generate_synthetic_data(n_samples=1000, random_state=42):
             print(f"Warning: Feature {feature} not found in scaled_df for propensity calculation.")
 
 
-    # Add random noise to the propensity score
-    completion_propensity += np.random.normal(0, 0.3, len(df)) # Tunable noise level
+    completion_propensity += np.random.normal(0, 0.3, len(df))
 
-    # Transform propensity to probability (0-1) using sigmoid
-    # Centering and scaling propensity before sigmoid helps stabilize probability distribution
+
     propensity_mean = np.mean(completion_propensity)
     propensity_std = np.std(completion_propensity)
-    if propensity_std == 0: # Avoid division by zero if all propensities are somehow identical
+    if propensity_std == 0:
         propensity_std = 1
 
     probability_of_completion = 1 / (
         1 + np.exp(-(completion_propensity - propensity_mean) / propensity_std)
     )
 
-    # Determine 'completed_on_time' based on a threshold
-    threshold = 0.5 # With centered/scaled propensity, 0.5 is a natural threshold
+    threshold = 0.5
     df["completed_on_time"] = (probability_of_completion > threshold).astype(int)
 
     # print(completion_propensity.describe())
@@ -192,7 +186,6 @@ def generate_synthetic_data(n_samples=1000, random_state=42):
     return df
 
 
-# Generate the dataset
 data_set = generate_synthetic_data(n_samples=10000, random_state=42)
 data_set.to_csv("synth_data_set_v2.csv", index=False)
 print("\nFirst 5 rows of the generated dataset:")
