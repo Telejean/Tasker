@@ -81,7 +81,6 @@ const TeamList = ({ projectId, availableUsers, projectManager }: TeamListProps) 
         }
     };
 
-    // Format team members for the table
     const getTeamMembers = (team: Team) => {
         if (!team.users) {
             console.error('No users found for team:', team.id);
@@ -91,7 +90,7 @@ const TeamList = ({ projectId, availableUsers, projectManager }: TeamListProps) 
             id: user.id,
             name: user.name,
             email: user.email,
-            role: user.userRole,
+            role: user.role,
             tags: user.tags,
             bio: user.bio,
             isAdmin: user.isAdmin,

@@ -4,7 +4,6 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Task } from '@my-types/types';
 
-// Task card component (sortable)
 const KanbanTaskCard = ({ task, onTaskClick } : {task:Task, onTaskClick: (task: Task) => void}) => {
     const {
         attributes,

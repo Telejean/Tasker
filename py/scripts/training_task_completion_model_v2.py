@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import random
 import os
+import matplotlib as plt
 
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import (
@@ -69,7 +70,6 @@ def preprocess_data(df):
 def build_and_train_model(X_train, y_train, input_dim):
     print("Building realistic neural network...")
 
-    # Simplified architecture
     inputs = Input(shape=(input_dim,))
     x = Dense(128, activation='relu')(inputs)
     x = Dropout(0.4)(x)
@@ -162,6 +162,24 @@ if __name__ == "__main__":
 
     input_dim = X_train_processed.shape[1]
     model, history = build_and_train_model(X_train_processed, y_train, input_dim)
+
+    plt.figure(figsize=(12, 4))
+    plt.subplot(1, 2, 1)
+    plt.plot(history.history['loss'], label='Train Loss')
+    plt.plot(history.history['val_loss'], label='Validation Loss')
+    plt.title('Model Loss')
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.legend()
+
+    plt.subplot(1, 2, 2)
+    plt.plot(history.history['accuracy'], label='Train Accuracy')
+    plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
+    plt.title('Model Accuracy')
+    plt.xlabel('Epochs')
+    plt.ylabel('Accuracy')
+    plt.legend()
+    plt.show()
 
     metrics = evaluate_model(model, preprocessor, X_test, y_test)
 

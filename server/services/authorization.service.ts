@@ -9,6 +9,8 @@ import { PermissionLog } from '../models/PermissionLog.model';
 import { Project } from '../models/Project.model';
 import { Team } from '../models/Team.model';
 import { UserTeam } from '../models/UserTeam.model';
+import { Rule as RuleModel } from '../models/Rule.model';
+import { UserProject } from '../models/UserProjects.model'; 
 
 interface PermissionCheckParams {
   userId: number;
@@ -24,71 +26,59 @@ interface Rule {
   condition?: any;
 }
 
-// Cache for policy rules to avoid frequent database queries
 const policyCache: Record<number, { rules: Rule[]; cachedAt: number }> = {};
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes in milliseconds
-
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 class AuthorizationService {
   /**
    * Check if a user has permission to perform an action on a resource
    */
   async checkPermission({ userId, action, resourceType, resourceId, projectId }: PermissionCheckParams): Promise<boolean> {
     try {
-      // Get user with role
       const user = await User.findByPk(userId);
       if (!user) {
-        this.logPermissionCheck(userId, action, resourceType, resourceId, false, 'User not found');
+        await this.logPermissionCheck(userId, action, resourceType, resourceId, false, 'User not found');
         return false;
       }
 
-      // Board and Coordinator roles have all permissions
       if (user.isAdmin) {
-        this.logPermissionCheck(userId, action, resourceType, resourceId, true, 'User has admin role');
+        await this.logPermissionCheck(userId, action, resourceType, resourceId, true, 'User has admin role');
         return true;
       }
 
-      // Check role-based permissions
       if (projectId) {
         const hasRolePermission = await this.checkRolePermission(user, projectId, action, resourceType);
-
         if (hasRolePermission) {
-          this.logPermissionCheck(userId, action, resourceType, resourceId, true, 'User has role-based permission');
+          await this.logPermissionCheck(userId, action, resourceType, resourceId, true, 'User has role-based permission');
           return true;
         }
       }
 
-
-
-      // Check project membership (applies to project and task resources)
       if ((resourceType === 'project' || resourceType === 'task') && resourceId) {
         const hasProjectPermission = await this.checkProjectMembership(userId, action, resourceType, resourceId);
         if (hasProjectPermission) {
-          this.logPermissionCheck(userId, action, resourceType, resourceId, true, 'User has project-based permission');
+          await this.logPermissionCheck(userId, action, resourceType, resourceId, true, 'User has project-based permission');
           return true;
         }
       }
 
-      // Check policies assigned to user
       const hasUserPolicy = await this.checkUserPolicies(userId, action, resourceType, resourceId);
       if (hasUserPolicy) {
-        this.logPermissionCheck(userId, action, resourceType, resourceId, true, 'User has user-policy permission');
+        await this.logPermissionCheck(userId, action, resourceType, resourceId, true, 'User has user-policy permission');
         return true;
       }
 
-      // Check policies assigned to the resource
       const hasResourcePolicy = await this.checkResourcePolicies(userId, action, resourceType, resourceId);
       if (hasResourcePolicy) {
-        this.logPermissionCheck(userId, action, resourceType, resourceId, true, 'User has resource-policy permission');
+        await this.logPermissionCheck(userId, action, resourceType, resourceId, true, 'User has resource-policy permission');
         return true;
       }
 
-      // No permission found
-      this.logPermissionCheck(userId, action, resourceType, resourceId, false, 'No matching permission found');
+      await this.logPermissionCheck(userId, action, resourceType, resourceId, false, 'No matching permission found');
       return false;
     } catch (error) {
       console.error('Error checking permission:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      this.logPermissionCheck(userId, action, resourceType, resourceId, false, `Error: ${errorMessage}`);
+      await this.logPermissionCheck(userId, action, resourceType, resourceId, false, `Error: ${errorMessage}`);
       return false;
     }
   }
@@ -105,97 +95,314 @@ class AuthorizationService {
     const resourceType = resource.type;
     const resourceId = resource.id;
 
-    // 1. Get all active policies assigned to the user (UserPolicy)
-    const userPolicies = await UserPolicy.findAll({
-      where: {
-        userId,
-        [Op.or]: [
-          { expiresAt: null },
-          { expiresAt: { [Op.gt]: new Date() } }
+    try {
+      const user = await User.findByPk(userId, {
+        include: [
+          {
+            model: UserTeam,
+            include: [Team]
+          }
         ]
-      },
-      include: [{ model: Policy, where: { isActive: true }, include: [{ model: require('../models/Rule.model').Rule, as: 'policyRules' }] }]
-    });
-
-    // 2. Get all active policies assigned to the resource (e.g., TaskPolicy, ProjectPolicy, etc.)
-    let resourcePolicies: any[] = [];
-    if (resourceType === 'task') {
-      resourcePolicies = await TaskPolicy.findAll({
-        where: { taskId: resourceId },
-        include: [{ model: Policy, where: { isActive: true }, include: [{ model: require('../models/Rule.model').Rule, as: 'policyRules' }] }]
       });
-    }
-    // Add more resource types as needed
 
-    // 3. Collect all rules from user and resource policies
-    const allRules: any[] = [];
-    for (const up of userPolicies) {
-      if (up.policy && up.policy.policyRules) {
-        allRules.push(...up.policy.policyRules);
+      if (!user) {
+        return { allowed: false, reason: 'User not found' };
       }
-    }
-    for (const rp of resourcePolicies) {
-      if (rp.policy && rp.policy.policyRules) {
-        allRules.push(...rp.policy.policyRules);
-      }
-    }
 
-    // 4. Sort rules by priority (higher first)
-    allRules.sort((a, b) => (b.priority || 0) - (a.priority || 0));
+      if (user.isAdmin) {
+        return { allowed: true, reason: 'Admin user has full access' };
+      }
 
-    // 5. Evaluate rules (ABAC)
-    for (const rule of allRules) {
-      // Check action
-      if (rule.actionAttributes && rule.actionAttributes['type'] && rule.actionAttributes['type'] !== actionType) {
-        continue;
+      const userPolicies = await UserPolicy.findAll({
+        where: {
+          userId,
+          [Op.or]: [
+            { expiresAt: null },
+            { expiresAt: { [Op.gt]: new Date() } }
+          ]
+        },
+        include: [{
+          model: Policy,
+          where: { isActive: true },
+          include: [RuleModel] 
+        }]
+      });
+
+      let resourcePolicies: any[] = [];
+      if (resourceType === 'task' && resourceId) {
+        resourcePolicies = await TaskPolicy.findAll({
+          where: { taskId: resourceId },
+          include: [{
+            model: Policy,
+            where: { isActive: true },
+            include: [RuleModel]
+          }]
+        });
+      } else if (resourceType === 'project' && resourceId) {
+        resourcePolicies = await ProjectPolicy.findAll({
+          where: { projectId: resourceId },
+          include: [{
+            model: Policy,
+            where: { isActive: true },
+            include: [RuleModel]
+          }]
+        });
       }
-      // Check resource
-      if (rule.resourceAttributes && rule.resourceAttributes['type'] && rule.resourceAttributes['type'] !== resourceType) {
-        continue;
+
+      const allRules: any[] = [];
+      for (const up of userPolicies) {
+        if (up.policy && up.policy.rules) { 
+          allRules.push(...up.policy.rules);
+        }
       }
-      // Check subject attributes (user attributes)
-      if (rule.subjectAttributes) {
-        // Example: { department: 'IT' }
-        const user = await User.findByPk(userId);
-        if (!user) continue;
-        let subjectMatch = true;
-        for (const [key, value] of Object.entries(rule.subjectAttributes)) {
-          if ((user as any)[key] !== value) {
-            subjectMatch = false;
-            break;
+      for (const rp of resourcePolicies) {
+        if (rp.policy && rp.policy.rules) { 
+          allRules.push(...rp.policy.rules);
+        }
+      }
+
+      allRules.sort((a, b) => (b.priority || 0) - (a.priority || 0));
+
+      for (const rule of allRules) {
+        const ruleEvaluation = await this.evaluateABACRule(rule, {
+          user,
+          actionType,
+          resourceType,
+          resourceId,
+          resource: resource.attributes || {},
+          environment
+        });
+
+        if (ruleEvaluation.matches) {
+          if (rule.effect === 'DENY') {
+            return { allowed: false, reason: rule.description || 'Denied by policy rule' };
+          }
+          if (rule.effect === 'ALLOW') {
+            return { allowed: true, reason: rule.description || 'Allowed by policy rule' };
           }
         }
-        if (!subjectMatch) continue;
       }
-      // Check environment attributes (e.g., time)
-      if (rule.environmentAttributes) {
-        // Example: { time: { $gte: '09:00', $lte: '17:00' } }
-        // Implement as needed
-      }
-      // Check condition (optional, as stringified JSON logic)
-      if (rule.condition) {
-        // For now, skip or implement as needed
-      }
-      // If rule matches, return effect
-      if (rule.effect === 'DENY') {
-        return { allowed: false, reason: rule.description || 'Denied by policy rule' };
-      }
-      if (rule.effect === 'ALLOW') {
-        return { allowed: true, reason: rule.description || 'Allowed by policy rule' };
+
+      return { allowed: false, reason: 'No matching ABAC rule found' };
+    } catch (error) {
+      console.error('Error in ABAC authorization:', error);
+      return { allowed: false, reason: 'Authorization error occurred' };
+    }
+  }
+
+  /**
+   * Evaluate a single ABAC rule against the request context
+   */
+  private async evaluateABACRule(rule: any, context: any): Promise<{ matches: boolean; reason?: string }> {
+    const { user, actionType, resourceType, resourceId, resource, environment } = context;
+
+    if (rule.actionAttributes) {
+      const actionAttrs = typeof rule.actionAttributes === 'string'
+        ? JSON.parse(rule.actionAttributes)
+        : rule.actionAttributes;
+
+      if (actionAttrs.type && actionAttrs.type !== actionType && actionAttrs.type !== '*') {
+        return { matches: false, reason: 'Action type mismatch' };
       }
     }
-    // Default deny
-    return { allowed: false, reason: 'No matching ABAC rule found' };
+
+    if (rule.resourceAttributes) {
+      const resourceAttrs = typeof rule.resourceAttributes === 'string'
+        ? JSON.parse(rule.resourceAttributes)
+        : rule.resourceAttributes;
+
+      if (resourceAttrs.type && resourceAttrs.type !== resourceType && resourceAttrs.type !== '*') {
+        return { matches: false, reason: 'Resource type mismatch' };
+      }
+    }
+
+    if (rule.subjectAttributes) {
+      const subjectAttrs = typeof rule.subjectAttributes === 'string'
+        ? JSON.parse(rule.subjectAttributes)
+        : rule.subjectAttributes;
+
+      for (const [key, expectedValue] of Object.entries(subjectAttrs)) {
+        let userValue;
+
+        if (key === 'departmentId') {
+          userValue = user.departmentId;
+        } else if (key === 'teamIds') {
+          userValue = user.userTeams?.map((ut: any) => ut.teamId) || [];
+        } else if (key === 'role') {
+          userValue = this.getUserHighestRole(user);
+        } else {
+          userValue = (user as any)[key];
+        }
+
+        if (!this.matchAttribute(userValue, expectedValue)) {
+          return { matches: false, reason: `Subject attribute ${key} mismatch` };
+        }
+      }
+    }
+
+    if (rule.environmentAttributes) {
+      const envAttrs = typeof rule.environmentAttributes === 'string'
+        ? JSON.parse(rule.environmentAttributes)
+        : rule.environmentAttributes;
+
+      if (!this.evaluateEnvironmentAttributes(envAttrs, environment)) {
+        return { matches: false, reason: 'Environment attribute mismatch' };
+      }
+    }
+
+    if (rule.condition) {
+      const conditionResult = await this.evaluateAdvancedCondition(rule.condition, {
+        user,
+        resourceId,
+        resourceType,
+        resource,
+        environment
+      });
+
+      if (!conditionResult) {
+        return { matches: false, reason: 'Condition evaluation failed' };
+      }
+    }
+
+    return { matches: true };
+  }
+
+  /**
+   * Match a single attribute value against expected value(s)
+   */
+  private matchAttribute(actualValue: any, expectedValue: any): boolean {
+    if (expectedValue === '*') return true;
+
+    if (Array.isArray(expectedValue)) {
+      if (Array.isArray(actualValue)) {
+        return expectedValue.some(ev => actualValue.includes(ev));
+      }
+      return expectedValue.includes(actualValue);
+    }
+
+    if (Array.isArray(actualValue)) {
+      return actualValue.includes(expectedValue);
+    }
+
+    return actualValue === expectedValue;
+  }
+
+  /**
+   * Get user's highest role across all teams
+   */
+  private getUserHighestRole(user: any): string {
+    if (!user.userTeams || user.userTeams.length === 0) return 'viewer';
+
+    const roleHierarchy = ['viewer', 'member', 'admin', 'owner'];
+    let highestRole = 'viewer';
+
+    for (const userTeam of user.userTeams) {
+      const role = userTeam.userRole?.toLowerCase() || 'viewer';
+      const currentIndex = roleHierarchy.indexOf(highestRole);
+      const newIndex = roleHierarchy.indexOf(role);
+
+      if (newIndex > currentIndex) {
+        highestRole = role;
+      }
+    }
+
+    return highestRole;
+  }
+
+  /**
+   * Evaluate environment attributes
+   */
+  private evaluateEnvironmentAttributes(envAttrs: any, environment: any): boolean {
+    for (const [key, expectedValue] of Object.entries(envAttrs)) {
+      const actualValue = environment?.[key];
+
+      if (key === 'timeRange') {
+        const time = environment?.time || new Date();
+        const range = expectedValue as any;
+        if (range.start && time < new Date(range.start)) return false;
+        if (range.end && time > new Date(range.end)) return false;
+      } else if (key === 'businessHours') {
+        const time = environment?.time || new Date();
+        const hour = time.getHours();
+        const range = expectedValue as any;
+        if (hour < range.start || hour > range.end) return false;
+      } else {
+        if (!this.matchAttribute(actualValue, expectedValue)) return false;
+      }
+    }
+
+    return true;
+  }
+
+  /**
+   * Evaluate advanced conditions with context
+   */
+  private async evaluateAdvancedCondition(condition: string, context: any): Promise<boolean> {
+    try {
+      const cond = typeof condition === 'string' ? JSON.parse(condition) : condition;
+      const { user, resourceId, resourceType, resource } = context;
+
+      if (cond.isOwner) {
+        const ownerId = resource.ownerId || resource.managerId || resource.createdBy;
+        if (ownerId !== user.id) return false;
+      }
+
+      if (cond.sameDepartment) {
+        if (resource.departmentId !== user.departmentId) return false;
+      }
+
+      if (cond.sameTeam) {
+        const userTeamIds = user.userTeams?.map((ut: any) => ut.teamId) || [];
+        if (!resource.teamId || !userTeamIds.includes(resource.teamId)) return false;
+      }
+
+      if (cond.projectMember && resourceType === 'task') {
+        const task = await Task.findByPk(resourceId, { include: [Project] });
+        if (task?.project) {
+          const userProject = await UserProject.findOne({
+            where: { userId: user.id, projectId: task.project.id }
+          });
+
+          if (userProject) return true; 
+
+          const userTeamIds = user.userTeams?.map((ut: any) => ut.teamId) || [];
+          const projectTeams = await Team.findAll({
+            where: { projectId: task.project.id }
+          });
+
+          const hasTeamMembership = projectTeams.some(team => userTeamIds.includes(team.id));
+          if (!hasTeamMembership) return false;
+        }
+      }
+
+      if (cond.isAssigned && resourceType === 'task') {
+        const task = await Task.findByPk(resourceId, {
+          include: [{ model: User, as: 'assignedPersons' }]
+        });
+        if (!task) return false;
+        const isAssigned = task?.assignedUsers?.some((ap: any) => ap.id === user.id);
+        if (!isAssigned) return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error evaluating advanced condition:', error);
+      return false;
+    }
   }
 
   /**
    * Check role-based permissions (simple role checks)
    */
-  private async checkRolePermission(user: User, project: number, action: string, resourceType: string): Promise<boolean> {
-    // Define role-based permissions for different resources
+  private async checkRolePermission(user: User, projectId: number, action: string, resourceType: string): Promise<boolean> {
+    const project = await Project.findByPk(projectId);
+    if (project?.managerId === user.id) {
+      return true; 
+    }
 
-    return true
+    return false;
   }
+
   /**
    * Check project membership permissions through team membership
    */
@@ -208,57 +415,53 @@ class AuthorizationService {
     try {
       let projectId: number;
 
-      // If checking task permissions, get the associated project ID
       if (resourceType === 'task') {
         const task = await Task.findByPk(resourceId);
         if (!task) return false;
         projectId = task.projectId;
       } else {
         projectId = resourceId;
-      }      // Check if user is a member of any team in the project
-      const teams = await Team.findAll({
+      }
+
+      const project = await Project.findByPk(projectId);
+      if (project?.managerId === userId) {
+        return true; 
+      }
+
+      let highestRole = '';
+
+      const userProject = await UserProject.findOne({
+        where: { userId, projectId }
+      });
+
+      if (userProject) {
+        highestRole = userProject.role?.toLowerCase() || 'member';
+      }
+
+      const projectTeams = await Team.findAll({
         where: { projectId },
         include: [{
-          model: User,
-          through: {
-            where: { userId }
-          }
+          model: UserTeam,
+          where: { userId },
+          required: false
         }]
       });
 
-      // If not a member of any team, check if user is the project manager
-      if (teams.length === 0) {
-        const project = await Project.findByPk(projectId);
-        if (!project || project.managerId !== userId) return false;
-      }
-
-      // Get the user's highest role in any team
-      let highestRole = '';
-      for (const team of teams) {
-        const userTeam = await UserTeam.findOne({
-          where: { userId, teamId: team.id }
-        });
-
+      for (const team of projectTeams) {
+        const userTeam = team.userTeams?.[0]; 
         if (userTeam) {
-          // Determine which role has higher privileges
-          if (
-            highestRole === '' ||
-            (highestRole === 'viewer' && ['member', 'admin', 'owner'].includes(userTeam.userRole.toLowerCase())) ||
-            (highestRole === 'member' && ['admin', 'owner'].includes(userTeam.userRole.toLowerCase())) ||
-            (highestRole === 'admin' && userTeam.userRole.toLowerCase() === 'owner')
-          ) {
-            highestRole = userTeam.userRole.toLowerCase();
+          const teamRole = userTeam.userRole?.toLowerCase() || 'member';
+
+          if (this.isHigherRole(teamRole, highestRole)) {
+            highestRole = teamRole;
           }
         }
       }
 
-      // If user is a project manager, consider them as "owner" role
-      const project = await Project.findByPk(projectId);
-      if (project && project.managerId === userId) {
-        highestRole = 'owner';
+      if (!highestRole) {
+        return false;
       }
 
-      // Define role permissions within a project
       const projectRolePermissions: Record<string, Record<string, string[]>> = {
         'owner': {
           'project': ['read', 'update', 'delete', 'manage'],
@@ -278,12 +481,19 @@ class AuthorizationService {
         }
       };
 
-      // Check if the project role has the required permission
       return !!projectRolePermissions[highestRole]?.[resourceType]?.includes(action);
     } catch (error) {
       console.error('Error checking project membership:', error);
       return false;
     }
+  }
+
+  private isHigherRole(newRole: string, currentRole: string): boolean {
+    const roleHierarchy = ['viewer', 'member', 'admin', 'owner'];
+    const newIndex = roleHierarchy.indexOf(newRole);
+    const currentIndex = roleHierarchy.indexOf(currentRole);
+
+    return newIndex > currentIndex;
   }
 
   /**
@@ -296,7 +506,6 @@ class AuthorizationService {
     resourceId?: number
   ): Promise<boolean> {
     try {
-      // Get active policies assigned to the user
       const userPolicies = await UserPolicy.findAll({
         where: {
           userId,
@@ -315,15 +524,12 @@ class AuthorizationService {
         ]
       });
 
-      // Check each policy's rules
       for (const userPolicy of userPolicies) {
         const policy = userPolicy.policy;
         const policyId = policy.id;
 
-        // Get rules from cache or database
         const rules = await this.getPolicyRules(policyId);
 
-        // Check if any rule allows the action on the resource
         if (this.evaluateRules(rules, action, resourceType, resourceId)) {
           return true;
         }
@@ -364,7 +570,6 @@ class AuthorizationService {
           return false;
       }
 
-      // Filter for active, non-expired policies
       whereClause = {
         ...whereClause,
         [Op.or]: [
@@ -379,21 +584,18 @@ class AuthorizationService {
           {
             model: Policy,
             where: {
-              active: true
+              isActive: true
             }
           }
         ]
       });
 
-      // Check each policy's rules
       for (const resourcePolicy of resourcePolicies) {
         const policy = resourcePolicy.policy;
         const policyId = policy.id;
 
-        // Get rules from cache or database
         const rules = await this.getPolicyRules(policyId);
 
-        // Check if any rule allows the action on the resource
         if (this.evaluateRules(rules, action, resourceType, resourceId, { userId })) {
           return true;
         }
@@ -410,7 +612,6 @@ class AuthorizationService {
    * Get policy rules from cache or database
    */
   private async getPolicyRules(policyId: number): Promise<Rule[]> {
-    // Check if we have a valid cached version
     const now = Date.now();
     if (
       policyCache[policyId] &&
@@ -419,21 +620,19 @@ class AuthorizationService {
       return policyCache[policyId].rules;
     }
 
-    // Get fresh rules from database
-    const policy = await Policy.findByPk(policyId);
-    if (!policy) return [];
+    const policy = await Policy.findByPk(policyId, {
+      include: [RuleModel] 
+    });
 
-    // Map database Rule models to the Rule interface format used in this service
-    const mappedRules: Rule[] = policy.policyRules.map(dbRule => {
-      // Extract action from actionAttributes
+    if (!policy || !policy.rules) return [];
+
+    const mappedRules: Rule[] = policy.rules.map(dbRule => {
       const actionAttr = dbRule.actionAttributes as { type?: string } || {};
       const action = actionAttr.type || '*';
 
-      // Extract resource from resourceAttributes
       const resourceAttr = dbRule.resourceAttributes as { type?: string } || {};
       const resource = resourceAttr.type || '*';
 
-      // Use condition as is or convert if needed
       const condition = dbRule.condition ? JSON.parse(dbRule.condition) : undefined;
 
       return {
@@ -443,7 +642,6 @@ class AuthorizationService {
       };
     });
 
-    // Update cache
     policyCache[policyId] = {
       rules: mappedRules,
       cachedAt: now
@@ -463,7 +661,6 @@ class AuthorizationService {
     context: Record<string, any> = {}
   ): boolean {
     return rules.some(rule => {
-      // Check if action and resource match
       const actionMatches = rule.action === '*' || rule.action === action;
       const resourceMatches = rule.resource === '*' || rule.resource === resourceType;
 
@@ -471,12 +668,10 @@ class AuthorizationService {
         return false;
       }
 
-      // If rule has no condition, it's a match
       if (!rule.condition) {
         return true;
       }
 
-      // Evaluate conditions
       return this.evaluateCondition(rule.condition, { resourceId, ...context });
     });
   }
@@ -487,14 +682,11 @@ class AuthorizationService {
   private evaluateCondition(condition: any, context: Record<string, any>): boolean {
     if (!condition) return true;
 
-    // Simple condition format: { attribute: value }
     if (typeof condition === 'object' && !Array.isArray(condition)) {
       return Object.entries(condition).every(([key, value]) => {
         return context[key] === value;
       });
     }
-
-    // TODO: Implement more complex condition evaluation logic if needed
 
     return false;
   }
@@ -510,16 +702,17 @@ class AuthorizationService {
     allowed: boolean,
     reason: string
   ): Promise<void> {
-    if (!userId || !action || !resourceType || !resourceId || !allowed || !reason) {
-      console.log("couldn't log permission")
-      return
+    if (!userId || !action || !resourceType) {
+      console.log("Incomplete permission check data, skipping log");
+      return;
     }
+
     try {
       await PermissionLog.create({
         userId,
         action,
         resourceType,
-        resourceId,
+        resourceId: resourceId || null,
         allowed,
         reason,
         timestamp: new Date()

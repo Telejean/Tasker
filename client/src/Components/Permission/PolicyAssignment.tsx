@@ -29,17 +29,14 @@ const PolicyAssignment = ({ resourceType, resourceId, resourceName }: PolicyAssi
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
-    // Load available policies and current assignments
     useEffect(() => {
         const fetchData = async () => {
             try {
                 setLoading(true);
 
-                // Fetch all active policies
                 const policiesRes = await axios.get(`${API_URL}/policies?active=true`, axiosConfig);
                 setPolicies(policiesRes.data);
 
-                // Fetch current assignments for this resource
                 const assignmentsRes = await axios.get(
                     `${API_URL}/policies/assignments/${resourceType}/${resourceId}`,
                     axiosConfig
@@ -56,7 +53,6 @@ const PolicyAssignment = ({ resourceType, resourceId, resourceName }: PolicyAssi
         fetchData();
     }, [resourceType, resourceId]);
 
-    // Handle assigning a policy to the resource
     const handleAssignPolicy = async () => {
         if (!selectedPolicyId) {
             setError('Please select a policy to assign');
@@ -79,10 +75,8 @@ const PolicyAssignment = ({ resourceType, resourceId, resourceName }: PolicyAssi
                 axiosConfig
             );
 
-            // Update assignments list
             setAssignments(prev => [...prev, data]);
 
-            // Reset form
             setSelectedPolicyId('');
             setExpiresAt('');
         } catch (err) {
@@ -97,7 +91,6 @@ const PolicyAssignment = ({ resourceType, resourceId, resourceName }: PolicyAssi
         }
     };
 
-    // Handle removing a policy assignment
     const handleRemoveAssignment = async (assignmentId: number) => {
         if (!window.confirm('Are you sure you want to remove this policy assignment?')) {
             return;
@@ -111,7 +104,6 @@ const PolicyAssignment = ({ resourceType, resourceId, resourceName }: PolicyAssi
                 axiosConfig
             );
 
-            // Update assignments list
             setAssignments(prev => prev.filter(a => a.id !== assignmentId));
         } catch (err) {
             console.error('Error removing policy assignment:', err);
@@ -121,7 +113,6 @@ const PolicyAssignment = ({ resourceType, resourceId, resourceName }: PolicyAssi
         }
     };
 
-    // Filter out policies that are already assigned
     const availablePolicies = policies.filter(
         policy => !assignments.some(a => a.policyId === policy.id)
     );

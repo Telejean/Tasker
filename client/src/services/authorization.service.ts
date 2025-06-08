@@ -57,7 +57,6 @@ export const AuthorizationService = {
         } catch (error) {
             console.error('Error batch checking permissions:', error);
 
-            // Return all false on error
             return requests.reduce((acc, { action, resourceType, resourceId }) => {
                 const key = `${action}:${resourceType}${resourceId ? `:${resourceId}` : ''}`;
                 acc[key] = false;

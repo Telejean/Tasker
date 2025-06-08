@@ -11,7 +11,6 @@ router.get('/google', passport.authenticate('google', { scope: ['profile', 'emai
 //     authController.handleGoogleCallback
 // );
 
-// JWT Google OAuth route (alternative to session-based auth)
 router.get('/google/jwt', passport.authenticate('google', { scope: ['profile', 'email'] }));
 router.get('/google/jwt/callback',
     passport.authenticate('google', { failureRedirect: '/login' }),
@@ -20,13 +19,10 @@ router.get('/google/jwt/callback',
 
 router.post('/complete-registration', authController.completeRegistration as any);
 
-// Check auth status
 router.get('/status', authController.checkStatus as any);
 
-// Logout
 router.post('/logout', authController.logout);
 
-// ABAC permission check endpoints
 router.get('/check-permission', authController.checkPermission as any);
 router.post('/check-permissions-batch', authController.checkPermissionsBatch as any);
 

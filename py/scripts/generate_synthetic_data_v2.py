@@ -11,24 +11,20 @@ def generate_synthetic_data(n_samples=5000):
     duration = np.clip(np.random.lognormal(mean=1.8, sigma=0.5, size=n_samples), 1, 30)
     priority = np.random.choice([1, 2, 3], n_samples, p=[0.5, 0.3, 0.2])
     subtasks = np.clip(np.random.negative_binomial(n=2, p=0.4, size=n_samples), 0, 8)
-
     created_to_deadline = np.clip(np.random.gamma(shape=3, scale=4, size=n_samples), 5, 60)
     days_passed = np.random.uniform(0.1, 0.8) * created_to_deadline
     deadline_days = np.round(created_to_deadline - days_passed).astype(int)
-
     user_past_completion = np.clip(np.random.beta(a=7, b=3, size=n_samples), 0.3, 1.0)
     user_availability = np.clip(np.random.normal(loc=65, scale=20, size=n_samples), 10, 100)
     no_curr_assigned_tasks = np.clip(np.random.poisson(lam=4, size=n_samples), 1, 15)
     tasks_completed = np.clip(np.random.lognormal(mean=3, sigma=0.7, size=n_samples), 5, 200).astype(int)
-    overdue_tasks = np.clip(np.random.poisson(lam=np.sqrt(tasks_completed) * 0.7, size=n_samples), 0, 30)
+    # overdue_tasks = np.clip(np.random.poisson(lam=np.sqrt(tasks_completed) * 0.7, size=n_samples), 0, 30)
     avg_completion_time = np.clip(np.random.beta(a=2, b=5, size=n_samples) * 0.9 + 0.1, 0.1, 1.0)
-
     task_type = np.random.choice(TASK_TYPES, n_samples, p=[0.1, 0.08, 0.15, 0.07, 0.12,
                                                            0.09, 0.08, 0.05, 0.1, 0.04,
                                                            0.03, 0.06, 0.03])
     description_length = np.clip(gamma.rvs(a=2.5, scale=35, size=n_samples), 20, 500).astype(int)
     comments_count = np.clip(np.random.negative_binomial(n=2, p=0.3, size=n_samples), 0, 25)
-
     assigned_team_size = np.random.choice([1, 3, 5, 7], n_samples, p=[0.2, 0.5, 0.2, 0.1])
 
     df = pd.DataFrame({

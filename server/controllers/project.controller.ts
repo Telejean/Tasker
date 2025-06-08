@@ -145,7 +145,7 @@ export const projectController = {
                 return res.status(201).json({
                     message: `Successfully created ${createdUserProjects.length} users`,
                     users: createdUserProjects.map(user => user.get({ plain: true })),
-                    project: createdProject // include the created project with startDate and endDate
+                    project: createdProject 
                 });
 
             } catch (txError) {

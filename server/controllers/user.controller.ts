@@ -203,7 +203,6 @@ export const userController = {
         } catch (error: any) {
             console.error('Error creating users in bulk:', error);
 
-            // Handle Sequelize unique constraint error
             if (error.name === 'SequelizeUniqueConstraintError') {
                 return res.status(409).json({
                     error: 'Duplicate email found',

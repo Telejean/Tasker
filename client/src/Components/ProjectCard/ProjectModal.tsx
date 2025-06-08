@@ -47,7 +47,6 @@ const ProjectModal = ({ open, onOpenChange, projectId, onProjectSaved }) => {
             endDate !== originalFormState.endDate;
     }, [name, manager, userIds, iconId, originalFormState, startDate, endDate]);
 
-    // Handle modal close with confirmation if needed
     const handleCloseRequest = useCallback(() => {
         if (hasUnsavedChanges()) {
             setShowConfirmDialog(true);
@@ -56,13 +55,11 @@ const ProjectModal = ({ open, onOpenChange, projectId, onProjectSaved }) => {
         }
     }, [hasUnsavedChanges, onOpenChange]);
 
-    // Confirm discard changes
     const handleConfirmDiscard = () => {
         setShowConfirmDialog(false);
         onOpenChange(false);
     };
 
-    // Load available users
     useEffect(() => {
         const fetchUsers = async () => {
             try {
@@ -79,7 +76,6 @@ const ProjectModal = ({ open, onOpenChange, projectId, onProjectSaved }) => {
         }
     }, [open]);
 
-    // Load project data when editing    
     useEffect(() => {
         if (projectId && open) {
             const loadProject = async () => {
@@ -91,7 +87,6 @@ const ProjectModal = ({ open, onOpenChange, projectId, onProjectSaved }) => {
                     setIconId(project.iconId || 1);
                     setStartDate(project.startDate ? project.startDate.slice(0, 10) : '');
                     setEndDate(project.endDate ? project.endDate.slice(0, 10) : '');
-                    // Extract user IDs from the teams
                     const allUserIds: number[] = [];
 
                     if (project.teams && Array.isArray(project.teams)) {
@@ -125,7 +120,6 @@ const ProjectModal = ({ open, onOpenChange, projectId, onProjectSaved }) => {
 
             loadProject();
         } else {
-            // Reset form for new project
             setName('');
             setManager(null);
             setUserIds([]);
@@ -143,10 +137,8 @@ const ProjectModal = ({ open, onOpenChange, projectId, onProjectSaved }) => {
             });
         }
     }, [projectId, open]); const handleSave = async () => {
-        // Reset error state
         setError('');
 
-        // Validate form fields
         if (!name.trim()) {
             setError('Project name is required');
             return;
@@ -195,15 +187,12 @@ const ProjectModal = ({ open, onOpenChange, projectId, onProjectSaved }) => {
                 await projectService.createProject(projectData);
             }
 
-            // Notify parent component that the project was saved
             onProjectSaved();
 
-            // Close the modal
             onOpenChange(false);
         } catch (err: any) {
             console.error('Error saving project:', err);
 
-            // Extract error message from response if available
             const errorMessage = err?.response?.data?.error || 'Failed to save project';
             setError(errorMessage);
         } finally {

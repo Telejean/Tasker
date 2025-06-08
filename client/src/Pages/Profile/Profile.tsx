@@ -23,10 +23,8 @@ const Profile = () => {
     const [error, setError] = useState('');
     const navigate = useNavigate();
     console.log(userId)
-    // Determine if this is the current user's profile
     const isOwnProfile = currentUser && userId && String(currentUser.id) === String(userId);
 
-    // Fetch user data by ID
     useEffect(() => {
         const fetchProfile = async () => {
             if (!userId) return;
@@ -42,7 +40,6 @@ const Profile = () => {
         fetchProfile();
     }, [userId]);
 
-    // Update profile on the backend
     const handleSaveProfile = async () => {
         setIsLoading(true);
         setError('');
@@ -74,13 +71,11 @@ const Profile = () => {
         }
     };
 
-    // Sign out the user
     const handleSignOut = () => {
         console.log('Signing out...');
         AuthorizationService.handleSignOut()
     };
 
-    // Get the actual icon component based on the icon name
     const IconComponent = Icons[profile?.iconName as keyof typeof Icons] || Icons.LuUser;
 
     if (!profile) {

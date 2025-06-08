@@ -32,7 +32,6 @@ export const authController = {
     //     }
     // },
 
-    // Google login that returns JWT
     async handleGoogleCallbackJWT(req: Request, res: Response) {
         try {
             const user = req.user as any;
@@ -167,13 +166,11 @@ export const authController = {
                 });
             }
 
-            // Board and Coordinator roles have all permissions
             const user = req.user as any;
             if (user.isAdmin) {
                 return res.json({ hasPermission: true });
             }
 
-            // Check permission using the authorization service
             const hasPermission = await authorizationService.checkPermission({
                 userId: user.id,
                 action: action as string,
@@ -190,7 +187,6 @@ export const authController = {
         }
     },
 
-    // Batch check multiple permissions at once
     async checkPermissionsBatch(req: Request, res: Response) {
         try {
             if (!req.isAuthenticated()) {
@@ -211,7 +207,6 @@ export const authController = {
             const user = req.user as any;
             const results: Record<string, boolean> = {};
 
-            // Board and Coordinator roles have all permissions
             if (user.isAdmin) {
                 for (const perm of permissions) {
                     const { action, resourceType, resourceId } = perm;
@@ -221,7 +216,6 @@ export const authController = {
                 return res.json({ results });
             }
 
-            // Check each permission and collect results
             for (const perm of permissions) {
                 const { action, resourceType, resourceId } = perm;
                 const key = `${action}:${resourceType}${resourceId ? `:${resourceId}` : ''}`;

@@ -20,10 +20,8 @@ const Home = () => {
       try {
         setLoading(true);
 
-        // Fetch the user's tasks
         const tasksData = await taskService.getMyTasks();
 
-        // Transform the task data to match the expected format
         const formattedTasks = tasksData.map((task: any) => ({
           id: task.id,
           projectName: task.project?.name || "No Project",
@@ -37,10 +35,8 @@ const Home = () => {
 
         setTasks(formattedTasks);
 
-        // Fetch the user's projects
         const projectsData = await projectService.getMyProjects();
 
-        // Transform project data to match the UI format
         const formattedProjects = projectsData.map((project: any) => ({
           id: project.id,
           name: project.name,

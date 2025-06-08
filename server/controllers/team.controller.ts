@@ -41,7 +41,6 @@ export const teamController = {
                     }
                 ]
             });
-            // Flatten UserTeam and include department
             const teamsWithFlatUsers = teams.map(team => teamFlattenUtil(team));
             return res.status(200).json(teamsWithFlatUsers);
         } catch (error) {
@@ -267,7 +266,6 @@ export const teamController = {
             const userId = parseInt(req.params.userId);
             const { userRole } = req.body;
 
-            // Find the team member
             const userTeam = await UserTeam.findOne({
                 where: { teamId, userId }
             });
@@ -276,10 +274,8 @@ export const teamController = {
                 return res.status(404).json({ error: 'Team member not found' });
             }
 
-            // Update team member role
             if (userRole) userTeam.userRole = userRole;
 
-            // Save the changes
             await userTeam.save();
 
             return res.status(200).json(userTeam);
@@ -299,12 +295,10 @@ export const teamController = {
                 return res.status(404).json({ error: 'Team not found' });
             }
 
-            // Delete all team members first
             await UserTeam.destroy({
                 where: { teamId }
             });
 
-            // Then delete the team
             await team.destroy();
 
             return res.status(204).send();

@@ -1,13 +1,10 @@
 import { Card, Flex, Text, Heading, Badge, Box } from '@radix-ui/themes';
 import { format } from 'date-fns';
 
-// Non-sortable task card for the overlay
 const TaskCardOverlay = ({ task }) => {
-    // Format the deadline date
     const deadlineDate = new Date(task.deadline);
     const formattedDate = format(deadlineDate, 'MMM d, yyyy');
 
-    // Determine badge color based on status
     const getBadgeColor = (status) => {
         switch (status) {
             case 'NOT_STARTED': return 'amber';

@@ -124,7 +124,6 @@ const Projects = () => {
                 open={projectModalOpen}
                 onOpenChange={setProjectModalOpen}
                 onProjectSaved={() => {
-                    // Refresh the projects list after creating/updating a project
                     const fetchProjects = async () => {
                         try {
                             const projectsData = await projectService.getMyProjects();

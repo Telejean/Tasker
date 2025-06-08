@@ -111,7 +111,6 @@ const Kanban = ({ tasks } : {tasks:Task[]}) => {
         const activeId = active.id;
         const overId = over.id;
 
-        // Find the containers
 
         const activeContainer = findContainer(activeId);
         const overContainer = findContainer(overId);
@@ -128,7 +127,6 @@ const Kanban = ({ tasks } : {tasks:Task[]}) => {
             const activeItems = [...prev[activeContainer].items];
             const overItems = [...prev[overContainer].items];
 
-            // Find the task index in the active container
             const activeIndex = activeItems.findIndex(
                 item => item.id === activeId
             );
@@ -137,16 +135,13 @@ const Kanban = ({ tasks } : {tasks:Task[]}) => {
                 return prev;
             }
 
-            // Remove the task from the active container
             const [removedItem] = activeItems.splice(activeIndex, 1);
 
-            // Update the task's status to match the new container
             const updatedTask = {
                 ...removedItem,
                 status: overContainer
             };
 
-            // Add the task to the over container
             overItems.push(updatedTask);
 
             return {
@@ -172,7 +167,6 @@ const Kanban = ({ tasks } : {tasks:Task[]}) => {
         const activeId = active.id;
         const overId = over.id;
 
-        // Find the containers
         const activeContainer = findContainer(activeId);
         const overContainer = findContainer(overId);
 
@@ -181,7 +175,6 @@ const Kanban = ({ tasks } : {tasks:Task[]}) => {
             !overContainer ||
             activeContainer !== overContainer
         ) {
-            // This is handled in handleDragOver for cross-container dragging
             return;
         }
 
@@ -234,14 +227,11 @@ const Kanban = ({ tasks } : {tasks:Task[]}) => {
 
             if (!currentColumnId) return prev;
 
-            // If status has changed (column needs to change)
             if (currentColumnId !== updatedTask.status) {
-                // Remove task from old column
                 const sourceItems = prev[currentColumnId].items.filter(
                     item => item.id !== updatedTask.id
                 );
 
-                // Add task to new column
                 const destinationItems = [...prev[updatedTask.status].items, updatedTask];
 
                 return {
@@ -257,7 +247,6 @@ const Kanban = ({ tasks } : {tasks:Task[]}) => {
                 };
             }
 
-            // If status hasn't changed, just update the task in its current column
             return {
                 ...prev,
                 [currentColumnId]: {

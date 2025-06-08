@@ -6,7 +6,6 @@ import { TaskPolicy } from '../models/TaskPolicy.model';
 import { Rule } from '../models/Rule.model';
 import { Op } from 'sequelize';
 
-// Get the appropriate policy model based on resource type
 const getPolicyModelForResource = (resourceType: string) => {
     switch (resourceType.toLowerCase()) {
         case 'user':
@@ -21,7 +20,6 @@ const getPolicyModelForResource = (resourceType: string) => {
 };
 
 export const policyController = {
-    // Get all policies or filter by active status
     async getPolicies(req: Request, res: Response) {
         try {
             const { active } = req.query;
@@ -35,7 +33,6 @@ export const policyController = {
         }
     },
 
-    // Get a specific policy by ID
     async getPolicy(req: Request, res: Response) {
         try {
             const { id } = req.params;
@@ -52,12 +49,10 @@ export const policyController = {
         }
     },
 
-    // Create a new policy
     async createPolicy(req: Request, res: Response) {
         try {
             const { name, description, rules, active } = req.body;
 
-            // Basic validation
             if (!name || !rules || !Array.isArray(rules)) {
                 return res.status(400).json({ message: 'Name and rules array are required' });
             }
@@ -66,7 +61,7 @@ export const policyController = {
                 name,
                 description,
                 rules,
-                active: active !== false, // Default to true if not specified
+                active: active !== false, 
                 createdBy: (req.user as any).id
             });
 
@@ -77,7 +72,6 @@ export const policyController = {
         }
     },
 
-    // Update an existing policy
     async updatePolicy(req: Request, res: Response) {
         try {
             const { id } = req.params;
@@ -88,7 +82,6 @@ export const policyController = {
                 return res.status(404).json({ message: 'Policy not found' });
             }
 
-            // Update the policy fields
             await policy.update({
                 ...(name && { name }),
                 ...(description !== undefined && { description }),
@@ -104,7 +97,6 @@ export const policyController = {
         }
     },
 
-    // Delete a policy
     async deletePolicy(req: Request, res: Response) {
         try {
             const { id } = req.params;
@@ -114,13 +106,11 @@ export const policyController = {
                 return res.status(404).json({ message: 'Policy not found' });
             }
 
-            // Check if the policy is still in use
             const userCount = await UserPolicy.count({ where: { policyId: id } });
             const projectCount = await ProjectPolicy.count({ where: { policyId: id } });
             const taskCount = await TaskPolicy.count({ where: { policyId: id } });
 
             if (userCount > 0 || projectCount > 0 || taskCount > 0) {
-                // Instead of deleting, deactivate the policy
                 await policy.update({
                     active: false,
                     updatedBy: (req.user as any).id
@@ -132,7 +122,6 @@ export const policyController = {
                 });
             }
 
-            // Actually delete if not in use
             await policy.destroy();
             res.json({ message: 'Policy deleted successfully' });
         } catch (error) {
@@ -141,18 +130,15 @@ export const policyController = {
         }
     },
 
-    // Assign a policy to a user
     async assignPolicyToUser(req: Request, res: Response) {
         try {
             const { policyId, userId, expiresAt } = req.body;
 
-            // Check if policy exists
             const policy = await Policy.findByPk(policyId);
             if (!policy) {
                 return res.status(404).json({ message: 'Policy not found' });
             }
 
-            // Create the assignment
             const assignment = await UserPolicy.create({
                 policyId,
                 userId,
@@ -167,18 +153,15 @@ export const policyController = {
         }
     },
 
-    // Assign a policy to a project
     async assignPolicyToProject(req: Request, res: Response) {
         try {
             const { policyId, projectId, expiresAt } = req.body;
 
-            // Check if policy exists
             const policy = await Policy.findByPk(policyId);
             if (!policy) {
                 return res.status(404).json({ message: 'Policy not found' });
             }
 
-            // Create the assignment
             const assignment = await ProjectPolicy.create({
                 policyId,
                 projectId,
@@ -193,18 +176,15 @@ export const policyController = {
         }
     },
 
-    // Assign a policy to a task
     async assignPolicyToTask(req: Request, res: Response) {
         try {
             const { policyId, taskId, expiresAt } = req.body;
 
-            // Check if policy exists
             const policy = await Policy.findByPk(policyId);
             if (!policy) {
                 return res.status(404).json({ message: 'Policy not found' });
             }
 
-            // Create the assignment
             const assignment = await TaskPolicy.create({
                 policyId,
                 taskId,
@@ -219,7 +199,6 @@ export const policyController = {
         }
     },
 
-    // Get policy assignments for a specific resource
     async getPolicyAssignments(req: Request, res: Response) {
         try {
             const { resourceType, resourceId } = req.params;
@@ -243,7 +222,6 @@ export const policyController = {
         }
     },
 
-    // Remove a policy assignment
     async removePolicyAssignment(req: Request, res: Response) {
         try {
             const { resourceType, assignmentId } = req.params;
@@ -267,33 +245,28 @@ export const policyController = {
         }
     },
 
-    // Add a rule to an existing policy
     async addRuleToPolicy(req: Request, res: Response) {
         try {
             const { policyId } = req.params;
             const { rule } = req.body;
 
-            // Basic validation
             if (!rule || typeof rule !== 'object') {
                 return res.status(400).json({
                     message: 'A valid rule object is required'
                 });
             }
 
-            // Check required rule properties
             if (!rule.name || !rule.effect) {
                 return res.status(400).json({
                     message: 'Rule must contain name and effect properties'
                 });
             }
 
-            // Find the policy
             const policy = await Policy.findByPk(policyId);
             if (!policy) {
                 return res.status(404).json({ message: 'Policy not found' });
             }
 
-            // Create the new rule
             const newRule = await Rule.create({
                 name: rule.name,
                 description: rule.description || null,

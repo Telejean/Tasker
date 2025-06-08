@@ -50,7 +50,6 @@ const PolicyManagement = () => {
     const [showPolicyForm, setShowPolicyForm] = useState(false);
     const [policyFormData, setPolicyFormData] = useState<PolicyFormData>(defaultPolicy);
 
-    // Fetch policies when component mounts
     useEffect(() => {
         const fetchPolicies = async () => {
             try {
@@ -68,18 +67,15 @@ const PolicyManagement = () => {
         fetchPolicies();
     }, []);
 
-    // Handle creating/updating a policy
     const handleSavePolicy = async () => {
         try {
             setLoading(true);
 
-            // Validate policy data
             if (!policyFormData.name.trim()) {
                 setError('Policy name is required');
                 return;
             }
 
-            // Format rule attributes as JSON strings
             const formattedRules = policyFormData.rules.map(rule => ({
                 ...rule,
                 subjectAttributes: JSON.stringify(rule.subjectAttributes),
@@ -94,14 +90,12 @@ const PolicyManagement = () => {
 
             let response;
             if (selectedPolicy?.id) {
-                // Update existing policy
                 response = await axios.put(
                     `${API_URL}/policies/${selectedPolicy.id}`,
                     formattedPolicy,
                     axiosConfig
                 );
             } else {
-                // Create new policy
                 response = await axios.post(
                     `${API_URL}/policies`,
                     formattedPolicy,
@@ -109,7 +103,6 @@ const PolicyManagement = () => {
                 );
             }
 
-            // Refresh policies list
             setPolicies(prev => {
                 if (selectedPolicy?.id) {
                     return prev.map(p => p.id === selectedPolicy.id ? response.data : p);
@@ -134,7 +127,6 @@ const PolicyManagement = () => {
         }
     };
 
-    // Add a new rule to the current policy
     const handleAddRule = () => {
         setPolicyFormData(prev => ({
             ...prev,
@@ -142,7 +134,6 @@ const PolicyManagement = () => {
         }));
     };
 
-    // Remove a rule from the current policy
     const handleRemoveRule = (index: number) => {
         setPolicyFormData(prev => ({
             ...prev,
@@ -150,7 +141,6 @@ const PolicyManagement = () => {
         }));
     };
 
-    // Update rule field
     const handleRuleChange = (index: number, field: keyof RuleFormData, value: any) => {
         setPolicyFormData(prev => {
             const rules = [...prev.rules];
@@ -162,7 +152,6 @@ const PolicyManagement = () => {
         });
     };
 
-    // Update subject attributes
     const handleSubjectAttributeChange = (index: number, field: string, value: any) => {
         setPolicyFormData(prev => {
             const rules = [...prev.rules];
@@ -174,7 +163,6 @@ const PolicyManagement = () => {
         });
     };
 
-    // Update resource attributes
     const handleResourceAttributeChange = (index: number, field: string, value: any) => {
         setPolicyFormData(prev => {
             const rules = [...prev.rules];
@@ -186,9 +174,7 @@ const PolicyManagement = () => {
         });
     };
 
-    // Edit an existing policy
     const handleEditPolicy = (policy) => {
-        // Format the rule attributes from JSON strings back to objects
         const formattedRules = policy.rules.map(rule => ({
             ...rule,
             subjectAttributes: rule.subjectAttributes ? JSON.parse(rule.subjectAttributes) : {},
@@ -206,14 +192,12 @@ const PolicyManagement = () => {
         setShowPolicyForm(true);
     };
 
-    // Create a new policy
     const handleNewPolicy = () => {
         setSelectedPolicy(null);
         setPolicyFormData(defaultPolicy);
         setShowPolicyForm(true);
     };
 
-    // Delete a policy
     const handleDeletePolicy = async (policyId: number) => {
         if (!window.confirm('Are you sure you want to delete this policy?')) {
             return;

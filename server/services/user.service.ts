@@ -71,7 +71,6 @@ export const createBulkUsersService = async (users: any[]) => {
     const transaction = await sequelize.transaction();
 
     try {
-        // Validate all users first
         for (const userData of users) {
             await validateUserDataService(userData);
         }

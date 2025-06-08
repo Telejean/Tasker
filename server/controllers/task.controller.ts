@@ -137,9 +137,7 @@ export const taskController = {
                 return res.status(400).json({ error: 'A non-empty array of tasks is required' });
             }
 
-            // Use a transaction to ensure all operations succeed or fail together
             const result = await Task.sequelize!.transaction(async (t) => {
-                // Create all tasks
                 const createdTasks = await Task.bulkCreate(
                     tasks.map(task => ({
                         name: task.name,
@@ -151,7 +149,6 @@ export const taskController = {
                     { transaction: t }
                 );
 
-                // Create assigned persons for each task
                 const assignedPersonPromises = [];
 
                 for (let i = 0; i < tasks.length; i++) {
@@ -209,13 +206,11 @@ export const taskController = {
             const taskId = parseInt(req.params.id);
             const { name, description, deadline, status, assignedUserIds } = req.body;
 
-            // Check if task exists
             const taskExists = await Task.findByPk(taskId);
             if (!taskExists) {
                 return res.status(404).json({ error: 'Task not found' });
             }
 
-            // Update task fields
             const updateData: any = {};
             if (name !== undefined) updateData.name = name;
             if (description !== undefined) updateData.description = description;
@@ -226,14 +221,11 @@ export const taskController = {
                 where: { id: taskId }
             });
 
-            // Update assigned users if provided
             if (assignedUserIds) {
-                // Delete existing assignments
                 await AssignedPerson.destroy({
                     where: { taskId }
                 });
 
-                // Create new assignments
                 if (assignedUserIds.length > 0) {
                     const assignedPeople = assignedUserIds.map((userId: number) => ({
                         taskId,
@@ -244,7 +236,6 @@ export const taskController = {
                 }
             }
 
-            // Fetch updated task with associations
             const updatedTask = await Task.findByPk(taskId, {
                 include: [
                     {
@@ -273,7 +264,6 @@ export const taskController = {
         try {
             const taskId = parseInt(req.params.id);
 
-            // Check if task exists
             const taskExists = await Task.findByPk(taskId);
             if (!taskExists) {
                 return res.status(404).json({ error: 'Task not found' });

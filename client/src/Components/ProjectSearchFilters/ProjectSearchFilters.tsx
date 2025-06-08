@@ -10,7 +10,6 @@ const accentColor = "#ef4872"
 const ProjectSearchFilters = () => {
     const [filters, setFilters] = useAtom(projectFiltersAtom);
 
-    // Get unique lists for dropdowns
     const allManagers = [...new Set(projects.map(p => p.manager))];
     const allMembers = [...new Set(projects.flatMap(p => p.members))];
     const statuses = ['active', 'archived'] as const;

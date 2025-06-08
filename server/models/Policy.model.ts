@@ -27,19 +27,19 @@ export class Policy extends Model {
     isActive!: boolean;
 
     @Column({
-        type: DataType.DATE,
-        allowNull: false,
-        defaultValue: DataType.NOW,
+        type: DataType.INTEGER,
+        allowNull: true,
     })
+    createdBy?: number;
 
     @Column({
-        type: DataType.DATE,
-        allowNull: false,
-        defaultValue: DataType.NOW,
+        type: DataType.INTEGER,
+        allowNull: true,
     })
+    updatedBy?: number;
 
-    @HasMany(() => Rule, { as: 'policyRules2' })
-    policyRules!: Rule[];
+    @HasMany(() => Rule)
+    rules!: Rule[];
 
     @HasMany(() => UserPolicy)
     userAssignments!: UserPolicy[];
