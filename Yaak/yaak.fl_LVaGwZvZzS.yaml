@@ -2,9 +2,12 @@ type: folder
 model: folder
 id: fl_LVaGwZvZzS
 createdAt: 2025-05-03T12:46:59.923695900
-updatedAt: 2025-05-14T09:13:07.602298300
+updatedAt: 2025-06-08T13:11:13.336687800
 workspaceId: wk_mxbmXX2jVR
 folderId: null
-name: Tasks
+authentication: {}
+authenticationType: null
 description: ''
-sortPriority: 5000.0
+headers: []
+name: Tasks
+sortPriority: 6000.0

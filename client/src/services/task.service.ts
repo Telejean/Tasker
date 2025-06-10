@@ -4,7 +4,7 @@ import { Task } from '@my-types/types';
 import { DateValue, parseDate } from '@internationalized/date';
 
 export const taskService = {
-   dateValueToString(date: DateValue): Date {
+    dateValueToString(date: DateValue): Date {
         const month = date.month;
         const day = date.day;
         const year = date.year;
@@ -13,11 +13,11 @@ export const taskService = {
     /**
      * Get all tasks assigned to the current user
      */
-    async getMyTasks() :Promise<Task[]> {
+    async getMyTasks(): Promise<Task[]> {
         try {
             const response = await axios.get(`${API_URL}/tasks/my-tasks`, axiosConfig);
             const tasks = response.data.map((task: Task) => {
-                return {...task, deadline: new Date(task.deadline)};
+                return { ...task, deadline: new Date(task.deadline) };
             });
             return tasks;
         } catch (error) {
@@ -32,8 +32,8 @@ export const taskService = {
     async getTasksByProject(projectId: number) {
         try {
             const response = await axios.get(`${API_URL}/tasks/project/${projectId}`, axiosConfig);
-              const tasks = response.data.map((task: Task) => {
-                return {...task, deadline: new Date(task.deadline)};
+            const tasks = response.data.map((task: Task) => {
+                return { ...task, deadline: new Date(task.deadline) };
             });
             return tasks;
         } catch (error) {
@@ -78,6 +78,22 @@ export const taskService = {
         } catch (error) {
             console.error(`Error updating task ${taskId}:`, error);
             throw error;
+        }
+    },
+
+    async addUserToTask(taskId: number, userId: number): Promise<void> {
+        try{
+            
+            const response = await fetch(`${API_URL}/tasks/${taskId}/users`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ userId }),
+            });
+            
+        }catch (error) {
+            console.error(`Error adding user ${userId} to task ${taskId}:`, error);
         }
     },
 

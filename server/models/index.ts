@@ -13,7 +13,8 @@ import { UserPolicy } from './UserPolicy.model';
 import { UserTeam } from './UserTeam.model';
 import { Team } from './Team.model';
 import { UserProject } from './UserProjects.model';
-// Export all models
+import { Comment } from './Comment.model';
+import { CommentLike } from './CommentLike.model';
 export {
     AssignedPerson,
     Department,
@@ -28,10 +29,11 @@ export {
     User,
     UserPolicy,
     UserTeam,
-    Team
+    Team,
+    Comment,
+    CommentLike
 };
 
-// Export a complete array of models for Sequelize initialization
 const models = [
     AssignedPerson,
     Department,
@@ -46,7 +48,9 @@ const models = [
     User,
     UserPolicy,
     UserTeam,
-    Team
+    Team,
+    Comment,
+    CommentLike
 ];
 
 export default models;

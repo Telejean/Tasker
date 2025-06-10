@@ -20,7 +20,7 @@ export const taskController = {
                         include: [
                             {
                                 model: User,
-                                attributes: {exclude: ['team', 'createdAt', 'updatedAt']},
+                                attributes: { exclude: ['team', 'createdAt', 'updatedAt'] },
                             }
                         ]
                     }
@@ -54,7 +54,7 @@ export const taskController = {
                         include: [
                             {
                                 model: User,
-                                attributes: {exclude: ['team', 'createdAt', 'updatedAt']},
+                                attributes: { exclude: ['team', 'createdAt', 'updatedAt'] },
                             }
                         ]
                     }
@@ -109,7 +109,7 @@ export const taskController = {
                         include: [
                             {
                                 model: User,
-                                attributes: {exclude: ['team', 'createdAt', 'updatedAt']},
+                                attributes: { exclude: ['team', 'createdAt', 'updatedAt'] },
                             }
                         ]
                     }
@@ -187,7 +187,7 @@ export const taskController = {
                         include: [
                             {
                                 model: User,
-                                attributes: {exclude: ['team', 'createdAt', 'updatedAt']},
+                                attributes: { exclude: ['team', 'createdAt', 'updatedAt'] },
                             }
                         ]
                     }
@@ -246,7 +246,7 @@ export const taskController = {
                         include: [
                             {
                                 model: User,
-                                attributes: {exclude: ['team', 'createdAt', 'updatedAt']},
+                                attributes: { exclude: ['team', 'createdAt', 'updatedAt'] },
                             }
                         ]
                     }
@@ -280,66 +280,66 @@ export const taskController = {
         }
     },
 
-async getMyTasks(req: Request, res: Response) {
-    try {
-        const userId = (req.user as any)?.id;
+    async getMyTasks(req: Request, res: Response) {
+        try {
+            const userId = (req.user as any)?.id;
 
-        if (!userId) {
-            return res.status(401).json({ error: 'Authentication required' });
+            if (!userId) {
+                return res.status(401).json({ error: 'Authentication required' });
+            }
+
+            const assignedTaskIds = await AssignedPerson.findAll({
+                where: { userId },
+                attributes: ['taskId'],
+                raw: true
+            }).then(assignments => assignments.map(a => a.taskId));
+
+            const tasks = await Task.findAll({
+                where: {
+                    id: {
+                        [Op.in]: assignedTaskIds
+                    }
+                },
+                include: [
+                    {
+                        model: Project
+                    },
+                    {
+                        model: AssignedPerson,
+                        include: [
+                            {
+                                model: User,
+                                attributes: { exclude: ['team', 'createdAt', 'updatedAt'] },
+                            }
+                        ]
+                    },
+                    {
+                        model: User,
+                        as: 'creator',
+                        attributes: ['id', 'name', 'email']
+                    }
+                ],
+                order: [
+                    ['deadline', 'ASC']
+                ]
+            });
+
+            const flattenedTasks = tasks.map(task => {
+                const t = task.toJSON();
+                t.assignedUsers = (t.assignedUsers || []).map((ap: any) => ap.user);
+                return t;
+            });
+
+            return res.status(200).json(flattenedTasks);
+        } catch (error) {
+            console.error('Error getting user tasks:', error);
+            return res.status(500).json({ error: 'Failed to retrieve tasks' });
         }
-
-        const assignedTaskIds = await AssignedPerson.findAll({
-            where: { userId },
-            attributes: ['taskId'],
-            raw: true
-        }).then(assignments => assignments.map(a => a.taskId));
-
-        const tasks = await Task.findAll({
-            where: {
-                id: {
-                    [Op.in]: assignedTaskIds
-                }
-            },
-            include: [
-                {
-                    model: Project
-                },
-                {
-                    model: AssignedPerson,
-                    include: [
-                        {
-                            model: User,
-                            attributes: {exclude: ['team', 'createdAt', 'updatedAt']},
-                        }
-                    ]
-                },
-                {
-                    model: User,
-                    as: 'creator',
-                    attributes: ['id', 'name', 'email']
-                }
-            ],
-            order: [
-                ['deadline', 'ASC']
-            ]
-        });
-
-        const flattenedTasks = tasks.map(task => {
-            const t = task.toJSON();
-            t.assignedUsers = (t.assignedUsers || []).map((ap: any) => ap.user);
-            return t;
-        });
-
-        return res.status(200).json(flattenedTasks);
-    } catch (error) {
-        console.error('Error getting user tasks:', error);
-        return res.status(500).json({ error: 'Failed to retrieve tasks' });
-    }
-},
+    },
 
     async getTasksByProject(req: Request, res: Response) {
         try {
-            const userId = (req.user as any)?.id 
+            const userId = (req.user as any)?.id
             const projectId = parseInt(req.params.id);
 
             const teams = await Team.findAll({
@@ -352,18 +352,7 @@ async getMyTasks(req: Request, res: Response) {
                 }]
             });
 
-            const project = await Project.findByPk(projectId, {raw:true});
-
-
-            const isProjectManager = project && project.managerId === userId;
-
-            const user = req.user as any;
-
-            if (teams.length === 0 && !isProjectManager) {
-                return res.status(403).json({
-                    error: 'You do not have access to this project'
-                });
-            }
+            const project = await Project.findByPk(projectId, { raw: true });
 
             const tasks = await Task.findAll({
                 where: { projectId },
@@ -402,5 +391,75 @@ async getMyTasks(req: Request, res: Response) {
             console.error('Error getting project tasks:', error);
             return res.status(500).json({ error: 'Failed to retrieve tasks' });
         }
-    }
+    },
+
+    async addUserToTask(req: Request, res: Response) {
+        try {
+
+            const taskId = parseInt(req.params.id);
+            const { userId } = req.body;
+
+            if (!userId) {
+                return res.status(400).json({ error: 'userId is required' });
+            }
+
+            const task = await Task.findByPk(taskId);
+            if (!task) {
+                return res.status(404).json({ error: 'Task not found' });
+            }
+
+            const user = await User.findByPk(userId);
+            if (!user) {
+                return res.status(404).json({ error: 'User not found' });
+            }
+
+            const existingAssignment = await AssignedPerson.findOne({
+                where: {
+                    taskId,
+                    userId
+                }
+            });
+
+            if (existingAssignment) {
+                return res.status(409).json({ error: 'User is already assigned to this task' });
+            }
+
+            await AssignedPerson.create({
+                taskId,
+                userId
+            });
+
+            const updatedTask = await Task.findByPk(taskId, {
+                include: [
+                    {
+                        model: Project
+                    },
+                    {
+                        model: AssignedPerson,
+                        include: [
+                            {
+                                model: User,
+                                attributes: { exclude: ['team', 'createdAt', 'updatedAt'] },
+                            }
+                        ]
+                    },
+                    {
+                        model: User,
+                        as: 'creator',
+                        attributes: ['id', 'name', 'email']
+                    }
+                ]
+            });
+
+            const t = updatedTask?.toJSON();
+            if (t) {
+                t.assignedUsers = (t.assignedUsers || []).map((ap: any) => ap.user);
+            }
+
+            return res.status(200).json(t);
+        } catch (error) {
+            console.error('Error adding user to task:', error);
+            return res.status(500).json({ error: 'Failed to add user to task' });
+        }
+    },
 };

@@ -145,7 +145,7 @@ export const projectController = {
                 return res.status(201).json({
                     message: `Successfully created ${createdUserProjects.length} users`,
                     users: createdUserProjects.map(user => user.get({ plain: true })),
-                    project: createdProject 
+                    project: createdProject
                 });
 
             } catch (txError) {
@@ -276,7 +276,7 @@ export const projectController = {
             const userId = (req.user as any)?.id;
             const user = (req.user as any);
 
-            if (user.isAdmin) {
+            if (user.dataValues.isAdmin) {
                 const projects = await Project.findAll({
                     include: [
                         {
@@ -296,7 +296,7 @@ export const projectController = {
                         },
                         {
                             model: User,
-                            as: 'users',
+                            as: 'members',
                             through: { attributes: ['role'] },
                             attributes: { exclude: ["departmentId", "createdAt", "updatedAt"] },
                         }
@@ -321,9 +321,7 @@ export const projectController = {
                         include: [
                             {
                                 model: User,
-                                through: {
-                                    where: { userId: userId }
-                                },
+                                through: { attributes: [] },
                                 attributes: { exclude: ["departmentId", "createdAt", "updatedAt"] },
                             }
                         ]
@@ -333,11 +331,15 @@ export const projectController = {
                         as: 'members',
                         through: { attributes: ['role'] },
                         attributes: { exclude: ["departmentId", "createdAt", "updatedAt"] },
+                        required: false
                     }
                 ],
                 where: {
                     [Op.or]: [
-                        { managerId: userId }
+                        { managerId: userId },
+                        {
+                            '$members.id$': userId
+                        }
                     ]
                 },
                 order: [
@@ -347,14 +349,15 @@ export const projectController = {
 
             projects = projects.map(p => p.get({ plain: true }));
 
-
-            projects = projects.map((project: Project) => {
-                project.members = project.members.map((member: any) => {
-                    const { UserProject, ...rest } = member;
-                    return { ...rest, role: UserProject.role };
-                })
+            projects = projects.map((project: any) => {
+                if (project.members && project.members.length > 0) {
+                    project.members = project.members.map((member: any) => {
+                        const { UserProject, ...rest } = member;
+                        return { ...rest, role: UserProject?.role || 'member' };
+                    });
+                }
                 return project;
-            })
+            });
 
             return res.status(200).json(projects);
         } catch (error) {

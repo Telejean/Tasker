@@ -11,6 +11,7 @@ import {
 import { Project } from "./Project.model";
 import { AssignedPerson } from "./AssignedPerson.model";
 import { User } from "./User.model";
+import { Comment } from "./Comment.model";
 
 @Table
 export class Task extends Model {
@@ -58,9 +59,11 @@ export class Task extends Model {
 
   @BelongsTo(() => Project)
   project!: Project;
-
   @HasMany(() => AssignedPerson)
   assignedUsers!: User[];
+
+  @HasMany(() => Comment)
+  comments!: Comment[];
 
   //AI
 

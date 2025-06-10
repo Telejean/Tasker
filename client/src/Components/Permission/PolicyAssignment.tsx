@@ -5,7 +5,7 @@ import { API_URL, axiosConfig } from '@/config/api';
 import { LuPlus, LuTrash } from 'react-icons/lu';
 
 interface PolicyAssignmentProps {
-    resourceType: 'user' | 'project' | 'task';
+    resourceType: 'user' | 'project' | 'task' | 'team'; 
     resourceId: number;
     resourceName: string;
 }
@@ -128,7 +128,6 @@ const PolicyAssignment = ({ resourceType, resourceId, resourceName }: PolicyAssi
                     <Text color="red" size="2">{error}</Text>
                 )}
 
-                {/* Current Assignments */}
                 <Box>
                     <Heading as="h4" size="3" mb="2">Current Assignments</Heading>
 
@@ -174,7 +173,6 @@ const PolicyAssignment = ({ resourceType, resourceId, resourceName }: PolicyAssi
                     )}
                 </Box>
 
-                {/* Assign New Policy */}
                 <Box>
                     <Heading as="h4" size="3" mb="2">Assign Policy</Heading>
 

@@ -127,19 +127,7 @@ const Projects = () => {
                     const fetchProjects = async () => {
                         try {
                             const projectsData = await projectService.getMyProjects();
-                            const formattedProjects = projectsData.map((project: any) => ({
-                                id: project.id,
-                                name: project.name,
-                                members: project.teams?.flatMap((team: any) =>
-                                    team.users?.map((user: any) => user.name) || []
-                                ) || [],
-                                manager: project.manager?.name || "Unknown",
-                                completion: project.completion || 0,
-                                iconId: project.iconId || 1,
-                                icon: "LuFile", // Default icon
-                                status: project.status?.toLowerCase() || "active"
-                            }));
-                            setProjects(formattedProjects);
+                            setProjects(projectsData);
                         } catch (err) {
                             console.error("Error fetching projects:", err);
                         }

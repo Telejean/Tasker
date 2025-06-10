@@ -44,7 +44,7 @@ const Home = () => {
           manager: project.manager?.name || "Unknown",
           completion: project.completion || 0,
           iconId: project.iconId || 1,
-          icon: "LuFile", // Default icon
+          icon: "LuFile", 
           status: project.status?.toLowerCase() || "active",
           description: project.description || ""
         }));

@@ -2,9 +2,12 @@ type: folder
 model: folder
 id: fl_fn6pfqAx3t
 createdAt: 2025-05-14T08:58:21.373242
-updatedAt: 2025-05-14T09:13:07.601035700
+updatedAt: 2025-06-08T13:11:13.295862400
 workspaceId: wk_mxbmXX2jVR
 folderId: null
-name: Departments
+authentication: {}
+authenticationType: null
 description: ''
-sortPriority: 0.0
+headers: []
+name: Departments
+sortPriority: 1000.0

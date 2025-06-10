@@ -7,6 +7,7 @@ import utilsRoutes from './utils.routes';
 import authRoutes from './auth.routes';
 import teamRoutes from './team.routes';
 import departmentRoutes from './department.routes';
+import commentRoutes from './comment.routes';
 
 const router = Router();
 
@@ -18,6 +19,7 @@ router.use('/teams', teamRoutes);
 router.use('/policies', policyRoutes);
 router.use('/utils', utilsRoutes);
 router.use('/departments', departmentRoutes);
+router.use('/comments', commentRoutes);
 router.use("*", (req, res) => {
     res.status(501).json("route not found")
 })

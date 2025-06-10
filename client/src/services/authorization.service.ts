@@ -30,21 +30,11 @@ export const AuthorizationService = {
             return data.hasPermission;
         } catch (error) {
             console.error('Error checking permission:', error);
-            // Default to no permission on error
             return false;
         }
     },
 
-    /**
-     * Check multiple permissions at once and return results as an object
-     * 
-     * @example
-     * const permissions = await AuthorizationService.batchCheckPermissions([
-     *   { action: 'update', resourceType: 'project', resourceId: 1 },
-     *   { action: 'delete', resourceType: 'project', resourceId: 1 }
-     * ]);
-     * // Returns: { 'update:project:1': true, 'delete:project:1': false }
-     */
+
     async batchCheckPermissions(requests: PermissionRequest[]): Promise<Record<string, boolean>> {
         try {
             const { data } = await axios.post(

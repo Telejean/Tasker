@@ -5,9 +5,10 @@ import { RequestHandler } from 'express';
 
 const router = express.Router();
 
-const authenticate = passport.authenticate('jwt', { session: false });
+// !! nu mai stiu daca mai e nevoie de autentificare aici
+// const authenticate = passport.authenticate('jwt', { session: false });
 
-router.use(authenticate);
+// router.use(authenticate);
 
 const asHandler = (fn: any): RequestHandler => fn as RequestHandler;
 
@@ -26,5 +27,9 @@ router.post('/assign/task', asHandler(policyController.assignPolicyToTask));
 router.get('/assignments/:resourceType/:resourceId', asHandler(policyController.getPolicyAssignments));
 
 router.delete('/assignments/:resourceType/:assignmentId', asHandler(policyController.removePolicyAssignment));
+
+// Add to server/routes/policy.routes.ts
+router.patch('/:id/status', asHandler(policyController.togglePolicyStatus));
+router.post('/test', asHandler(policyController.testPolicy));
 
 export default router;

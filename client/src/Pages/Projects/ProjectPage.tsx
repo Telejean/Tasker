@@ -38,20 +38,8 @@ const ProjectPage = () => {
             setLoading(true);
             const projectData = await projectService.getProjectById(parseInt(id));
             console.log("Project data:", projectData);
-            const formattedProject = {
-                id: projectData.id,
-                name: projectData.name,
-                teams: projectData.teams || [],
-                manager: projectData.manager || { id: 0, name: "Unknown" },
-                managerId: projectData.managerId,
-                completion: projectData.completion || 0,
-                iconId: projectData.iconId || 1,
-                icon: projectData.icon || "LuFile",
-                status: projectData.status?.toLowerCase() || "active",
-                description: projectData.description || ""
-            };
-
-            setProject(formattedProject);
+    
+            setProject(projectData);
         } catch (err) {
             console.error("Error refreshing project data:", err);
         } finally {

@@ -9,7 +9,6 @@ import { Project } from '@my-types/types';
 
 const ProjectsTable = ({ data }: { data: Project[] }) => {
 
-    console.log("ProjectsTable data:", data);   
 
     const [sorting, setSorting] = useState<SortingState>([])
     const navigate = useNavigate();
@@ -89,7 +88,7 @@ const ProjectsTable = ({ data }: { data: Project[] }) => {
         columnHelper.accessor("completion", {
             id: "completion",
             cell: info => (
-                <Progress value={info.getValue() * 100} />
+                <Progress value={64} />
             ),
             header: "Progress"
         }),

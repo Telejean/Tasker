@@ -20,4 +20,6 @@ router.put('/:id', taskController.updateTask as any);
 
 router.delete('/:id', taskController.deleteTask as any);
 
+router.post('/:id/users', taskController.addUserToTask as any);
+
 export default router;

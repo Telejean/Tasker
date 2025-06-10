@@ -18,6 +18,7 @@ import Login from "./Pages/Auth/Login";
 import Register from "./Pages/Auth/Register";
 import PolicyManagement from "./Pages/Admin/PolicyManagement";
 import Permission from "./Components/Permission/Permission";
+import { TaskDetail } from './Pages/Tasks/TaskDetail';
 
 import { User } from "@my-types/types";
 import { set } from "date-fns";
@@ -58,12 +59,12 @@ function App() {
                 <Sidebar />
                 <Box id={s.mainContainer}>
                   <Routes>
-                    <Route path="/login" element={<Login />} />
                     <Route path="/home" element={<Home />} />
                     <Route path="/tasks" element={<Tasks />} />
                     <Route path="/projects" element={<Projects />} />
                     <Route path="/projects/:id" element={<ProjectPage />} />
                     <Route path="/profile/:userId" element={<Profile />} />
+                    <Route path="/tasks/:taskId" element={<TaskDetail />} />
                     <Route
                       path="/admin/policies"
                       element={

@@ -42,7 +42,40 @@ export interface Task {
     project: Project;
     deadline: Date;
     creatorId: number;
+    creator?: User;
     assignedUsers: User[];
+    createdAt?: Date;
+    comments?: Comment[];
+}
+
+export interface Comment {
+    id: number;
+    content: string;
+    authorId: number;
+    author: User;
+    taskId: number;
+    task?: Task;
+    parentCommentId?: number;
+    parentComment?: Comment;
+    replies?: Comment[];
+    likesCount: number;
+    dislikesCount: number;
+    isEdited: boolean;
+    editedAt?: Date;
+    createdAt: Date;
+    updatedAt: Date;
+    likes?: CommentLike[];
+    userReaction?: 'like' | 'dislike' | null;
+}
+
+export interface CommentLike {
+    id: number;
+    userId: number;
+    user: User;
+    commentId: number;
+    comment: Comment;
+    type: 'like' | 'dislike';
+    createdAt: Date;
 }
 
 export interface Team {

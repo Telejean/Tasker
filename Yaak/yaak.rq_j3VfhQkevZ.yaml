@@ -1,0 +1,26 @@
+type: http_request
+model: http_request
+id: rq_j3VfhQkevZ
+createdAt: 2025-06-10T12:31:16.035110900
+updatedAt: 2025-06-10T12:35:35.143717200
+workspaceId: wk_mxbmXX2jVR
+folderId: fl_LVaGwZvZzS
+authentication: {}
+authenticationType: null
+body:
+  text: |-
+    {
+      "userId": 1
+    }
+bodyType: application/json
+description: ''
+headers:
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: KqfIEGZVx0
+method: POST
+name: AddUserToTask
+sortPriority: 4000.0008
+url: ${[ baseUrl ]}/tasks/19/users
+urlParameters: []

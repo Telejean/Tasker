@@ -2,7 +2,7 @@ type: http_request
 model: http_request
 id: rq_task_getById
 createdAt: 2025-05-03T11:48:48.635019700
-updatedAt: 2025-05-17T11:56:46.890267300
+updatedAt: 2025-06-10T12:35:47.083178600
 workspaceId: wk_mxbmXX2jVR
 folderId: fl_LVaGwZvZzS
 authentication: {}
@@ -22,5 +22,5 @@ url: ${[ baseUrl ]}/tasks/:id
 urlParameters:
 - enabled: true
   name: :id
-  value: '2'
-  id: nigmM3d3s6
+  value: '19'
+  id: DXYPNRW5eV

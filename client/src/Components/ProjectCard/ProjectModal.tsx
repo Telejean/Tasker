@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Dialog, Flex, Button, Text, Box, Select, TextField } from '@radix-ui/themes';
+import { Dialog, Flex, Button, Text, Box, TextField } from '@radix-ui/themes';
 import { projectService } from '../../services/project.service';
 import { userService } from '../../services/user.service';
 import { User } from '@my-types/types';
 import * as LuIcons from 'react-icons/lu'
 import React from 'react';
+import Permission from '../Permission/Permission';
 
 interface ProjectModalProps {
     open: boolean;
@@ -13,8 +14,7 @@ interface ProjectModalProps {
     onProjectSaved: () => void;
 }
 
-const ProjectModal = ({ open, onOpenChange, projectId, onProjectSaved }) => {
-
+const ProjectModal = ({ open, onOpenChange, projectId, onProjectSaved } : ProjectModalProps) => {
     const [name, setName] = useState('');
     const [manager, setManager] = useState<number | null>(null);
     const [userIds, setUserIds] = useState<number[]>([]);
@@ -60,6 +60,18 @@ const ProjectModal = ({ open, onOpenChange, projectId, onProjectSaved }) => {
         onOpenChange(false);
     };
 
+    const validateDates = () => {
+        if (startDate && endDate) {
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            if (start >= end) {
+                setError('End date must be after start date');
+                return false;
+            }
+        }
+        return true;
+    };
+
     useEffect(() => {
         const fetchUsers = async () => {
             try {
@@ -87,8 +99,13 @@ const ProjectModal = ({ open, onOpenChange, projectId, onProjectSaved }) => {
                     setIconId(project.iconId || 1);
                     setStartDate(project.startDate ? project.startDate.slice(0, 10) : '');
                     setEndDate(project.endDate ? project.endDate.slice(0, 10) : '');
-                    const allUserIds: number[] = [];
 
+                    const managerUser = availableUsers.find(u => u.id === project.managerId);
+                    if (managerUser) {
+                        setManagerSearch(`${managerUser.name} ${managerUser.surname || ''}`);
+                    }
+
+                    const allUserIds: number[] = [];
                     if (project.teams && Array.isArray(project.teams)) {
                         project.teams.forEach((team: any) => {
                             if (team.userTeams && Array.isArray(team.userTeams)) {
@@ -126,6 +143,7 @@ const ProjectModal = ({ open, onOpenChange, projectId, onProjectSaved }) => {
             setIconId(1);
             setStartDate('');
             setEndDate('');
+            setManagerSearch('');
             setError('');
             setOriginalFormState({
                 name: '',
@@ -136,7 +154,9 @@ const ProjectModal = ({ open, onOpenChange, projectId, onProjectSaved }) => {
                 endDate: ''
             });
         }
-    }, [projectId, open]); const handleSave = async () => {
+    }, [projectId, open, availableUsers]);
+
+    const handleSave = async () => {
         setError('');
 
         if (!name.trim()) {
@@ -159,16 +179,12 @@ const ProjectModal = ({ open, onOpenChange, projectId, onProjectSaved }) => {
             return;
         }
 
+        if (!validateDates()) {
+            return;
+        }
+
         try {
             setIsLoading(true);
-            console.log('Saving project:', {
-                name,
-                manager,
-                userIds,
-                iconId,
-                startDate,
-                endDate
-            });
 
             const projectData = {
                 name: name.trim(),
@@ -188,11 +204,9 @@ const ProjectModal = ({ open, onOpenChange, projectId, onProjectSaved }) => {
             }
 
             onProjectSaved();
-
             onOpenChange(false);
         } catch (err: any) {
             console.error('Error saving project:', err);
-
             const errorMessage = err?.response?.data?.error || 'Failed to save project';
             setError(errorMessage);
         } finally {
@@ -208,7 +222,13 @@ const ProjectModal = ({ open, onOpenChange, projectId, onProjectSaved }) => {
         );
     };
 
-    return (
+    const filteredUsers = availableUsers.filter(user =>
+        (user.name + ' ' + (user.surname || '') + ' ' + (user.email || ''))
+            .toLowerCase()
+            .includes(managerSearch.toLowerCase())
+    );
+
+    const modalContent = (
         <Dialog.Root open={open} onOpenChange={handleCloseRequest}>
             <Dialog.Content style={{ maxWidth: 500 }}>
                 <Dialog.Title>{isEditMode ? 'Edit Project' : 'Create Project'}</Dialog.Title>
@@ -217,105 +237,75 @@ const ProjectModal = ({ open, onOpenChange, projectId, onProjectSaved }) => {
                         ? 'Update project information and members'
                         : 'Create a new project and assign team members'}
                 </Dialog.Description>
+                
                 <Flex direction="column" gap="4">
                     <Box>
                         <Text as="div" size="2" mb="1" weight="bold">
                             Project Name
                         </Text>
                         <TextField.Root
-                            className="rt-TextFieldInput"
                             placeholder="Enter project name"
                             value={name}
                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
                             style={{ borderColor: !name.trim() && error ? 'var(--color-error)' : undefined }}
                         />
-                        {!name.trim() && error && (
-                            <Text size="1" color="red" mt="1">
-                                Project name is required
-                            </Text>
-                        )}
-                        <Box>
-                            <Text as="div" size="2" mb="1" weight="bold">
-                                Project Manager
-                            </Text>
-                            <Box style={{ position: 'relative' }}>
-                                <TextField.Root
-                                    placeholder="Search manager..."
-                                    value={managerSearch}
-                                    // value={
-                                    //     manager
-                                    //         ? availableUsers.find(u => u.id === manager)?.name +
-                                    //         ' ' +
-                                    //         (availableUsers.find(u => u.id === manager)?.surname || '')
-                                    //         : ''
-                                    // }
-                                    onChange={e => {
-                                        setManagerSearch(e.target.value);
+                    </Box>
+
+                    <Box>
+                        <Text as="div" size="2" mb="1" weight="bold">
+                            Project Manager
+                        </Text>
+                        <Box style={{ position: 'relative' }}>
+                            <TextField.Root
+                                placeholder="Search manager..."
+                                value={managerSearch}
+                                onChange={e => setManagerSearch(e.target.value)}
+                                onFocus={() => setShowManagerDropdown(true)}
+                                onBlur={() => setTimeout(() => setShowManagerDropdown(false), 150)}
+                                style={{ borderColor: !manager && error ? 'var(--color-error)' : undefined }}
+                            />
+                            {showManagerDropdown && (
+                                <Box
+                                    style={{
+                                        position: 'absolute',
+                                        top: '100%',
+                                        left: 0,
+                                        right: 0,
+                                        background: 'white',
+                                        border: '1px solid var(--gray-6)',
+                                        borderRadius: 4,
+                                        zIndex: 10,
+                                        maxHeight: 180,
+                                        overflowY: 'auto',
                                     }}
-                                    onFocus={() => setShowManagerDropdown(true)}
-                                    onBlur={() => setTimeout(() => setShowManagerDropdown(false), 150)}
-                                    style={{ borderColor: !manager && error ? 'var(--color-error)' : undefined }}
-                                />
-                                {showManagerDropdown && managerSearch && (
-                                    <Box
-                                        style={{
-                                            position: 'absolute',
-                                            top: '100%',
-                                            left: 0,
-                                            right: 0,
-                                            background: 'white',
-                                            border: '1px solid var(--gray-6)',
-                                            borderRadius: 4,
-                                            zIndex: 10,
-                                            maxHeight: 180,
-                                            overflowY: 'auto',
-                                        }}
-                                    >
-                                        {availableUsers
-                                            .filter(
-                                                user =>
-                                                    (user.name + ' ' + (user.surname || '') + ' ' + (user.email || ''))
-                                                        .toLowerCase()
-                                                        .includes(managerSearch.toLowerCase())
-                                            )
-                                            .map(user => (
-                                                <Box
-                                                    key={user.id}
-                                                    style={{
-                                                        padding: '8px',
-                                                        cursor: 'pointer',
-                                                        background: manager === user.id ? 'var(--accent-3)' : 'transparent',
-                                                    }}
-                                                    onMouseDown={() => {
-                                                        setManager(user.id);
-                                                        setManagerSearch(user.name + ' ' + user.surname);
-                                                        setShowManagerDropdown(false);
-                                                    }}
-                                                >
-                                                    {user.name} {user.surname || ''} ({user.email || ''})
-                                                </Box>
-                                            ))}
-                                        {availableUsers.filter(
-                                            user =>
-                                                user.role === 'ADMIN' &&
-                                                (user.name + ' ' + (user.surname || '') + ' ' + (user.email || ''))
-                                                    .toLowerCase()
-                                                    .includes(managerSearch.toLowerCase())
-                                        ).length === 0 && (
-                                                <Text size="2" color="gray" style={{ padding: '8px' }}>
-                                                    No results
-                                                </Text>
-                                            )}
-                                    </Box>
-                                )}
-                                {!manager && error && (
-                                    <Text size="1" color="red" mt="1">
-                                        Project manager is required
-                                    </Text>
-                                )}
-                            </Box>
+                                >
+                                    {filteredUsers.map(user => (
+                                        <Box
+                                            key={user.id}
+                                            style={{
+                                                padding: '8px',
+                                                cursor: 'pointer',
+                                                background: manager === user.id ? 'var(--accent-3)' : 'transparent',
+                                            }}
+                                            onMouseDown={() => {
+                                                setManager(user.id);
+                                                setManagerSearch(`${user.name} ${user.surname || ''}`);
+                                                setShowManagerDropdown(false);
+                                            }}
+                                        >
+                                            {user.name} {user.surname || ''} ({user.email || ''})
+                                        </Box>
+                                    ))}
+                                    {filteredUsers.length === 0 && (
+                                        <Text size="2" color="gray" style={{ padding: '8px' }}>
+                                            No users found
+                                        </Text>
+                                    )}
+                                </Box>
+                            )}
                         </Box>
                     </Box>
+
                     <Box>
                         <Text as="div" size="2" mb="1" weight="bold">
                             Project Icon
@@ -339,7 +329,9 @@ const ProjectModal = ({ open, onOpenChange, projectId, onProjectSaved }) => {
                                     </Box>
                                 ))}
                         </Flex>
-                    </Box><Box>
+                    </Box>
+
+                    <Box>
                         <Text as="div" size="2" mb="1" weight="bold">
                             Team Members
                         </Text>
@@ -375,28 +367,39 @@ const ProjectModal = ({ open, onOpenChange, projectId, onProjectSaved }) => {
                             )}
                         </Box>
                     </Box>
-                    <Box>
-                        <Text as="div" size="2" mb="1" weight="bold">
-                            Start Date
-                        </Text>
-                        <TextField.Root
-                            type="date"
-                            value={startDate}
-                            onChange={e => setStartDate(e.target.value)}
-                            style={{ borderColor: !startDate && error ? 'var(--color-error)' : undefined }}
-                        />
-                    </Box>
-                    <Box>
-                        <Text as="div" size="2" mb="1" weight="bold">
-                            End Date
-                        </Text>
-                        <TextField.Root
-                            type="date"
-                            value={endDate}
-                            onChange={e => setEndDate(e.target.value)}
-                            style={{ borderColor: !endDate && error ? 'var(--color-error)' : undefined }}
-                        />
-                    </Box>
+
+                    <Flex gap="3">
+                        <Box style={{ flex: 1 }}>
+                            <Text as="div" size="2" mb="1" weight="bold">
+                                Start Date
+                            </Text>
+                            <TextField.Root
+                                type="date"
+                                value={startDate}
+                                onChange={e => {
+                                    setStartDate(e.target.value);
+                                    setError(''); 
+                                }}
+                                style={{ borderColor: !startDate && error ? 'var(--color-error)' : undefined }}
+                            />
+                        </Box>
+                        <Box style={{ flex: 1 }}>
+                            <Text as="div" size="2" mb="1" weight="bold">
+                                End Date
+                            </Text>
+                            <TextField.Root
+                                type="date"
+                                value={endDate}
+                                onChange={e => {
+                                    setEndDate(e.target.value);
+                                    setError(''); 
+                                }}
+                                style={{ borderColor: !endDate && error ? 'var(--color-error)' : undefined }}
+                            />
+                        </Box>
+
+                        
+                    </Flex>
 
                     {error && (
                         <Text color="red" size="2">
@@ -436,6 +439,29 @@ const ProjectModal = ({ open, onOpenChange, projectId, onProjectSaved }) => {
                 </Dialog.Root>
             )}
         </Dialog.Root>
+    );
+
+    if (isEditMode) {
+        return (
+            <Permission 
+                action="update" 
+                resourceType="project" 
+                resourceId={projectId}
+                fallback={null}
+            >
+                {modalContent}
+            </Permission>
+        );
+    }
+
+    return (
+        <Permission 
+            action="create" 
+            resourceType="project"
+            fallback={null}
+        >
+            {modalContent}
+        </Permission>
     );
 };
 

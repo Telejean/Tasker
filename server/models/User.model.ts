@@ -8,6 +8,8 @@ import { UserTeam } from './UserTeam.model';
 import { Task } from './Task.model';
 import { Team } from './Team.model';
 import { UserProject } from './UserProjects.model';
+import { Comment } from './Comment.model';
+import { CommentLike } from './CommentLike.model';
 import { PerformanceStats, UserAvailability, UserSkills } from '@my-types/types';
 
 @Table
@@ -39,13 +41,6 @@ export class User extends Model {
     phoneNumber!: string;
 
     @Column({
-        type: DataType.STRING,
-        allowNull: true,
-    })
-    team!: string;
-
-
-    @Column({
         type: DataType.TEXT,
         allowNull: true,
     })
@@ -62,10 +57,14 @@ export class User extends Model {
     tasks!: Task[];
 
     @HasMany(() => UserPolicy)
-    policies!: UserPolicy[];
-
-    @HasMany(() => PermissionLog)
+    policies!: UserPolicy[]; @HasMany(() => PermissionLog)
     permissionLogs!: PermissionLog[];
+
+    @HasMany(() => Comment)
+    comments!: Comment[];
+
+    @HasMany(() => CommentLike)
+    commentLikes!: CommentLike[];
 
     @BelongsToMany(() => Team, () => UserTeam)
     teams!: Team[];

@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { API_URL, axiosConfig } from '../config/api';
+import { Project } from '@my-types/*';
 
 export const projectService = {
     /**
@@ -21,7 +22,7 @@ export const projectService = {
     async getProjectById(projectId: number) {
         try {
             const response = await axios.get(`${API_URL}/projects/${projectId}`, axiosConfig);
-            return response.data;
+            return response.data as Project;
         } catch (error) {
             console.error(`Error fetching project ${projectId}:`, error);
             throw error;

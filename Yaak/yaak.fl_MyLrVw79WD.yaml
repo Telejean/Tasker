@@ -2,9 +2,12 @@ type: folder
 model: folder
 id: fl_MyLrVw79WD
 createdAt: 2025-05-03T12:46:54.698276300
-updatedAt: 2025-05-14T09:13:07.601878700
+updatedAt: 2025-06-08T13:11:13.328796700
 workspaceId: wk_mxbmXX2jVR
 folderId: null
-name: Projects
+authentication: {}
+authenticationType: null
 description: ''
-sortPriority: 4000.0
+headers: []
+name: Projects
+sortPriority: 5000.0

@@ -154,11 +154,11 @@ export const authController = {
 
     async checkPermission(req: Request, res: Response) {
         try {
-            if (!req.isAuthenticated()) {
+            if (!req.user) {
                 return res.json({ hasPermission: false });
             }
 
-            const { action, resourceType, resourceId } = req.query;
+            const { action, resourceType, resourceId, resourceAttributes } = req.query;
 
             if (!action || !resourceType) {
                 return res.status(400).json({
@@ -167,17 +167,45 @@ export const authController = {
             }
 
             const user = req.user as any;
+
             if (user.isAdmin) {
                 return res.json({ hasPermission: true });
             }
 
-            const hasPermission = await authorizationService.checkPermission({
-                userId: user.id,
-                action: action as string,
-                resourceType: resourceType as string,
-                resourceId: resourceId ? Number(resourceId) : undefined
+            let parsedResourceAttributes;
+            if (resourceAttributes) {
+                try {
+                    parsedResourceAttributes = JSON.parse(resourceAttributes as string);
+                } catch (error) {
+                    console.error('Error parsing resourceAttributes:', error);
+                    parsedResourceAttributes = {};
+                }
+            }
+
+            const authRequest = {
+                subject: {
+                    userId: user.id
+                },
+                action: {
+                    type: action as string
+                },
+                resource: {
+                    type: resourceType as string,
+                    id: resourceId ? Number(resourceId) : undefined,
+                    attributes: parsedResourceAttributes || {}
+                },
+                environment: {
+                    time: new Date(),
+                    ip: req.ip || req.connection.remoteAddress,
+                    userAgent: req.get('User-Agent')
+                }
+            };
+
+            const result = await authorizationService.isAuthorized(authRequest);
+            res.status(200).json({
+                hasPermission: result.allowed,
+                reason: result.reason
             });
-            res.status(200).json({ hasPermission });
         } catch (error) {
             console.error('Error checking permission:', error);
             res.status(500).json({
@@ -189,7 +217,7 @@ export const authController = {
 
     async checkPermissionsBatch(req: Request, res: Response) {
         try {
-            if (!req.isAuthenticated()) {
+            if (!req.user) {
                 return res.json({
                     results: {},
                     message: 'User not authenticated'
@@ -217,18 +245,31 @@ export const authController = {
             }
 
             for (const perm of permissions) {
-                const { action, resourceType, resourceId } = perm;
+                const { action, resourceType, resourceId, resourceAttributes } = perm;
                 const key = `${action}:${resourceType}${resourceId ? `:${resourceId}` : ''}`;
 
                 try {
-                    const hasPermission = await authorizationService.checkPermission({
-                        userId: user.id,
-                        action,
-                        resourceType,
-                        resourceId
-                    });
+                    const authRequest = {
+                        subject: {
+                            userId: user.id
+                        },
+                        action: {
+                            type: action
+                        },
+                        resource: {
+                            type: resourceType,
+                            id: resourceId,
+                            attributes: resourceAttributes || {}
+                        },
+                        environment: {
+                            time: new Date(),
+                            ip: req.ip || req.connection.remoteAddress,
+                            userAgent: req.get('User-Agent')
+                        }
+                    };
 
-                    results[key] = hasPermission;
+                    const result = await authorizationService.isAuthorized(authRequest);
+                    results[key] = result.allowed;
                 } catch (err) {
                     console.error(`Error checking permission ${key}:`, err);
                     results[key] = false;
@@ -243,5 +284,51 @@ export const authController = {
                 results: {}
             });
         }
-    }
-};
+    },
+
+    async checkABACPermission(req: Request, res: Response) {
+        try {
+            if (!req.user) {
+                return res.status(401).json({
+                    allowed: false,
+                    reason: 'User not authenticated'
+                });
+            }
+
+            const { subject, action, resource, environment } = req.body;
+
+            if (!action?.type || !resource?.type) {
+                return res.status(400).json({
+                    error: 'Missing required parameters: action.type and resource.type are required',
+                    allowed: false
+                });
+            }
+
+            const user = req.user as any;
+
+            const authRequest = {
+                subject: {
+                    userId: user.id,
+                    ...subject 
+                },
+                action,
+                resource,
+                environment: {
+                    time: new Date(),
+                    ip: req.ip || req.connection.remoteAddress,
+                    userAgent: req.get('User-Agent'),
+                    ...environment 
+                }
+            };
+
+            const result = await authorizationService.isAuthorized(authRequest);
+            res.json(result);
+        } catch (error) {
+            console.error('Error in ABAC permission check:', error);
+            res.status(500).json({
+                allowed: false,
+                reason: 'Internal server error during permission check'
+            });
+        }
+    },
+}

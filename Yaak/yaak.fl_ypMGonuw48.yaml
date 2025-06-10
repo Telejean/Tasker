@@ -2,9 +2,12 @@ type: folder
 model: folder
 id: fl_ypMGonuw48
 createdAt: 2025-05-13T08:53:28.925406
-updatedAt: 2025-05-17T07:10:39.148342
+updatedAt: 2025-06-08T13:11:13.312520200
 workspaceId: wk_mxbmXX2jVR
 folderId: null
-name: Auth
+authentication: {}
+authenticationType: null
 description: ''
-sortPriority: 500.0
+headers: []
+name: Auth
+sortPriority: 3000.0

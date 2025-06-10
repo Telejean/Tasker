@@ -15,32 +15,36 @@ import { tasksAtom } from "@/Pages/Tasks/Tasks";
 import { useAtom } from "jotai";
 import "./table.css";
 import { taskService } from "@/services/task.service";
+import { useNavigate } from "react-router";
 
 const TasksTable = ({ data }: { data: Task[] }) => {
 
   console.log("TasksTable data", data);
 
-    const getBadgeColor = (status: Task['status']) => {
-        switch (status) {
-            case 'NOT_STARTED': return 'amber';
-            case 'IN_PROGRESS': return 'blue';
-            case 'COMPLETED': return 'green';
-            default: return 'gray';
-        }
+  const getBadgeColor = (status: Task['status']) => {
+    switch (status) {
+      case 'NOT_STARTED': return 'amber';
+      case 'IN_PROGRESS': return 'blue';
+      case 'COMPLETED': return 'green';
+      default: return 'gray';
     }
+  }
   const getPriorityColor = (priority: Task['priority']) => {
-      switch (priority) {
-          case 'LOW': return 'green';
-          case 'MEDIUM': return 'yellow';
-          case 'HIGH': return 'red';
-          default: return 'gray';
-      }
+    switch (priority) {
+      case 'LOW': return 'green';
+      case 'MEDIUM': return 'yellow';
+      case 'HIGH': return 'red';
+      default: return 'gray';
+    }
   }
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
   const [, setTasks] = useAtom(tasksAtom);
+
+  const navigate = useNavigate();
+
 
   const handleTaskUpdate = async (updatedTask: Task) => {
     try {
@@ -163,7 +167,7 @@ const TasksTable = ({ data }: { data: Task[] }) => {
               key={row.id}
               onClick={() => {
                 setSelectedTask(row.original);
-                setIsDetailDialogOpen(true);
+                navigate(`/tasks/${row.original.id}`)
               }}
             >
               {row.getVisibleCells().map((cell) => (

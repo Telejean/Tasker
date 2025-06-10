@@ -4,7 +4,7 @@ import { UserPolicy } from '../models/UserPolicy.model';
 import { ProjectPolicy } from '../models/ProjectPolicy.model';
 import { TaskPolicy } from '../models/TaskPolicy.model';
 import { Rule } from '../models/Rule.model';
-import { Op } from 'sequelize';
+import authorizationService from '../services/authorization.service';
 
 const getPolicyModelForResource = (resourceType: string) => {
     switch (resourceType.toLowerCase()) {
@@ -20,23 +20,26 @@ const getPolicyModelForResource = (resourceType: string) => {
 };
 
 export const policyController = {
-    async getPolicies(req: Request, res: Response) {
-        try {
-            const { active } = req.query;
-            const where = active === 'true' ? { active: true } : {};
+   async getPolicies(req: Request, res: Response) {
+    try {
+        const { active } = req.query;
+        const where = active === 'true' ? { isActive: true } : {}; 
 
-            const policies = await Policy.findAll({ where });
-            res.json(policies);
-        } catch (error) {
-            console.error('Error fetching policies:', error);
-            res.status(500).json({ message: 'Error fetching policies' });
-        }
-    },
+        const policies = await Policy.findAll({ 
+            where,
+            include: [Rule] // Include rules
+        });
+        res.json(policies);
+    } catch (error) {
+        console.error('Error fetching policies:', error);
+        res.status(500).json({ message: 'Error fetching policies' });
+    }
+},
 
     async getPolicy(req: Request, res: Response) {
         try {
             const { id } = req.params;
-            const policy = await Policy.findByPk(id);
+            const policy = await Policy.findByPk(id, {include: [Rule]}); 
 
             if (!policy) {
                 return res.status(404).json({ message: 'Policy not found' });
@@ -51,7 +54,7 @@ export const policyController = {
 
     async createPolicy(req: Request, res: Response) {
         try {
-            const { name, description, rules, active } = req.body;
+            const { name, description, rules, isActive } = req.body; // Note: isActive not active
 
             if (!name || !rules || !Array.isArray(rules)) {
                 return res.status(400).json({ message: 'Name and rules array are required' });
@@ -60,12 +63,37 @@ export const policyController = {
             const policy = await Policy.create({
                 name,
                 description,
-                rules,
-                active: active !== false, 
+                isActive: isActive !== false,
                 createdBy: (req.user as any).id
             });
 
-            res.status(201).json(policy);
+            const createdRules = [];
+            for (const rule of rules) {
+                const newRule = await Rule.create({
+                    name: rule.name,
+                    description: rule.description || null,
+                    effect: rule.effect,
+                    subjectAttributes: typeof rule.subjectAttributes === 'string'
+                        ? rule.subjectAttributes
+                        : JSON.stringify(rule.subjectAttributes || {}),
+                    resourceAttributes: typeof rule.resourceAttributes === 'string'
+                        ? rule.resourceAttributes
+                        : JSON.stringify(rule.resourceAttributes || {}),
+                    actionAttributes: typeof rule.actionAttributes === 'string'
+                        ? rule.actionAttributes
+                        : JSON.stringify(rule.actionAttributes || {}),
+                    condition: rule.condition || null,
+                    priority: rule.priority || 0,
+                    policyId: policy.id
+                });
+                createdRules.push(newRule);
+            }
+
+            const policyWithRules = await Policy.findByPk(policy.id, {
+                include: [Rule]
+            });
+
+            res.status(201).json(policyWithRules);
         } catch (error) {
             console.error('Error creating policy:', error);
             res.status(500).json({ message: 'Error creating policy' });
@@ -287,6 +315,54 @@ export const policyController = {
         } catch (error) {
             console.error('Error adding rule to policy:', error);
             res.status(500).json({ message: 'Error adding rule to policy' });
+        }
+    },
+    async togglePolicyStatus(req: Request, res: Response) {
+        try {
+            const { id } = req.params;
+            const { isActive } = req.body;
+
+            const policy = await Policy.findByPk(id);
+            if (!policy) {
+                return res.status(404).json({ message: 'Policy not found' });
+            }
+
+            await policy.update({
+                isActive,
+                updatedBy: (req.user as any).id
+            });
+
+            res.json(policy);
+        } catch (error) {
+            console.error('Error toggling policy status:', error);
+            res.status(500).json({ message: 'Error updating policy status' });
+        }
+    },
+
+    async testPolicy(req: Request, res: Response) {
+        try {
+            const { userId, action, resourceType, resourceId, resourceAttributes } = req.body;
+
+            const authRequest = {
+                subject: { userId: parseInt(userId) },
+                action: { type: action },
+                resource: {
+                    type: resourceType,
+                    id: resourceId ? parseInt(resourceId) : undefined,
+                    attributes: resourceAttributes || {}
+                },
+                environment: {
+                    time: new Date(),
+                    ip: req.ip,
+                    userAgent: req.get('User-Agent')
+                }
+            };
+
+            const result = await authorizationService.isAuthorized(authRequest);
+            res.json(result);
+        } catch (error) {
+            console.error('Error testing policy:', error);
+            res.status(500).json({ message: 'Error testing policy' });
         }
     }
 };
